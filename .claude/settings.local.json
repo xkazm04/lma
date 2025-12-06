@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install @supabase/supabase-js @supabase/ssr @tanstack/react-query zustand zod react-hook-form @hookform/resolvers clsx tailwind-merge class-variance-authority date-fns pdf-parse mammoth @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-slot @radix-ui/react-tabs @radix-ui/react-select @radix-ui/react-progress @radix-ui/react-toast @radix-ui/react-tooltip @radix-ui/react-popover @radix-ui/react-separator)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
