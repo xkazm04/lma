@@ -4,9 +4,10 @@ import React, { memo } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, TrendingUp, AlertTriangle, Plus, RefreshCw, ArrowRight, CheckCircle, BarChart3, Zap, Activity, Network, ArrowRightLeft, Bot, Brain } from 'lucide-react';
+import { Calendar, TrendingUp, AlertTriangle, Plus, RefreshCw, ArrowRight, CheckCircle, BarChart3, Brain } from 'lucide-react';
 import { ComplianceStatsBar, GroupedDeadlinesList, FacilityAtRiskCard, ActivityCard } from './components';
 import { dashboardStats, upcomingItems, facilitiesAtRisk, recentActivity } from './lib';
+import { InlineAIAssist } from '@/components/intelligence';
 
 export const CompliancePage = memo(function CompliancePage() {
   return (
@@ -17,6 +18,18 @@ export const CompliancePage = memo(function CompliancePage() {
           <p className="text-zinc-500">Monitor obligations, covenants, and reporting deadlines</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* AI Assist - replaces separate Compliance Agent page */}
+          <InlineAIAssist
+            domain="compliance"
+            context={{
+              domain: 'compliance',
+              entityType: 'compliance-tracker',
+              entityId: 'tracker',
+              entityName: 'Compliance Tracker',
+            }}
+            variant="popover"
+            actions={['explain', 'suggest', 'analyze']}
+          />
           <Button variant="outline" className="hover:shadow-sm transition-all">
             <RefreshCw className="w-4 h-4 mr-2" />
             Sync from Documents
@@ -99,7 +112,8 @@ export const CompliancePage = memo(function CompliancePage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* Consolidated Quick Actions - reduced from 10 to 4 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           {
             href: '/compliance/autopilot',
@@ -110,76 +124,28 @@ export const CompliancePage = memo(function CompliancePage() {
             description: 'AI breach prediction 6-12 months ahead',
           },
           {
-            href: '/compliance/agent',
-            icon: Bot,
-            iconBg: 'bg-purple-100 group-hover:bg-purple-200',
-            iconColor: 'text-purple-600',
-            title: 'Compliance Agent',
-            description: 'AI-powered natural language assistant',
-          },
-          {
-            href: '/compliance/live-testing',
-            icon: Activity,
-            iconBg: 'bg-emerald-100 group-hover:bg-emerald-200',
-            iconColor: 'text-emerald-600',
-            title: 'Live Testing',
-            description: 'Real-time covenant monitoring',
-          },
-          {
-            href: '/compliance/automated-calendar',
-            icon: Zap,
-            iconBg: 'bg-green-100 group-hover:bg-green-200',
-            iconColor: 'text-green-600',
-            title: 'Automated Calendar',
-            description: 'Smart reminders & calendar sync',
-          },
-          {
             href: '/compliance/calendar',
             icon: Calendar,
             iconBg: 'bg-blue-100 group-hover:bg-blue-200',
             iconColor: 'text-blue-600',
-            title: 'Obligation Calendar',
-            description: 'View all deadlines and events',
+            title: 'Unified Calendar',
+            description: 'All deadlines, events & automated reminders',
           },
           {
             href: '/compliance/covenants',
             icon: TrendingUp,
             iconBg: 'bg-purple-100 group-hover:bg-purple-200',
             iconColor: 'text-purple-600',
-            title: 'Covenant Tracking',
-            description: 'Monitor tests and headroom',
+            title: 'Covenant Management',
+            description: 'Live testing, headroom & trading',
           },
           {
-            href: '/compliance/headroom-exchange',
-            icon: ArrowRightLeft,
-            iconBg: 'bg-orange-100 group-hover:bg-orange-200',
-            iconColor: 'text-orange-600',
-            title: 'Headroom Exchange',
-            description: 'Trade covenant flexibility',
-          },
-          {
-            href: '/compliance/covenant-network',
-            icon: Network,
-            iconBg: 'bg-rose-100 group-hover:bg-rose-200',
-            iconColor: 'text-rose-600',
-            title: 'Covenant Network',
-            description: 'Cross-facility correlations',
-          },
-          {
-            href: '/compliance/benchmarks',
+            href: '/compliance/analytics',
             icon: BarChart3,
             iconBg: 'bg-indigo-100 group-hover:bg-indigo-200',
             iconColor: 'text-indigo-600',
-            title: 'Benchmark Network',
-            description: 'Compare to industry standards',
-          },
-          {
-            href: '/compliance/notifications',
-            icon: AlertTriangle,
-            iconBg: 'bg-amber-100 group-hover:bg-amber-200',
-            iconColor: 'text-amber-600',
-            title: 'Event Notifications',
-            description: 'Analyze and report events',
+            title: 'Analytics',
+            description: 'Network, benchmarks & events',
           },
         ].map((action, idx) => (
           <Link key={action.href} href={action.href}>

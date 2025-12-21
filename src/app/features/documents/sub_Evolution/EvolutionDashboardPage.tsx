@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { PageContainer } from '@/components/layout';
 import {
   EvolutionStatsCards,
   MarketTrendCard,
@@ -160,7 +161,8 @@ export function EvolutionDashboardPage() {
   }
 
   return (
-    <div className="space-y-6" data-testid="evolution-dashboard">
+    <PageContainer>
+      <div className="space-y-6" data-testid="evolution-dashboard">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -469,6 +471,7 @@ export function EvolutionDashboardPage() {
         }}
         onSend={handleSendCommunication}
       />
-    </div>
+      </div>
+    </PageContainer>
   );
 }

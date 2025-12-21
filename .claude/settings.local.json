@@ -9,7 +9,8 @@
       "Bash(wc:*)",
       "Bash(dir:*)",
       "Bash(npx tsc:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

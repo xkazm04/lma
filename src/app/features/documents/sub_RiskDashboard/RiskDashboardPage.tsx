@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield, ArrowLeft, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageContainer } from '@/components/layout';
 import {
   RiskStatsCards,
   RiskFiltersBar,
@@ -137,9 +138,10 @@ export function RiskDashboardPage() {
   }, [filteredAlerts]);
 
   return (
-    <div className="space-y-6" data-testid="risk-dashboard-page">
-      {/* Page Header */}
-      <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
+    <PageContainer>
+      <div className="space-y-6" data-testid="risk-dashboard-page">
+        {/* Page Header */}
+        <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -190,9 +192,19 @@ export function RiskDashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Sidebar - Breakdowns */}
-        <div className="lg:col-span-1 space-y-6">
-          <RiskCategoryBreakdown stats={stats} onCategoryClick={handleCategoryClick} />
-          <RiskStatusBreakdown stats={stats} onStatusClick={handleStatusClick} />
+        <div className="lg:col-span-1 space-y-4 p-4 bg-white rounded-lg border border-zinc-200">
+          <RiskCategoryBreakdown
+            stats={stats}
+            onCategoryClick={handleCategoryClick}
+            selectedCategory={categoryFilter !== 'all' ? categoryFilter : null}
+          />
+          <div className="border-t border-zinc-100 pt-4">
+            <RiskStatusBreakdown
+              stats={stats}
+              onStatusClick={handleStatusClick}
+              selectedStatus={statusFilter !== 'all' ? statusFilter : null}
+            />
+          </div>
         </div>
 
         {/* Main Content - Alert List */}
@@ -232,6 +244,7 @@ export function RiskDashboardPage() {
           />
         </div>
       </div>
-    </div>
+      </div>
+    </PageContainer>
   );
 }

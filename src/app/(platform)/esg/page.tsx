@@ -11,19 +11,17 @@ import {
   ArrowRight,
   Plus,
   DollarSign,
-  Sparkles,
   CheckCircle,
   Clock,
   BarChart3,
-  GitCompareArrows,
   Brain,
   Zap,
   Layers,
-  Shield,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { InlineAIAssist } from '@/components/intelligence';
 import {
   KPICard,
   LoanTypeBadge,
@@ -119,6 +117,18 @@ export default function ESGDashboardPage() {
           <p className="text-zinc-500">Monitor sustainability performance across your portfolio</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* AI Assist - replaces separate ESG Assistant page */}
+          <InlineAIAssist
+            domain="esg"
+            context={{
+              domain: 'esg',
+              entityType: 'esg-dashboard',
+              entityId: 'dashboard',
+              entityName: 'ESG Dashboard',
+            }}
+            variant="popover"
+            actions={['explain', 'suggest', 'analyze']}
+          />
           <ExportButton onExport={handleExport} label="Export Report" />
           <Link href="/esg/facilities">
             <Button variant="outline" className="transition-transform hover:scale-105" data-testid="view-facilities-btn">
@@ -392,26 +402,9 @@ export default function ESGDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3" role="navigation" aria-label="Quick actions">
-        <Link href="/esg/governance" data-testid="quick-action-governance-link" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded-lg">
-          <Card className="hover:shadow-md transition-all cursor-pointer group border-purple-200 bg-gradient-to-br from-purple-50/50 to-white animate-in slide-in-from-bottom-4 duration-500 delay-525 group-focus-visible:ring-2 group-focus-visible:ring-purple-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-purple-100 group-hover:bg-purple-200 transition-colors" aria-hidden="true">
-                  <Shield className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-zinc-900">Governance</h3>
-                  <p className="text-sm text-zinc-500">Proxy voting signals</p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/esg/portfolio-optimization" data-testid="quick-action-portfolio-optimization-link" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-lg">
+      {/* Consolidated Quick Actions - reduced from 7 to 4 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" role="navigation" aria-label="Quick actions">
+        <Link href="/esg/portfolio" data-testid="quick-action-portfolio-link" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-lg">
           <Card className="hover:shadow-md transition-all cursor-pointer group border-amber-200 bg-gradient-to-br from-amber-50/50 to-white animate-in slide-in-from-bottom-4 duration-500 delay-550 group-focus-visible:ring-2 group-focus-visible:ring-amber-500">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
@@ -419,8 +412,8 @@ export default function ESGDashboardPage() {
                   <Layers className="w-6 h-6 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-zinc-900">Portfolio Optimizer</h3>
-                  <p className="text-sm text-zinc-500">Optimize ESG mix</p>
+                  <h3 className="font-semibold text-zinc-900">Portfolio Intelligence</h3>
+                  <p className="text-sm text-zinc-500">At-risk, optimization & comparison</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </div>
@@ -436,8 +429,25 @@ export default function ESGDashboardPage() {
                   <Brain className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-zinc-900">AI Predictor</h3>
+                  <h3 className="font-semibold text-zinc-900">AI Predictions</h3>
                   <p className="text-sm text-zinc-500">Forecast KPIs & margins</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/esg/reports" data-testid="quick-action-reports-link" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-lg">
+          <Card className="hover:shadow-md transition-all cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-700 group-focus-visible:ring-2 group-focus-visible:ring-indigo-500">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-indigo-100 group-hover:bg-indigo-200 transition-colors" aria-hidden="true">
+                  <BarChart3 className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-zinc-900">Reports</h3>
+                  <p className="text-sm text-zinc-500">Export & regulatory reporting</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </div>
@@ -454,58 +464,7 @@ export default function ESGDashboardPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-zinc-900">ESG Facilities</h3>
-                  <p className="text-sm text-zinc-500">Manage facilities and KPIs</p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/esg/compare" data-testid="quick-action-compare-link" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-lg">
-          <Card className="hover:shadow-md transition-all cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-700 group-focus-visible:ring-2 group-focus-visible:ring-indigo-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-indigo-100 group-hover:bg-indigo-200 transition-colors" aria-hidden="true">
-                  <GitCompareArrows className="w-6 h-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-zinc-900">Compare Facilities</h3>
-                  <p className="text-sm text-zinc-500">Side-by-side analysis</p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/esg/allocations" data-testid="quick-action-allocations-link" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-lg">
-          <Card className="hover:shadow-md transition-all cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-[750ms] group-focus-visible:ring-2 group-focus-visible:ring-teal-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-teal-100 group-hover:bg-teal-200 transition-colors" aria-hidden="true">
-                  <DollarSign className="w-6 h-6 text-teal-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-zinc-900">Use of Proceeds</h3>
-                  <p className="text-sm text-zinc-500">Track allocations</p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/esg/ai" data-testid="quick-action-ai-assistant-link" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-lg">
-          <Card className="hover:shadow-md transition-all cursor-pointer group border-blue-200 animate-in slide-in-from-bottom-4 duration-500 delay-[800ms] group-focus-visible:ring-2 group-focus-visible:ring-blue-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-blue-100 group-hover:bg-blue-200 transition-colors" aria-hidden="true">
-                  <Sparkles className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-zinc-900">ESG Assistant</h3>
-                  <p className="text-sm text-zinc-500">AI-powered insights</p>
+                  <p className="text-sm text-zinc-500">Manage facilities & KPIs</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-zinc-400 ml-auto group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </div>

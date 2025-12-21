@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, GitCompare, BarChart3, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageContainer } from '@/components/layout';
+import { InlineAIAssist } from '@/components/intelligence';
 import {
   DocumentFiltersBar,
   DocumentStatsBar,
   DocumentGrid,
   GlobalDropzone,
-  SavedViewsSidebar,
+  SavedViewsBar,
   SaveViewDialog,
   FolderTree,
   FolderCreateModal,
@@ -103,7 +105,6 @@ export function DocumentsListPage() {
 
   const handleUploadComplete = useCallback((files: unknown[]) => {
     console.log('Upload complete:', files);
-    // In a real implementation, this would refresh the document list
   }, []);
 
   // Selection handlers for batch operations
@@ -131,7 +132,6 @@ export function DocumentsListPage() {
     (ids: string[]) => {
       setIsProcessingBatch(true);
       console.log('Batch delete documents:', ids);
-      // Simulate API call
       setTimeout(() => {
         setIsProcessingBatch(false);
         clearSelection();
@@ -144,7 +144,6 @@ export function DocumentsListPage() {
     (ids: string[]) => {
       setIsProcessingBatch(true);
       console.log('Batch reprocess documents:', ids);
-      // Simulate API call
       setTimeout(() => {
         setIsProcessingBatch(false);
       }, 1000);
@@ -156,7 +155,6 @@ export function DocumentsListPage() {
     (ids: string[], folderId: string | null) => {
       setIsProcessingBatch(true);
       console.log('Batch move documents:', ids, 'to folder:', folderId);
-      // Simulate API call
       setTimeout(() => {
         setIsProcessingBatch(false);
         clearSelection();
@@ -167,14 +165,12 @@ export function DocumentsListPage() {
 
   const handleBatchExport = useCallback((ids: string[]) => {
     console.log('Batch export documents:', ids);
-    // In a real implementation, this would trigger file download
   }, []);
 
   const handleBatchTag = useCallback(
     (ids: string[], tags: string[]) => {
       setIsProcessingBatch(true);
       console.log('Batch tag documents:', ids, 'with tags:', tags);
-      // Simulate API call
       setTimeout(() => {
         setIsProcessingBatch(false);
       }, 1000);
@@ -185,7 +181,6 @@ export function DocumentsListPage() {
   const handleBulkCompare = useCallback(
     (ids: string[]) => {
       console.log('Bulk compare documents:', ids);
-      // Navigate to compare page with selected document IDs
       const queryParams = new URLSearchParams();
       ids.forEach((id) => queryParams.append('docs', id));
       router.push(`/documents/compare?${queryParams.toString()}`);
@@ -215,23 +210,11 @@ export function DocumentsListPage() {
   );
 
   const handleFolderCreated = useCallback(() => {
-    // Expand the parent folder to show the new folder
     if (createFolderParentId) {
       setFolderExpanded(createFolderParentId, true);
     }
     closeCreateFolderModal();
   }, [createFolderParentId, setFolderExpanded, closeCreateFolderModal]);
-
-  // Get folder context for display
-  const folderContextLabel = useMemo(() => {
-    if (folderFilter.type === 'all') return null;
-    if (folderFilter.type === 'unfiled') return 'Unfiled Documents';
-    if (folderFilter.type === 'folder') {
-      const folder = getFolderById(folderFilter.folderId);
-      return folder ? folder.name : null;
-    }
-    return null;
-  }, [folderFilter, getFolderById]);
 
   // Get current filters for save dialog
   const currentFilters = useMemo(() => getCurrentFilters(), [getCurrentFilters]);
@@ -256,94 +239,118 @@ export function DocumentsListPage() {
         onFolderCreated={handleFolderCreated}
       />
 
-      <div className="space-y-4">
-        {/* Row 1: Folders and Saved Views */}
-        <div className="flex gap-4">
-          {/* Folder Tree Sidebar - Expanded width */}
-          <div className="w-80">
-            <FolderTree onCreateFolder={handleCreateFolder} />
-          </div>
-
-          {/* Saved Views Sidebar */}
-          <div className="w-64">
-            <SavedViewsSidebar
-              onViewSelect={handleViewSelect}
-              onSaveCurrentFilters={handleSaveCurrentFilters}
-            />
-          </div>
-        </div>
-
-        {/* Row 2: Document Hub - Full Width */}
-        <div className="flex-1">
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 mb-4">
-            <Link href="/documents/risk-detection">
-              <Button
-                variant="outline"
-                className="transition-transform hover:scale-105 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                data-testid="documents-risk-detection-btn"
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Risk Detection
-              </Button>
-            </Link>
-            <Link href="/documents/portfolio">
-              <Button
-                variant="outline"
-                className="transition-transform hover:scale-105"
-                data-testid="documents-portfolio-btn"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Portfolio Intelligence
-              </Button>
-            </Link>
-            <Link href="/documents/compare">
-              <Button
-                variant="outline"
-                className="transition-transform hover:scale-105"
-                data-testid="documents-compare-btn"
-              >
-                <GitCompare className="w-4 h-4 mr-2" />
-                Compare
-              </Button>
-            </Link>
-            <Link href="/documents/upload">
-              <Button className="transition-transform hover:scale-105" data-testid="documents-upload-btn">
-                <Plus className="w-4 h-4 mr-2" />
-                Upload Documents
-              </Button>
-            </Link>
-          </div>
-
-          {/* Filters Bar */}
-          <DocumentFiltersBar
-            searchQuery={searchQuery}
-            statusFilter={statusFilter}
-            typeFilter={typeFilter}
-            viewMode={viewMode}
-            onSearchChange={setSearchQuery}
-            onStatusChange={setStatusFilter}
-            onTypeChange={setTypeFilter}
-            onViewModeChange={setViewMode}
-          />
-
-          {/* Document Stats */}
+      <PageContainer>
+        <div className="space-y-3">
+          {/* Row 1: Stats Bar - Full Width */}
           <DocumentStatsBar documents={folderFilteredDocuments} />
 
-          {/* Document Grid/List */}
-          <DocumentGrid
-            documents={filteredDocuments}
-            viewMode={viewMode}
-            previewData={mockDocumentPreviewData}
-            onDelete={handleDelete}
-            onReprocess={handleReprocess}
-            selectionMode={selectionMode}
-            selectedIds={selectedIds}
-            onSelectionChange={handleSelectionChange}
-            onToggleSelectionMode={handleToggleSelectionMode}
-          />
+          {/* Row 2: Saved Views Bar + Action Buttons */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 rounded-lg overflow-hidden border border-zinc-200">
+              <SavedViewsBar
+                onViewSelect={handleViewSelect}
+                onSaveCurrentFilters={handleSaveCurrentFilters}
+              />
+            </div>
+
+            {/* Compact Action Buttons */}
+            <div className="flex items-center gap-1.5">
+              {/* AI Assist */}
+              <InlineAIAssist
+                domain="documents"
+                context={{
+                  domain: 'documents',
+                  entityType: 'document-hub',
+                  entityId: 'hub',
+                  entityName: 'Document Hub',
+                }}
+                variant="popover"
+                actions={['explain', 'suggest', 'analyze']}
+              />
+
+              <Link href="/documents/risk-detection">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs border-red-200 text-red-600 hover:bg-red-50"
+                  data-testid="documents-risk-detection-btn"
+                >
+                  <Shield className="w-3.5 h-3.5 mr-1" />
+                  Risk
+                </Button>
+              </Link>
+              <Link href="/documents/portfolio">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  data-testid="documents-portfolio-btn"
+                >
+                  <BarChart3 className="w-3.5 h-3.5 mr-1" />
+                  Portfolio
+                </Button>
+              </Link>
+              <Link href="/documents/compare">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  data-testid="documents-compare-btn"
+                >
+                  <GitCompare className="w-3.5 h-3.5 mr-1" />
+                  Compare
+                </Button>
+              </Link>
+              <Link href="/documents/upload">
+                <Button size="sm" className="h-8 text-xs" data-testid="documents-upload-btn">
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Upload
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Row 3: Main Content - Folder Sidebar + Document Area */}
+          <div className="flex rounded-lg border border-zinc-200 bg-white overflow-hidden" style={{ height: 'calc(100vh - 240px)' }}>
+            {/* Folder Sidebar */}
+            <div className="w-56 flex-shrink-0">
+              <FolderTree onCreateFolder={handleCreateFolder} />
+            </div>
+
+            {/* Document Area */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Filters Bar - Integrated into table header */}
+              <div className="border-b border-zinc-200">
+                <DocumentFiltersBar
+                  searchQuery={searchQuery}
+                  statusFilter={statusFilter}
+                  typeFilter={typeFilter}
+                  viewMode={viewMode}
+                  onSearchChange={setSearchQuery}
+                  onStatusChange={setStatusFilter}
+                  onTypeChange={setTypeFilter}
+                  onViewModeChange={setViewMode}
+                />
+              </div>
+
+              {/* Document Grid/List */}
+              <div className="flex-1 overflow-auto">
+                <DocumentGrid
+                  documents={filteredDocuments}
+                  viewMode={viewMode}
+                  previewData={mockDocumentPreviewData}
+                  onDelete={handleDelete}
+                  onReprocess={handleReprocess}
+                  selectionMode={selectionMode}
+                  selectedIds={selectedIds}
+                  onSelectionChange={handleSelectionChange}
+                  onToggleSelectionMode={handleToggleSelectionMode}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </PageContainer>
 
       {/* Batch Actions Toolbar - shows when documents are selected */}
       <BatchActionsToolbar

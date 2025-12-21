@@ -1,7 +1,7 @@
 'use client';
 
-import { PortfolioComparisonPage } from '@/app/features/documents/sub_PortfolioComparison';
+import { PortfolioIntelligencePage } from '@/app/features/documents/PortfolioIntelligencePage';
 
-export default function PortfolioComparisonRoute() {
-  return <PortfolioComparisonPage />;
+export default function PortfolioIntelligenceRoute() {
+  return <PortfolioIntelligencePage />;
 }

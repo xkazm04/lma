@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Box, ArrowRight } from 'lucide-react';
+import { InlineAIAssist } from '@/components/intelligence';
 import {
   RecentActivitySection,
   UpcomingDeadlinesSection,
@@ -19,6 +20,7 @@ import {
   AutopilotSettingsPanel,
 } from './components';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageContainer } from '@/components/layout';
 import { toast } from '@/components/ui/use-toast';
 import {
   stats,
@@ -101,15 +103,31 @@ export function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      {/* Stats Top Bar */}
+    <PageContainer>
+      <div className="space-y-4">
+        {/* AI Assist - Global Portfolio Intelligence */}
+        <div className="flex justify-end">
+          <InlineAIAssist
+            domain="documents"
+            context={{
+              domain: 'documents',
+              entityType: 'portfolio-dashboard',
+              entityId: 'dashboard',
+              entityName: 'Portfolio Dashboard',
+            }}
+            variant="popover"
+            actions={['explain', 'suggest', 'analyze']}
+          />
+        </div>
+
+        {/* Stats Top Bar */}
       <StatsTopBar
         stats={stats.map((stat) => ({
           label: stat.label,
           value: stat.value,
           change: stat.change,
           trend: stat.trend,
-          icon: <stat.icon className="w-4 h-4" />,
+          icon: stat.icon,
           onClick: () => handleStatClick(stat.label, stat.value),
         }))}
       />
@@ -216,6 +234,7 @@ export function DashboardPage() {
         settings={mockAutopilotDashboardData.settings}
         thresholds={mockAutoApprovalThresholds}
       />
-    </div>
+      </div>
+    </PageContainer>
   );
 }

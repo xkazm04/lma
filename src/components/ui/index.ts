@@ -28,3 +28,6 @@ export * from './wizard-container';
 
 // Unified Stat Card system
 export * from './stat-card-unified';
+
+// Expandable row component
+export * from './expandable-row';

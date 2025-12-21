@@ -25,7 +25,6 @@ import {
   Files,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -334,47 +333,47 @@ export const FolderTree = memo(function FolderTree({
   const isUnfiledSelected = folderFilter.type === 'unfiled';
 
   return (
-    <Card className="w-64 flex-shrink-0 animate-in fade-in slide-in-from-left-4 duration-300">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-zinc-700">
-            Folders
-          </CardTitle>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={expandAllFolders}
-              title="Expand all"
-              data-testid="expand-all-folders-btn"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={collapseAllFolders}
-              title="Collapse all"
-              data-testid="collapse-all-folders-btn"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2"
-              onClick={() => onCreateFolder(null)}
-              data-testid="create-folder-btn"
-            >
-              <FolderPlus className="w-4 h-4 mr-1" />
-              New
-            </Button>
-          </div>
+    <div className="h-full flex flex-col border-r border-zinc-200 bg-zinc-50/50">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200">
+        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          Folders
+        </span>
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-zinc-400 hover:text-zinc-600"
+            onClick={expandAllFolders}
+            title="Expand all"
+            data-testid="expand-all-folders-btn"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-zinc-400 hover:text-zinc-600"
+            onClick={collapseAllFolders}
+            title="Collapse all"
+            data-testid="collapse-all-folders-btn"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-1.5 text-zinc-400 hover:text-zinc-600"
+            onClick={() => onCreateFolder(null)}
+            data-testid="create-folder-btn"
+          >
+            <FolderPlus className="w-3.5 h-3.5" />
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0 space-y-1">
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
         {/* All Documents */}
         <div
           className={cn(
@@ -441,7 +440,7 @@ export const FolderTree = memo(function FolderTree({
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });

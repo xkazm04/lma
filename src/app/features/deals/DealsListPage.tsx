@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Plus, BarChart3, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { InlineAIAssist } from '@/components/intelligence';
 import { DealFiltersBar, DealStatsBar, DealListView, DealKanbanView, DealTimelineView, SmartInboxView, type ViewMode } from './components';
 import {
   mockDeals,
@@ -166,16 +167,23 @@ export function DealsListPage() {
           <p className="text-zinc-500">Manage and negotiate loan terms with counterparties</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/deals/term-intelligence">
-            <Button variant="outline" className="transition-transform hover:scale-105" data-testid="deals-term-intelligence-btn">
-              <Brain className="w-4 h-4 mr-2" />
-              Term Intelligence
-            </Button>
-          </Link>
+          {/* AI Assist */}
+          <InlineAIAssist
+            domain="deals"
+            context={{
+              domain: 'deals',
+              entityType: 'deal-room',
+              entityId: 'room',
+              entityName: 'Deal Room',
+            }}
+            variant="popover"
+            actions={['explain', 'suggest', 'analyze']}
+          />
+
           <Link href="/deals/intelligence">
             <Button variant="outline" className="transition-transform hover:scale-105" data-testid="deals-intelligence-btn">
               <BarChart3 className="w-4 h-4 mr-2" />
-              Market Intelligence
+              Deal Intelligence
             </Button>
           </Link>
           <Link href="/deals/new">

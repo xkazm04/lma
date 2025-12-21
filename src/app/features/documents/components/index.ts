@@ -4,6 +4,7 @@ export { DocumentGrid } from './DocumentGrid';
 export { CompactDocumentCard } from './CompactDocumentCard';
 export { GlobalDropzone } from './GlobalDropzone';
 export { SavedViewsSidebar } from './SavedViewsSidebar';
+export { SavedViewsBar } from './SavedViewsBar';
 export { SaveViewDialog } from './SaveViewDialog';
 export { FolderTree } from './FolderTree';
 export { FolderCreateModal } from './FolderCreateModal';

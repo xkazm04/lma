@@ -5,12 +5,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Development Commands
 
 ```bash
-npm run dev      # Start development server (Next.js)
-npm run build    # Production build
-npm run start    # Start production server
-npm run lint     # Run ESLint
-npm run test     # Run tests in watch mode (Vitest)
-npm run test:run # Run tests once
+npm run dev          # Start development server (Next.js)
+npm run build        # Production build
+npm run lint         # Run ESLint
+npm run test         # Run tests in watch mode (Vitest)
+npm run test:run     # Run tests once
+npm run test:e2e     # Run Playwright E2E tests
+npm run test:e2e:ui  # Run E2E tests with Playwright UI
+```
+
+### Running a Single Test
+
+```bash
+# Vitest - run single test file
+npx vitest run src/lib/llm/client.test.ts
+
+# Vitest - run tests matching a pattern
+npx vitest run --grep "parseJSON"
+
+# Playwright - run single E2E test
+npx playwright test e2e/deal-status-filter-roundtrip.spec.ts
+```
+
+### Generating New API Routes
+
+```bash
+# Generate API route with Supabase integration
+npm run generate:api -- --name invoices --methods GET,POST --supabase
+
+# Generate LLM-powered endpoint
+npm run generate:api -- --name analysis --methods POST --llm
+
+# Generate dynamic route with both
+npm run generate:api -- --name documents/[id]/analyze --methods POST --supabase --llm
 ```
 
 ## Architecture Overview
@@ -24,6 +51,7 @@ npm run test:run # Run tests once
 - **UI**: Tailwind CSS 4 + Radix UI primitives
 - **State**: Zustand + React Query
 - **Validation**: Zod v4
+- **Testing**: Vitest (unit), Playwright (E2E)
 - **Document parsing**: pdf-parse, mammoth (DOCX)
 
 ### Project Structure
@@ -31,47 +59,89 @@ npm run test:run # Run tests once
 ```
 src/
 ├── app/
-│   ├── (auth)/          # Auth routes (login, register)
-│   ├── (platform)/      # Protected platform routes
-│   │   ├── dashboard/   # Platform overview
-│   │   ├── documents/   # Document Intelligence Hub
-│   │   ├── deals/       # Deal Room (negotiation)
-│   │   ├── compliance/  # Compliance Tracker
-│   │   ├── trading/     # Trade Due Diligence
-│   │   └── esg/         # ESG Performance Dashboard
-│   └── api/             # API route handlers
+│   ├── (auth)/           # Auth routes (login, register)
+│   ├── (platform)/       # Protected platform routes
+│   ├── api/              # API route handlers
+│   └── features/         # Feature-specific pages and components
+│       ├── documents/    # Document Intelligence Hub
+│       ├── deals/        # Deal Room
+│       ├── compliance/   # Compliance Tracker
+│       ├── trading/      # Trade Due Diligence
+│       └── esg/          # ESG Dashboard
 ├── components/
-│   ├── ui/              # Reusable UI primitives (shadcn-style)
-│   ├── layout/          # Shell, header, sidebar
-│   ├── documents/       # Document-specific components
-│   └── deals/           # Deal-specific components
+│   ├── ui/               # Reusable UI primitives (shadcn-style)
+│   └── layout/           # Shell, header, sidebar
 ├── lib/
-│   ├── llm/             # LLM client and domain-specific prompts
-│   │   ├── client.ts    # Anthropic client wrapper (generateCompletion, generateStructuredOutput)
-│   │   └── *.ts         # Domain modules: extraction, query, negotiation, compliance, trading, esg, amendment, similarity, risk-scoring, covenant-extraction, document-lifecycle, risk-detection
-│   ├── supabase/        # Database client (client.ts, server.ts, middleware.ts)
-│   ├── validations/     # Zod schemas per module
-│   └── utils/           # cn() helper, formatters, animation utilities
-└── types/
-    ├── database.ts      # Supabase generated types
-    └── index.ts         # Application-level types
+│   ├── llm/              # LLM client and domain modules
+│   ├── supabase/         # Database client (client.ts, server.ts)
+│   ├── validations/      # Zod schemas per module
+│   └── utils/            # Formatters, response helpers, urgency utils
+├── types/
+│   └── index.ts          # Application-level types (ApiResponse, etc.)
+└── e2e/                  # Playwright E2E tests
 ```
 
-### Five Core Modules
+### Feature Module Structure
 
-1. **Document Intelligence Hub** (`/documents`) - Upload, extract, compare loan documents
-2. **Deal Room** (`/deals`) - Multi-party term negotiation with proposals/comments
-3. **Compliance Tracker** (`/compliance`) - Obligations, covenants, calendar, waivers
-4. **Trade Due Diligence** (`/trading`) - Secondary market trade lifecycle, DD checklists
-5. **ESG Dashboard** (`/esg`) - KPIs, targets, ratings, use of proceeds tracking
+Each feature in `src/app/features/` follows this pattern:
+```
+feature/
+├── FeaturePage.tsx           # Main page component
+├── components/               # Feature-specific components
+├── lib/                      # Feature-specific utilities, stores, types
+├── hooks/                    # Feature-specific hooks
+└── sub_SubFeature/           # Sub-feature modules (prefixed with sub_)
+    ├── index.ts
+    └── components/
+```
 
 ### Key Patterns
 
-- **API Routes**: All in `src/app/api/`, RESTful with nested dynamic segments
-- **LLM Integration**: Use `generateCompletion()` or `generateStructuredOutput<T>()` from `@/lib/llm`
-- **Database Access**: Server-side uses `createClient()` from `@/lib/supabase/server`
-- **Path alias**: `@/*` maps to `./src/*`
-- **Component exports**: Each component folder has an `index.ts` barrel export
+#### API Response Helpers
+Use standardized response helpers from `@/lib/utils` in all API routes:
+```typescript
+import { respondSuccess, respondNotFound, respondValidationError } from '@/lib/utils';
+
+// Success with data
+return respondSuccess(data);
+return respondSuccess(data, { status: 201 });
+return respondSuccess(items, { pagination: { page, pageSize, total, totalPages } });
+
+// Errors
+return respondUnauthorized();
+return respondNotFound('Document not found');
+return respondValidationError('Invalid request', parsed.error.flatten());
+return respondDatabaseError(error.message);
+```
+
+#### LLM Integration
+Use wrappers from `@/lib/llm` - never call Anthropic SDK directly:
+```typescript
+import { generateCompletion, generateStructuredOutput, withLLMFallback } from '@/lib/llm';
+
+// Simple completion
+const text = await generateCompletion(systemPrompt, userMessage);
+
+// Structured JSON output (auto-parses response)
+const result = await generateStructuredOutput<MyType>(systemPrompt, userMessage);
+
+// With fallback for graceful degradation
+const result = await withLLMFallback(
+  () => generateStructuredOutput<MyType>(systemPrompt, userMessage),
+  context,
+  { operation: 'myOperation', fallbackFactory: (ctx) => defaultResult }
+);
+```
+
+#### Database Access
+- Server-side: `createClient()` from `@/lib/supabase/server`
+- Auth check pattern: `const { data: { user } } = await supabase.auth.getUser()`
+
+#### Component Exports
+Each component folder has an `index.ts` barrel export.
+
+#### Path Alias
+`@/*` maps to `./src/*`
 
 ### Environment Variables Required
 
