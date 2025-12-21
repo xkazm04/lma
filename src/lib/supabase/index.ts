@@ -1,3 +1,3 @@
 export { createClient as createBrowserClient } from './client';
 export { createClient as createServerClient } from './server';
-export { createClient } from './server';
+export { createClient, type TypedSupabaseClient } from './server';

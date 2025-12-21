@@ -6,8 +6,7 @@ import type { ApiResponse, QueryResponse } from '@/types';
 // POST /api/query - Query documents using natural language
 export async function POST(request: NextRequest) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
     const body = await request.json();
 
     // Validate input

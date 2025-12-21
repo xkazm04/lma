@@ -1,0 +1,205 @@
+/**
+ * StatsProvider Pattern - Usage Examples
+ *
+ * This file demonstrates how to use the StatsProvider pattern across different entities.
+ * @fileoverview This is an example file for documentation purposes only
+ */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// @ts-nocheck
+
+import React from 'react';
+import {
+  defineStats,
+  defineStat,
+  composeStats,
+  withStats,
+  withStatsBatch,
+  useStats,
+  useStatsBatch,
+} from './stats-provider';
+import { getStatsCache } from './stats-cache';
+
+// ============================================================================
+// Example 1: Document Stats
+// ============================================================================
+
+interface Document {
+  id: string;
+  title: string;
+  extracted_data: any;
+  created_at: string;
+}
+
+// Define stats for documents
+const documentStats = defineStats<Document>([
+  defineStat<Document, number>('extraction_confidence', (doc) => {
+    return doc.extracted_data?.confidence || 0;
+  }),
+
+  defineStat<Document, number>('field_count', (doc) => {
+    return Object.keys(doc.extracted_data || {}).length;
+  }),
+
+  defineStat<Document, number>('age_days', (doc) => {
+    const created = new Date(doc.created_at);
+    const now = new Date();
+    return Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+  }),
+]);
+
+// Usage in a component
+function DocumentCard({ document }: { document: Document }) {
+  const stats = useStats(document, documentStats);
+
+  if (!stats) return null;
+
+  return (
+    <div>
+      <h3>{document.title}</h3>
+      <p>Confidence: {stats.extraction_confidence}%</p>
+      <p>Fields: {stats.field_count}</p>
+      <p>Age: {stats.age_days} days</p>
+    </div>
+  );
+}
+
+// ============================================================================
+// Example 2: Compliance Stats with Context
+// ============================================================================
+
+interface ComplianceItem {
+  id: string;
+  deal_id: string;
+  status: 'pending' | 'compliant' | 'breached';
+}
+
+const complianceStats = defineStats<{ deal_id: string }>([
+  defineStat<{ deal_id: string }, number>('obligation_count', (entity, context) => {
+    const items = context?.obligations as ComplianceItem[] | undefined;
+    if (!items) return 0;
+    return items.filter((item) => item.deal_id === entity.deal_id).length;
+  }),
+
+  defineStat<{ deal_id: string }, number>('breach_count', (entity, context) => {
+    const items = context?.obligations as ComplianceItem[] | undefined;
+    if (!items) return 0;
+    return items.filter(
+      (item) => item.deal_id === entity.deal_id && item.status === 'breached'
+    ).length;
+  }),
+]);
+
+// ============================================================================
+// Example 3: Composing Stats
+// ============================================================================
+
+interface Deal {
+  id: string;
+  deal_name: string;
+  status: string;
+  created_at: string;
+}
+
+const basicDealStats = defineStats<Deal>([
+  defineStat<Deal, number>('total_terms', (deal, context) => {
+    return context?.terms?.length || 0;
+  }),
+]);
+
+const timingStats = defineStats<Deal>([
+  defineStat<Deal, number>('days_active', (deal) => {
+    const created = new Date(deal.created_at);
+    const now = new Date();
+    return Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+  }),
+]);
+
+// Compose multiple stat definitions
+const completeDealStats = composeStats(basicDealStats, timingStats);
+
+// ============================================================================
+// Example 4: Batch Operations
+// ============================================================================
+
+function DealsList({ deals }: { deals: Deal[] }) {
+  // Compute stats for all deals at once with automatic memoization
+  const dealsWithStats = useStatsBatch(deals, completeDealStats, {
+    terms: [], // context data
+  });
+
+  return (
+    <div>
+      {dealsWithStats.map((deal) => (
+        <div key={deal.id}>
+          <h3>{deal.deal_name}</h3>
+          <p>Terms: {deal.stats.total_terms}</p>
+          <p>Active: {deal.stats.days_active} days</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// Example 5: Using Cache
+// ============================================================================
+
+const cache = getStatsCache({ maxSize: 500, ttl: 5 * 60 * 1000 });
+
+function getCachedDealStats(deal: Deal, context: any) {
+  return cache.get(deal.id, completeDealStats, () => {
+    // This computation only runs on cache miss
+    return withStats(deal, completeDealStats, context).stats;
+  });
+}
+
+// ============================================================================
+// Example 6: Custom Formatters
+// ============================================================================
+
+const formattedStats = defineStats<Deal>([
+  defineStat<Deal, number>(
+    'progress_percentage',
+    (deal, context) => {
+      const terms = context?.terms || [];
+      const agreed = terms.filter((t: any) => t.status === 'agreed').length;
+      return terms.length > 0 ? Math.round((agreed / terms.length) * 100) : 0;
+    },
+    {
+      format: (value) => `${value}%`,
+    }
+  ),
+]);
+
+// ============================================================================
+// Pattern Benefits Summary
+// ============================================================================
+
+/**
+ * BEFORE (scattered useMemo):
+ *
+ * const stats = useMemo(() => {
+ *   const total = categories.flatMap(c => c.terms).length;
+ *   const agreed = categories.flatMap(c => c.terms).filter(t => t.status === 'agreed').length;
+ *   return { total, agreed, percentage: total > 0 ? Math.round((agreed / total) * 100) : 0 };
+ * }, [categories]);
+ *
+ * Problems:
+ * - Logic scattered across components
+ * - Difficult to test
+ * - No reusability
+ * - No caching
+ *
+ * AFTER (declarative stats):
+ *
+ * const stats = useStats(deal, dealStatsDefinition, { categories });
+ *
+ * Benefits:
+ * - Declarative and clear
+ * - Reusable across components
+ * - Testable (pure functions)
+ * - Cacheable at provider level
+ * - Composable (combine definitions)
+ * - Type-safe
+ */

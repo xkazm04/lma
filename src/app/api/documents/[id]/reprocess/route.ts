@@ -9,8 +9,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
 
     // Get document
     const { data: document, error: fetchError } = await supabase

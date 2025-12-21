@@ -41,6 +41,73 @@ body {
   animation: slideIn 0.2s ease-out;
 }
 
+/* Pulse animation for urgent deadlines */
+@keyframes pulse-urgent {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-urgent {
+  animation: pulse-urgent 2s ease-in-out infinite;
+}
+
+/* One-time pulse animation for stat increases */
+@keyframes pulse-once {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+.animate-pulse-once {
+  animation: pulse-once 0.5s ease-out forwards;
+}
+
+/* Subtle pulse for high-count stat cards */
+@keyframes pulse-subtle {
+  0%, 100% {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+  50% {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Slide in from bottom animation */
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-from-bottom-2 {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -58,4 +125,64 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1aa;
+}
+
+/* View transition crossfade animation */
+@keyframes viewTransitionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes viewTransitionFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.view-transition-container {
+  position: relative;
+  width: 100%;
+}
+
+.view-transition-item {
+  width: 100%;
+}
+
+.view-transition-enter {
+  animation: viewTransitionFadeIn 220ms ease-out forwards;
+}
+
+.view-transition-exit {
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: viewTransitionFadeOut 220ms ease-out forwards;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .view-transition-enter,
+  .view-transition-exit {
+    animation: none;
+  }
+
+  .view-transition-enter {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .view-transition-exit {
+    display: none;
+  }
 }

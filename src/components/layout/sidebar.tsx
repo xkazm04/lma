@@ -13,6 +13,11 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  BarChart3,
+  Brain,
+  Shield,
+  Clock,
+  Box,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -26,38 +31,64 @@ const navigation = [
     description: 'Platform overview',
   },
   {
+    name: '3D Portfolio',
+    href: '/portfolio-3d',
+    icon: Box,
+    description: 'Spatial visualization',
+  },
+  {
     name: 'Document Hub',
     href: '/documents',
     icon: FileText,
     description: 'Upload and analyze documents',
   },
   {
+    name: 'Risk Detection',
+    href: '/documents/risk-detection',
+    icon: Shield,
+    description: 'Proactive risk monitoring',
+  },
+  {
+    name: 'Doc Evolution',
+    href: '/documents/evolution',
+    icon: Clock,
+    description: 'Track amendment history',
+  },
+  {
     name: 'Deal Room',
     href: '/deals',
     icon: Handshake,
     description: 'Negotiate terms',
-    disabled: true,
+  },
+  {
+    name: 'Deal Intelligence',
+    href: '/deals/intelligence',
+    icon: BarChart3,
+    description: 'Market benchmarking',
+  },
+  {
+    name: 'Term Intelligence',
+    href: '/deals/term-intelligence',
+    icon: Brain,
+    description: 'Cross-deal analytics',
   },
   {
     name: 'Compliance',
     href: '/compliance',
     icon: ClipboardCheck,
     description: 'Track obligations',
-    disabled: true,
   },
   {
     name: 'Trade DD',
     href: '/trading',
     icon: ArrowLeftRight,
     description: 'Due diligence',
-    disabled: true,
   },
   {
     name: 'ESG',
     href: '/esg',
     icon: Leaf,
     description: 'Sustainability tracking',
-    disabled: true,
   },
 ];
 
@@ -85,13 +116,12 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               const NavItem = (
                 <Link
                   key={item.name}
-                  href={item.disabled ? '#' : item.href}
+                  href={item.href}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors',
                     isActive
                       ? 'bg-zinc-100 text-zinc-900'
-                      : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
-                    item.disabled && 'opacity-50 cursor-not-allowed pointer-events-none'
+                      : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
                   )}
                 >
                   <item.icon className="w-5 h-5 shrink-0" />

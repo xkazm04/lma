@@ -34,20 +34,21 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // TODO: Re-enable route protection before production
   // Protected routes - redirect to login if not authenticated
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/(platform)') ||
-    request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/documents') ||
-    request.nextUrl.pathname.startsWith('/deals') ||
-    request.nextUrl.pathname.startsWith('/compliance') ||
-    request.nextUrl.pathname.startsWith('/trading') ||
-    request.nextUrl.pathname.startsWith('/esg');
+  // const isProtectedRoute = request.nextUrl.pathname.startsWith('/(platform)') ||
+  //   request.nextUrl.pathname.startsWith('/dashboard') ||
+  //   request.nextUrl.pathname.startsWith('/documents') ||
+  //   request.nextUrl.pathname.startsWith('/deals') ||
+  //   request.nextUrl.pathname.startsWith('/compliance') ||
+  //   request.nextUrl.pathname.startsWith('/trading') ||
+  //   request.nextUrl.pathname.startsWith('/esg');
 
-  if (isProtectedRoute && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
-  }
+  // if (isProtectedRoute && !user) {
+  //   const url = request.nextUrl.clone();
+  //   url.pathname = '/login';
+  //   return NextResponse.redirect(url);
+  // }
 
   // Redirect authenticated users away from auth pages
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||

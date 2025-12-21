@@ -6,8 +6,7 @@ import type { ApiResponse, ComparisonResult } from '@/types';
 // POST /api/documents/compare - Compare two documents
 export async function POST(request: NextRequest) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
     const body = await request.json();
 
     // Validate input

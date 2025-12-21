@@ -9,8 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
 
     const { data: document, error } = await supabase
       .from('loan_documents')
@@ -60,8 +59,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
     const body = await request.json();
 
     // Only allow updating certain fields
@@ -125,8 +123,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
 
     // Get document to find storage path
     const { data: document, error: fetchError } = await supabase

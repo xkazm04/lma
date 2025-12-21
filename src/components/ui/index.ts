@@ -12,3 +12,19 @@ export * from './separator';
 export * from './tooltip';
 export * from './skeleton';
 export * from './spinner';
+export * from './trend-icon';
+export * from './animated-progress-ring';
+export * from './animated-view-transition';
+
+// Compact component system
+export * from './compact-stat-row';
+export * from './compact-data-table';
+export * from './compact-list-item';
+export * from './compact-card';
+export * from './compact-grid';
+
+// Wizard system
+export * from './wizard-container';
+
+// Unified Stat Card system
+export * from './stat-card-unified';

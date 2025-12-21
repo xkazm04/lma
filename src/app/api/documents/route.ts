@@ -1,12 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import type { ApiResponse, LoanDocument } from '@/types';
+import type { LoanDocument } from '@/types';
+import {
+  respondSuccess,
+  ErrorBuilder,
+  getOrCreateRequestId,
+  createUnauthorizedError,
+} from '@/lib/utils';
 
 // GET /api/documents - List all documents
 export async function GET(request: NextRequest) {
+  const requestId = getOrCreateRequestId(request);
+  const path = request.nextUrl.pathname;
+
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
 
     // Get query params
     const searchParams = request.nextUrl.searchParams;
@@ -35,54 +43,43 @@ export async function GET(request: NextRequest) {
     const { data, error, count } = await query;
 
     if (error) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        error: {
-          code: 'DB_ERROR',
-          message: error.message,
-        },
-      }, { status: 500 });
+      return ErrorBuilder.database(`Failed to fetch documents: ${error.message}`)
+        .withRequestId(requestId)
+        .withPath(path)
+        .withMethod('GET')
+        .withContext({ status, type, page, pageSize, dbErrorCode: error.code })
+        .build();
     }
 
-    return NextResponse.json<ApiResponse<LoanDocument[]>>({
-      success: true,
-      data: data || [],
-      meta: {
-        pagination: {
-          page,
-          pageSize,
-          total: count || 0,
-          totalPages: Math.ceil((count || 0) / pageSize),
-        },
+    return respondSuccess<LoanDocument[]>(data || [], {
+      pagination: {
+        page,
+        pageSize,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / pageSize),
       },
     });
-  } catch (error) {
-    return NextResponse.json<ApiResponse<null>>({
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'An unexpected error occurred',
-      },
-    }, { status: 500 });
+  } catch {
+    return ErrorBuilder.internal()
+      .withRequestId(requestId)
+      .withPath(path)
+      .withMethod('GET')
+      .build();
   }
 }
 
 // POST /api/documents - Upload a new document
 export async function POST(request: NextRequest) {
+  const requestId = getOrCreateRequestId(request);
+  const path = request.nextUrl.pathname;
+
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
 
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Authentication required',
-        },
-      }, { status: 401 });
+      return createUnauthorizedError('You must be logged in to upload documents', path);
     }
 
     // Parse form data
@@ -91,36 +88,54 @@ export async function POST(request: NextRequest) {
     const documentType = formData.get('documentType') as string || 'other';
 
     if (!file) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'File is required',
-        },
-      }, { status: 400 });
+      return ErrorBuilder.validation('File is required')
+        .withRequestId(requestId)
+        .withPath(path)
+        .withMethod('POST')
+        .withFieldError('file', 'No file was provided in the request')
+        .withSuggestion(
+          'Include a file in the form data',
+          'Use the "file" field name when uploading',
+          'formData.append("file", selectedFile)'
+        )
+        .build();
     }
 
     // Validate file type
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid file type. Only PDF and Word documents are allowed.',
-        },
-      }, { status: 400 });
+      return ErrorBuilder.validation('Invalid file type')
+        .withRequestId(requestId)
+        .withPath(path)
+        .withMethod('POST')
+        .withFieldError('file', 'Only PDF and Word documents are allowed', {
+          received: file.type,
+          expected: 'application/pdf, application/msword, or application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        })
+        .withSuggestion(
+          'Upload a supported file format',
+          'Convert your document to PDF or Word format before uploading'
+        )
+        .build();
     }
 
     // Validate file size (50MB max)
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'File size exceeds 50MB limit',
-        },
-      }, { status: 400 });
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      return ErrorBuilder.validation('File size exceeds limit')
+        .withRequestId(requestId)
+        .withPath(path)
+        .withMethod('POST')
+        .withFieldError('file', `File size (${fileSizeMB}MB) exceeds the 50MB limit`, {
+          received: file.size,
+          expected: 'Maximum 52428800 bytes (50MB)',
+        })
+        .withSuggestion(
+          'Reduce the file size before uploading',
+          'Try compressing the PDF or splitting it into smaller documents'
+        )
+        .build();
     }
 
     // Get user's organization ID (in real app, this would come from user profile)
@@ -141,13 +156,16 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        error: {
-          code: 'UPLOAD_ERROR',
-          message: uploadError.message,
-        },
-      }, { status: 500 });
+      return ErrorBuilder.upload(`Failed to upload file: ${uploadError.message}`)
+        .withRequestId(requestId)
+        .withPath(path)
+        .withMethod('POST')
+        .withContext({ fileName: file.name, fileSize: file.size, fileType: file.type })
+        .withSuggestion(
+          'Storage service may be temporarily unavailable',
+          'Wait a moment and try uploading again'
+        )
+        .build();
     }
 
     // Create document record
@@ -169,29 +187,23 @@ export async function POST(request: NextRequest) {
       // Clean up uploaded file on error
       await supabase.storage.from('loan-documents').remove([storagePath]);
 
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        error: {
-          code: 'DB_ERROR',
-          message: dbError.message,
-        },
-      }, { status: 500 });
+      return ErrorBuilder.database(`Failed to create document record: ${dbError.message}`)
+        .withRequestId(requestId)
+        .withPath(path)
+        .withMethod('POST')
+        .withContext({ fileName: file.name, operation: 'create_record' })
+        .build();
     }
 
     // TODO: Trigger document processing job
     // await triggerDocumentProcessing(document.id);
 
-    return NextResponse.json<ApiResponse<LoanDocument>>({
-      success: true,
-      data: document,
-    }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json<ApiResponse<null>>({
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'An unexpected error occurred',
-      },
-    }, { status: 500 });
+    return respondSuccess<LoanDocument>(document, { status: 201 });
+  } catch {
+    return ErrorBuilder.internal()
+      .withRequestId(requestId)
+      .withPath(path)
+      .withMethod('POST')
+      .build();
   }
 }

@@ -9,8 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
 
     // Get document
     const { data: document, error: docError } = await supabase
@@ -187,8 +186,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase: any = await createClient();
+    const supabase = await createClient();
     const body = await request.json();
 
     // This endpoint allows manual corrections to extraction results

@@ -75,6 +75,10 @@ export const proposalResponseSchema = z.enum([
   'accept',
   'reject',
   'counter',
+  'withdrawn',
+  'accepted',
+  'rejected',
+  'countered',
 ]);
 
 // Deal schemas
@@ -169,6 +173,28 @@ export const updateTermSchema = z.object({
   display_order: z.number().int().min(0).optional(),
 });
 
+/**
+ * Schema for status transition requests
+ * Includes the target status and optional context for validation
+ */
+export const statusTransitionSchema = z.object({
+  target_status: negotiationStatusSchema,
+  reason: z.string().max(500).optional(),
+});
+
+/**
+ * Schema for the transition context used in state machine validation
+ */
+export const transitionContextSchema = z.object({
+  isDealLead: z.boolean().default(false),
+  canApprove: z.boolean().default(false),
+  hasPendingProposals: z.boolean().default(false),
+  allPartiesApproved: z.boolean().default(false),
+  isLocked: z.boolean().default(false),
+  negotiationMode: z.enum(['collaborative', 'proposal_based']).default('proposal_based'),
+  requireUnanimousConsent: z.boolean().default(false),
+});
+
 export const lockTermSchema = z.object({
   reason: z.string().max(500).optional(),
 });
@@ -182,10 +208,14 @@ export const createProposalSchema = z.object({
 
 export const respondToProposalSchema = z.object({
   response: proposalResponseSchema,
-  comment: z.string().max(2000).optional(),
+  response_comment: z.string().max(2000).optional(),
   counter_value: z.any().optional(),
+  counter_value_text: z.string().optional(),
 }).refine(
   (data) => !(data.response === 'counter' && data.counter_value === undefined),
+  { message: 'Counter-proposal requires a counter_value' }
+).refine(
+  (data) => !(data.response === 'countered' && data.counter_value === undefined),
   { message: 'Counter-proposal requires a counter_value' }
 );
 
@@ -194,10 +224,12 @@ export const createCommentSchema = z.object({
   content: z.string().min(1).max(5000),
   proposal_id: z.string().uuid().optional(),
   parent_comment_id: z.string().uuid().optional(),
+  is_internal: z.boolean().optional(),
 });
 
 export const updateCommentSchema = z.object({
-  content: z.string().min(1).max(5000),
+  content: z.string().min(1).max(5000).optional(),
+  is_resolved: z.boolean().optional(),
 });
 
 // Impact analysis schema
@@ -213,12 +245,13 @@ export const suggestionRequestSchema = z.object({
 // Export schemas
 export const exportTermSheetSchema = z.object({
   include_pending: z.boolean().optional().default(false),
-  format: z.enum(['pdf', 'docx', 'json']).optional().default('pdf'),
+  format: z.enum(['pdf', 'docx', 'json', 'markdown']).optional().default('pdf'),
 });
 
 export const exportAuditTrailSchema = z.object({
   start_date: z.string().optional(),
   end_date: z.string().optional(),
+  term_ids: z.array(z.string()).optional(),
   format: z.enum(['pdf', 'csv', 'json']).optional().default('pdf'),
 });
 
@@ -250,3 +283,5 @@ export type SuggestionRequestInput = z.infer<typeof suggestionRequestSchema>;
 export type ExportTermSheetInput = z.infer<typeof exportTermSheetSchema>;
 export type ExportAuditTrailInput = z.infer<typeof exportAuditTrailSchema>;
 export type ImportFacilityInput = z.infer<typeof importFacilitySchema>;
+export type StatusTransitionInput = z.infer<typeof statusTransitionSchema>;
+export type TransitionContextInput = z.infer<typeof transitionContextSchema>;

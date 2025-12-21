@@ -1,0 +1,57 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e18]:
+    - banner [ref=e19]:
+      - navigation [ref=e21]:
+        - generic [ref=e22]:
+          - button "Project" [ref=e24]: Project
+          - button "Contexts" [ref=e29]: Contexts
+          - button "Ideas" [ref=e33]: Ideas
+          - button "Tinder" [ref=e37]: Tinder
+          - button "Tasker" [ref=e41]: Tasker
+          - button "Manager" [ref=e45]: Manager
+          - button "Social" [ref=e49]: Social
+          - button "Other" [ref=e53]:
+            - generic [ref=e54]: Other
+            - img [ref=e55]
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - generic [ref=e66]: "Project:"
+        - button "All Projects" [ref=e67]
+        - button "bria" [ref=e68]
+        - button "char-creator" [ref=e69]
+        - button "GOAT" [ref=e70]
+        - button "hivecomp" [ref=e71]
+        - button "hyper" [ref=e72]
+        - button "image" [ref=e73]
+        - button "lma" [ref=e74]
+        - button "pikselplay" [ref=e75]
+        - button "story" [ref=e76]
+        - button "vaai" [ref=e77]
+        - button "vibeman" [ref=e78]
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - img [ref=e81]
+          - generic [ref=e84]: "11"
+        - generic [ref=e85]:
+          - img [ref=e86]
+          - generic [ref=e89]: "321"
+        - generic [ref=e90]:
+          - img [ref=e91]
+          - generic [ref=e94]: "245"
+    - generic [ref=e97]:
+      - heading "404" [level=1] [ref=e98]
+      - heading "This page could not be found." [level=2] [ref=e100]
+  - button "BLUEPRINT 5 CTRL+B" [ref=e102] [cursor=pointer]:
+    - generic [ref=e103]:
+      - generic [ref=e104]:
+        - generic [ref=e105]: BLUEPRINT
+        - generic [ref=e109]: "5"
+      - img [ref=e111]
+    - text: CTRL+B
+  - button "Open Next.js Dev Tools" [ref=e119] [cursor=pointer]:
+    - img [ref=e120]
+  - alert [ref=e123]
+```
