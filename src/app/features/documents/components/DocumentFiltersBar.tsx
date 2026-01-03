@@ -38,76 +38,76 @@ export const DocumentFiltersBar = memo(function DocumentFiltersBar({
   onViewModeChange,
 }: DocumentFiltersBarProps) {
   return (
-    <Card className="animate-in fade-in slide-in-from-top-2 duration-300">
-      <CardContent className="py-2.5">
-        <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <Input
-              placeholder="Search documents..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 transition-shadow focus:shadow-md"
-              data-testid="document-search-input"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={(v) => onStatusChange(v as DocumentStatusFilter)}>
-            <SelectTrigger className="w-40 transition-shadow hover:shadow-sm" data-testid="status-filter-trigger">
-              <Filter className="w-4 h-4 mr-2 text-zinc-400" />
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              {DOCUMENT_STATUS_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  data-testid={`status-filter-${option.value.replace('_', '-')}`}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Type Filter */}
-          <Select value={typeFilter} onValueChange={(v) => onTypeChange(v as DocumentTypeFilter)}>
-            <SelectTrigger className="w-48 transition-shadow hover:shadow-sm" data-testid="type-filter-trigger">
-              <SelectValue placeholder="Document Type" />
-            </SelectTrigger>
-            <SelectContent>
-              {DOCUMENT_TYPE_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  data-testid={`type-filter-${option.value.replace('_', '-')}`}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Sort */}
-          <Button variant="outline" size="icon" className="transition-transform hover:scale-105" data-testid="sort-btn">
-            <SortAsc className="w-4 h-4" />
-          </Button>
-
-          {/* View Toggle */}
-          <Tabs value={viewMode} onValueChange={(v) => onViewModeChange(v as DocumentViewMode)}>
-            <TabsList>
-              <TabsTrigger value="grid" className="transition-colors" data-testid="view-mode-grid-btn">
-                <Grid className="w-4 h-4" />
-              </TabsTrigger>
-              <TabsTrigger value="list" className="transition-colors" data-testid="view-mode-list-btn">
-                <List className="w-4 h-4" />
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+    <div className="px-3 py-2 bg-white">
+      <div className="flex items-center gap-2">
+        {/* Search */}
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+          <Input
+            placeholder="Search documents..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-8 h-8 text-sm border-zinc-200 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-200"
+            data-testid="document-search-input"
+          />
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Status Filter */}
+        <Select value={statusFilter} onValueChange={(v) => onStatusChange(v as DocumentStatusFilter)}>
+          <SelectTrigger className="w-32 h-8 text-xs border-zinc-200" data-testid="status-filter-trigger">
+            <Filter className="w-3 h-3 mr-1.5 text-zinc-400" />
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {DOCUMENT_STATUS_OPTIONS.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="text-xs"
+                data-testid={`status-filter-${option.value.replace('_', '-')}`}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Type Filter */}
+        <Select value={typeFilter} onValueChange={(v) => onTypeChange(v as DocumentTypeFilter)}>
+          <SelectTrigger className="w-40 h-8 text-xs border-zinc-200" data-testid="type-filter-trigger">
+            <SelectValue placeholder="Document Type" />
+          </SelectTrigger>
+          <SelectContent>
+            {DOCUMENT_TYPE_OPTIONS.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="text-xs"
+                data-testid={`type-filter-${option.value.replace('_', '-')}`}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Sort */}
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-700" data-testid="sort-btn">
+          <SortAsc className="w-3.5 h-3.5" />
+        </Button>
+
+        {/* View Toggle */}
+        <Tabs value={viewMode} onValueChange={(v) => onViewModeChange(v as DocumentViewMode)}>
+          <TabsList className="h-8 p-0.5 bg-zinc-100">
+            <TabsTrigger value="grid" className="h-7 px-2 text-xs" data-testid="view-mode-grid-btn">
+              <Grid className="w-3.5 h-3.5" />
+            </TabsTrigger>
+            <TabsTrigger value="list" className="h-7 px-2 text-xs" data-testid="view-mode-list-btn">
+              <List className="w-3.5 h-3.5" />
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+    </div>
   );
 });

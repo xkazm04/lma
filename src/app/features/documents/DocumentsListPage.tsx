@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, GitCompare, BarChart3, Shield } from 'lucide-react';
+import { Plus, GitCompare, Shield, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageContainer } from '@/components/layout';
-import { InlineAIAssist } from '@/components/intelligence';
+import { DemoCard } from '@/lib/demo-guide';
 import {
   DocumentFiltersBar,
   DocumentStatsBar,
@@ -29,6 +29,7 @@ import type { SavedView } from './lib/types';
 
 export function DocumentsListPage() {
   const router = useRouter();
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   // Get all state and actions from unified store
   const {
@@ -255,19 +256,6 @@ export function DocumentsListPage() {
 
             {/* Compact Action Buttons */}
             <div className="flex items-center gap-1.5">
-              {/* AI Assist */}
-              <InlineAIAssist
-                domain="documents"
-                context={{
-                  domain: 'documents',
-                  entityType: 'document-hub',
-                  entityId: 'hub',
-                  entityName: 'Document Hub',
-                }}
-                variant="popover"
-                actions={['explain', 'suggest', 'analyze']}
-              />
-
               <Link href="/documents/risk-detection">
                 <Button
                   variant="outline"
@@ -277,17 +265,6 @@ export function DocumentsListPage() {
                 >
                   <Shield className="w-3.5 h-3.5 mr-1" />
                   Risk
-                </Button>
-              </Link>
-              <Link href="/documents/portfolio">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs"
-                  data-testid="documents-portfolio-btn"
-                >
-                  <BarChart3 className="w-3.5 h-3.5 mr-1" />
-                  Portfolio
                 </Button>
               </Link>
               <Link href="/documents/compare">
@@ -311,43 +288,64 @@ export function DocumentsListPage() {
           </div>
 
           {/* Row 3: Main Content - Folder Sidebar + Document Area */}
-          <div className="flex rounded-lg border border-zinc-200 bg-white overflow-hidden" style={{ height: 'calc(100vh - 240px)' }}>
-            {/* Folder Sidebar */}
-            <div className="w-56 flex-shrink-0">
-              <FolderTree onCreateFolder={handleCreateFolder} />
-            </div>
-
-            {/* Document Area */}
-            <div className="flex-1 flex flex-col min-w-0">
-              {/* Filters Bar - Integrated into table header */}
-              <div className="border-b border-zinc-200">
-                <DocumentFiltersBar
-                  searchQuery={searchQuery}
-                  statusFilter={statusFilter}
-                  typeFilter={typeFilter}
-                  viewMode={viewMode}
-                  onSearchChange={setSearchQuery}
-                  onStatusChange={setStatusFilter}
-                  onTypeChange={setTypeFilter}
-                  onViewModeChange={setViewMode}
-                />
+          <div className="flex rounded-lg border border-zinc-200 bg-white overflow-hidden shadow-sm" style={{ height: 'calc(100vh - 240px)' }}>
+            {/* Folder Sidebar - Expandable - Explorable Section */}
+            <DemoCard sectionId="documents-folder-tree">
+              <div
+                className={`flex-shrink-0 transition-all duration-300 ease-in-out border-r border-zinc-100 relative bg-zinc-50/50 ${
+                  sidebarExpanded ? 'w-80' : 'w-56'
+                }`}
+                style={{ height: '100%' }}
+              >
+                <FolderTree onCreateFolder={handleCreateFolder} />
+                {/* Expand/Collapse Toggle */}
+                <button
+                  onClick={() => setSidebarExpanded(!sidebarExpanded)}
+                  className="absolute top-2 right-2 p-1 rounded-md hover:bg-zinc-200/70 text-zinc-400 hover:text-zinc-700 transition-colors z-10"
+                  title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                >
+                  {sidebarExpanded ? (
+                    <PanelLeftClose className="w-3.5 h-3.5" />
+                  ) : (
+                    <PanelLeft className="w-3.5 h-3.5" />
+                  )}
+                </button>
               </div>
+            </DemoCard>
 
-              {/* Document Grid/List */}
-              <div className="flex-1 overflow-auto">
-                <DocumentGrid
-                  documents={filteredDocuments}
-                  viewMode={viewMode}
-                  previewData={mockDocumentPreviewData}
-                  onDelete={handleDelete}
-                  onReprocess={handleReprocess}
-                  selectionMode={selectionMode}
-                  selectedIds={selectedIds}
-                  onSelectionChange={handleSelectionChange}
-                  onToggleSelectionMode={handleToggleSelectionMode}
-                />
+            {/* Document Area - Explorable Section */}
+            <DemoCard sectionId="documents-list" className="flex-1 min-w-0">
+              <div className="flex flex-col h-full">
+                {/* Filters Bar - Integrated into table header */}
+                <div className="border-b border-zinc-100 bg-white">
+                  <DocumentFiltersBar
+                    searchQuery={searchQuery}
+                    statusFilter={statusFilter}
+                    typeFilter={typeFilter}
+                    viewMode={viewMode}
+                    onSearchChange={setSearchQuery}
+                    onStatusChange={setStatusFilter}
+                    onTypeChange={setTypeFilter}
+                    onViewModeChange={setViewMode}
+                  />
+                </div>
+
+                {/* Document Grid/List */}
+                <div className="flex-1 overflow-auto">
+                  <DocumentGrid
+                    documents={filteredDocuments}
+                    viewMode={viewMode}
+                    previewData={mockDocumentPreviewData}
+                    onDelete={handleDelete}
+                    onReprocess={handleReprocess}
+                    selectionMode={selectionMode}
+                    selectedIds={selectedIds}
+                    onSelectionChange={handleSelectionChange}
+                    onToggleSelectionMode={handleToggleSelectionMode}
+                  />
+                </div>
               </div>
-            </div>
+            </DemoCard>
           </div>
         </div>
       </PageContainer>

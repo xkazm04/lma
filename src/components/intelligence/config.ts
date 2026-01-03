@@ -21,6 +21,7 @@ import {
   XCircle,
   AlertCircle,
   Info,
+  ArrowLeftRight,
   type LucideIcon,
 } from 'lucide-react';
 import type { Domain, Severity, TrendDirection, SignalType, SignalDirection } from './types';
@@ -204,6 +205,24 @@ export const domainConfig: Record<Domain, DomainConfig> = {
       verification_due: { icon: Clock, label: 'Verification Due', defaultSeverity: 'medium' },
       kpi_milestone: { icon: Target, label: 'KPI Milestone', defaultSeverity: 'info' },
       improvement_opportunity: { icon: TrendingUp, label: 'Improvement Opportunity', defaultSeverity: 'low' },
+    },
+  },
+  trading: {
+    name: 'Trading',
+    icon: ArrowLeftRight,
+    primaryColor: 'cyan',
+    gradientFrom: 'from-cyan-600',
+    gradientTo: 'to-teal-600',
+    bgLight: 'bg-cyan-50',
+    borderLight: 'border-cyan-200',
+    intelligenceTitle: 'Trading Intelligence',
+    predictionLabel: 'Trade Predictions',
+    alertTypes: {
+      dd_flagged: { icon: AlertTriangle, label: 'DD Flagged', defaultSeverity: 'high' },
+      settlement_due: { icon: Clock, label: 'Settlement Due', defaultSeverity: 'high' },
+      consent_pending: { icon: CheckCircle, label: 'Consent Pending', defaultSeverity: 'medium' },
+      question_open: { icon: Activity, label: 'Question Open', defaultSeverity: 'medium' },
+      trade_update: { icon: ArrowLeftRight, label: 'Trade Update', defaultSeverity: 'info' },
     },
   },
 };

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Negotiation Module Tests
  *

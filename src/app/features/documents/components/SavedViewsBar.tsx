@@ -44,13 +44,10 @@ export const SavedViewsBar = memo(function SavedViewsBar({
   const [showRightArrow, setShowRightArrow] = useState(false);
 
   const {
-    presetViews,
-    customViews,
+    views,
     activeViewId,
     setActiveView,
   } = useSavedViewsStore();
-
-  const allViews = [...presetViews, ...customViews];
 
   // Check scroll position to show/hide arrows
   const checkScroll = () => {
@@ -72,7 +69,7 @@ export const SavedViewsBar = memo(function SavedViewsBar({
         window.removeEventListener('resize', checkScroll);
       };
     }
-  }, [allViews]);
+  }, [views]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -107,7 +104,7 @@ export const SavedViewsBar = memo(function SavedViewsBar({
         className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1 px-1"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {allViews.map((view) => {
+        {views.map((view) => {
           const isActive = activeViewId === view.id;
           return (
             <button

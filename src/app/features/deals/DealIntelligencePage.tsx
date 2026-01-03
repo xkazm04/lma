@@ -24,7 +24,6 @@ import {
   IntelligencePanel,
   SignalCard,
   MetricCard,
-  InlineAIAssist,
   StatsBar,
 } from '@/components/intelligence';
 import type {
@@ -200,28 +199,15 @@ export function DealIntelligencePage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <InlineAIAssist
-              domain="deals"
-              context={{
-                domain: 'deals',
-                entityType: 'deal-intelligence',
-                entityId: 'all',
-                entityName: 'Deal Intelligence',
-              }}
-              variant="popover"
-              actions={['explain', 'suggest', 'analyze']}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
-              <RefreshCw className={cn('w-4 h-4 mr-1', isRefreshing && 'animate-spin')} />
-              Refresh
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={cn('w-4 h-4 mr-1', isRefreshing && 'animate-spin')} />
+            Refresh
+          </Button>
         </div>
 
         {/* Stats Bar */}

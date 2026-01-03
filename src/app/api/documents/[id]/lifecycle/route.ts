@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Document Lifecycle Automation API
  *

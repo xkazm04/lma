@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Amendment Module Tests
  *

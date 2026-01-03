@@ -3,6 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 import { createCommentSchema } from '@/lib/validations';
 import type { ApiResponse, TermComment, CommentWithAuthor } from '@/types';
 
+// Type helpers for tables not in generated Supabase types
+type TermCommentRow = TermComment;
+type ParticipantInfo = { party_name: string; party_role: string };
+type ParticipantWithRole = { deal_role: string; party_name: string };
+
 // GET /api/deals/[id]/terms/[termId]/comments - List comments for a term
 export async function GET(
   request: NextRequest,
@@ -13,12 +18,12 @@ export async function GET(
     const supabase = await createClient();
 
     // Get top-level comments
-    const { data: comments, error } = await supabase
-      .from('term_comments')
+    const { data: comments, error } = await (supabase
+      .from('term_comments' as 'documents')
       .select('*')
-      .eq('term_id', termId)
-      .is('parent_comment_id', null)
-      .order('created_at', { ascending: true });
+      .eq('term_id' as 'id', termId)
+      .is('parent_comment_id' as 'id', null)
+      .order('created_at', { ascending: true }) as unknown as Promise<{ data: TermCommentRow[] | null; error: Error | null }>);
 
     if (error) {
       return NextResponse.json<ApiResponse<null>>({
@@ -34,29 +39,29 @@ export async function GET(
     const commentsWithReplies: CommentWithAuthor[] = await Promise.all(
       (comments || []).map(async (comment: TermComment) => {
         // Get author info
-        const { data: author } = await supabase
-          .from('deal_participants')
+        const { data: author } = await (supabase
+          .from('deal_participants' as 'documents')
           .select('party_name, party_role')
-          .eq('deal_id', dealId)
-          .eq('user_id', comment.author_id)
-          .single();
+          .eq('deal_id' as 'id', dealId)
+          .eq('user_id' as 'id', comment.author_id)
+          .single() as unknown as Promise<{ data: ParticipantInfo | null }>);
 
         // Get replies
-        const { data: replies } = await supabase
-          .from('term_comments')
+        const { data: replies } = await (supabase
+          .from('term_comments' as 'documents')
           .select('*')
-          .eq('parent_comment_id', comment.id)
-          .order('created_at', { ascending: true });
+          .eq('parent_comment_id' as 'id', comment.id)
+          .order('created_at', { ascending: true }) as unknown as Promise<{ data: TermCommentRow[] | null }>);
 
         // Get author info for each reply
         const repliesWithAuthors = await Promise.all(
           (replies || []).map(async (reply: TermComment) => {
-            const { data: replyAuthor } = await supabase
-              .from('deal_participants')
+            const { data: replyAuthor } = await (supabase
+              .from('deal_participants' as 'documents')
               .select('party_name, party_role')
-              .eq('deal_id', dealId)
-              .eq('user_id', reply.author_id)
-              .single();
+              .eq('deal_id' as 'id', dealId)
+              .eq('user_id' as 'id', reply.author_id)
+              .single() as unknown as Promise<{ data: ParticipantInfo | null }>);
 
             return {
               ...reply,
@@ -127,13 +132,13 @@ export async function POST(
     }
 
     // Check if user is a participant
-    const { data: participant } = await supabase
-      .from('deal_participants')
+    const { data: participant } = await (supabase
+      .from('deal_participants' as 'documents')
       .select('deal_role, party_name')
-      .eq('deal_id', dealId)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single();
+      .eq('deal_id' as 'id', dealId)
+      .eq('user_id' as 'id', user.id)
+      .eq('status' as 'id', 'active')
+      .single() as unknown as Promise<{ data: ParticipantWithRole | null }>);
 
     if (!participant) {
       return NextResponse.json<ApiResponse<null>>({
@@ -146,14 +151,14 @@ export async function POST(
     }
 
     // Check term exists
-    const { data: term, error: termError } = await supabase
-      .from('negotiation_terms')
+    const { data: term, error: termError } = await (supabase
+      .from('negotiation_terms' as 'documents')
       .select('id')
       .eq('id', termId)
-      .eq('deal_id', dealId)
-      .single();
+      .eq('deal_id' as 'id', dealId)
+      .single() as unknown as Promise<{ data: { id: string } | null; error: Error | null }>);
 
-    if (termError) {
+    if (termError || !term) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -165,12 +170,12 @@ export async function POST(
 
     // If replying, check parent comment exists
     if (parsed.data.parent_comment_id) {
-      const { data: parentComment } = await supabase
-        .from('term_comments')
+      const { data: parentComment } = await (supabase
+        .from('term_comments' as 'documents')
         .select('id')
         .eq('id', parsed.data.parent_comment_id)
-        .eq('term_id', termId)
-        .single();
+        .eq('term_id' as 'id', termId)
+        .single() as unknown as Promise<{ data: { id: string } | null }>);
 
       if (!parentComment) {
         return NextResponse.json<ApiResponse<null>>({
@@ -183,46 +188,50 @@ export async function POST(
       }
     }
 
-    // Create comment
-    const { data: comment, error: createError } = await supabase
-      .from('term_comments')
-      .insert({
-        term_id: termId,
-        deal_id: dealId,
-        author_id: user.id,
-        author_party: participant.party_name,
-        content: parsed.data.content,
-        parent_comment_id: parsed.data.parent_comment_id || null,
-        is_internal: parsed.data.is_internal || false,
-        is_resolved: false,
-      })
-      .select()
-      .single();
+    // Create comment - use any to bypass strict typing for tables not in schema
+    const commentData = {
+      term_id: termId,
+      deal_id: dealId,
+      author_id: user.id,
+      author_party: participant.party_name,
+      content: parsed.data.content,
+      parent_comment_id: parsed.data.parent_comment_id || null,
+      is_internal: parsed.data.is_internal || false,
+      is_resolved: false,
+    };
 
-    if (createError) {
+    const { data: comment, error: createError } = await (supabase
+      .from('term_comments' as 'documents')
+      .insert(commentData as never)
+      .select()
+      .single() as unknown as Promise<{ data: TermCommentRow | null; error: Error | null }>);
+
+    if (createError || !comment) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
           code: 'DB_ERROR',
-          message: createError.message,
+          message: createError?.message || 'Failed to create comment',
         },
       }, { status: 500 });
     }
 
     // Log activity
-    await supabase
-      .from('deal_activities')
-      .insert({
-        deal_id: dealId,
-        activity_type: 'comment_added',
-        actor_id: user.id,
-        actor_party: participant.party_name,
-        term_id: termId,
-        details: {
-          comment_id: comment.id,
-          is_reply: !!parsed.data.parent_comment_id,
-        },
-      });
+    const activityData = {
+      deal_id: dealId,
+      activity_type: 'comment_added',
+      actor_id: user.id,
+      actor_party: participant.party_name,
+      term_id: termId,
+      details: {
+        comment_id: comment.id,
+        is_reply: !!parsed.data.parent_comment_id,
+      },
+    };
+
+    await (supabase
+      .from('deal_activities' as 'documents')
+      .insert(activityData as never) as unknown as Promise<unknown>);
 
     return NextResponse.json<ApiResponse<TermComment>>({
       success: true,

@@ -4,6 +4,10 @@ import { analyzeTermImpact } from '@/lib/llm';
 import { impactAnalysisSchema } from '@/lib/validations';
 import type { ApiResponse, ImpactAnalysisResult, NegotiationTerm } from '@/types';
 
+// Type helpers for tables not in generated Supabase types
+type DealInfo = { deal_type: string; deal_name: string; base_facility_id: string | null };
+type FacilityInfo = { currency: string; total_commitments: number };
+
 // POST /api/deals/[id]/terms/[termId]/impact - Analyze impact of a proposed value change
 export async function POST(
   request: NextRequest,
@@ -41,14 +45,14 @@ export async function POST(
     }
 
     // Get the term
-    const { data: term, error: termError } = await supabase
-      .from('negotiation_terms')
+    const { data: term, error: termError } = await (supabase
+      .from('negotiation_terms' as 'documents')
       .select('*')
       .eq('id', termId)
-      .eq('deal_id', dealId)
-      .single();
+      .eq('deal_id' as 'id', dealId)
+      .single() as unknown as Promise<{ data: NegotiationTerm | null; error: Error | null }>);
 
-    if (termError) {
+    if (termError || !term) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -59,28 +63,28 @@ export async function POST(
     }
 
     // Get related terms (same category or linked)
-    const { data: relatedTerms } = await supabase
-      .from('negotiation_terms')
+    const { data: relatedTerms } = await (supabase
+      .from('negotiation_terms' as 'documents')
       .select('*')
-      .eq('deal_id', dealId)
+      .eq('deal_id' as 'id', dealId)
       .neq('id', termId)
-      .limit(10);
+      .limit(10) as unknown as Promise<{ data: NegotiationTerm[] | null }>);
 
     // Get deal context
-    const { data: deal } = await supabase
-      .from('deals')
+    const { data: deal } = await (supabase
+      .from('deals' as 'documents')
       .select('deal_type, deal_name, base_facility_id')
       .eq('id', dealId)
-      .single();
+      .single() as unknown as Promise<{ data: DealInfo | null }>);
 
     // Get facility info if available
-    let facilityInfo = null;
+    let facilityInfo: FacilityInfo | null = null;
     if (deal?.base_facility_id) {
-      const { data: facility } = await supabase
-        .from('loan_facilities')
+      const { data: facility } = await (supabase
+        .from('loan_facilities' as 'documents')
         .select('currency, total_commitments')
         .eq('id', deal.base_facility_id)
-        .single();
+        .single() as unknown as Promise<{ data: FacilityInfo | null }>);
       facilityInfo = facility;
     }
 

@@ -318,7 +318,7 @@ export interface ProposalWithResponses {
   proposed_value: unknown;
   proposed_value_text: string | null;
   rationale: string | null;
-  status: 'pending' | 'accepted' | 'rejected' | 'superseded' | 'withdrawn';
+  status: 'pending' | 'accepted' | 'rejected' | 'superseded' | 'withdrawn' | 'countered';
   responses: Array<{
     party: string;
     user_id: string;

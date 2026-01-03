@@ -60,10 +60,15 @@ export const RecentActivitySection = memo(function RecentActivitySection({
   activities,
 }: RecentActivitySectionProps) {
   return (
-    <Card className="lg:col-span-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
-        <CardTitle className="text-base">Recent Activity</CardTitle>
-        <Button variant="ghost" size="sm" className="h-7 text-xs">
+    <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-full">
+      <CardHeader className="flex flex-row items-center justify-between py-2.5 px-3 border-b border-zinc-100">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-md bg-blue-50">
+            <Clock className="w-3.5 h-3.5 text-blue-600" />
+          </div>
+          <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+        </div>
+        <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-zinc-500 hover:text-zinc-900">
           View all
         </Button>
       </CardHeader>
@@ -73,7 +78,7 @@ export const RecentActivitySection = memo(function RecentActivitySection({
           columns={columns}
           rowHeight="sm"
           showHeader={false}
-          maxHeight="280px"
+          maxHeight="260px"
           emptyMessage="No recent activity"
         />
       </CardContent>

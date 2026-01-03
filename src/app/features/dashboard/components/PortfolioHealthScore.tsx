@@ -232,28 +232,28 @@ export const PortfolioHealthScore = memo(function PortfolioHealthScore({
         className="animate-in fade-in slide-in-from-top-4 duration-500"
         data-testid="portfolio-health-score-card"
       >
-        <CardHeader className="py-3 px-4">
+        <CardHeader className="py-2.5 px-3 border-b border-zinc-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-zinc-900 to-zinc-700">
-                <Activity className="w-4 h-4 text-white" />
+              <div className="p-1.5 rounded-md bg-gradient-to-br from-emerald-500 to-green-600">
+                <Activity className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
-                <CardTitle className="text-base">Portfolio Health Score</CardTitle>
-                <p className="text-[10px] text-zinc-500">Updated {data.lastUpdated}</p>
+                <CardTitle className="text-sm font-medium">Portfolio Health</CardTitle>
+                <p className="text-[9px] text-zinc-400">Updated {data.lastUpdated}</p>
               </div>
             </div>
             <button
               onClick={onViewTrends}
-              className="p-1.5 rounded-lg hover:bg-zinc-100 transition-colors group"
+              className="p-1.5 rounded-md hover:bg-zinc-100 transition-colors group"
               data-testid="view-trends-btn"
               aria-label="View trends"
             >
-              <BarChart3 className="w-4 h-4 text-zinc-500 group-hover:text-zinc-900" />
+              <BarChart3 className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-900" />
             </button>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 px-4 pb-4">
+        <CardContent className="pt-3 px-3 pb-3">
           {/* Score Overview */}
           <div className="flex items-center gap-4 mb-4">
             <ScoreRing score={data.overallScore} />

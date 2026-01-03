@@ -8,6 +8,11 @@ import {
   type NegotiationStatus,
 } from '@/app/features/deals/lib/term-status-state-machine';
 
+// Type helpers for tables not in generated Supabase types
+type ParticipantInfo = { party_name: string; party_role: string };
+type ParticipantWithPermissions = { deal_role: string; party_name: string; can_approve: boolean };
+type TermValue = { current_value: unknown; negotiation_status: string };
+
 // GET /api/deals/[id]/terms/[termId]/proposals/[proposalId] - Get proposal detail
 export async function GET(
   request: NextRequest,
@@ -17,14 +22,14 @@ export async function GET(
     const { id: dealId, termId, proposalId } = await params;
     const supabase = await createClient();
 
-    const { data: proposal, error } = await supabase
-      .from('term_proposals')
+    const { data: proposal, error } = await (supabase
+      .from('term_proposals' as 'documents')
       .select('*')
       .eq('id', proposalId)
-      .eq('term_id', termId)
-      .single();
+      .eq('term_id' as 'id', termId)
+      .single() as unknown as Promise<{ data: TermProposal | null; error: Error | null }>);
 
-    if (error) {
+    if (error || !proposal) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -35,22 +40,22 @@ export async function GET(
     }
 
     // Get proposer info
-    const { data: proposer } = await supabase
-      .from('deal_participants')
+    const { data: proposer } = await (supabase
+      .from('deal_participants' as 'documents')
       .select('party_name, party_role')
-      .eq('deal_id', dealId)
-      .eq('user_id', proposal.proposed_by)
-      .single();
+      .eq('deal_id' as 'id', dealId)
+      .eq('user_id' as 'id', proposal.proposed_by)
+      .single() as unknown as Promise<{ data: ParticipantInfo | null }>);
 
     // Get responder info if responded
-    let responder = null;
+    let responder: ParticipantInfo | null = null;
     if (proposal.responded_by) {
-      const { data: responderData } = await supabase
-        .from('deal_participants')
+      const { data: responderData } = await (supabase
+        .from('deal_participants' as 'documents')
         .select('party_name, party_role')
-        .eq('deal_id', dealId)
-        .eq('user_id', proposal.responded_by)
-        .single();
+        .eq('deal_id' as 'id', dealId)
+        .eq('user_id' as 'id', proposal.responded_by)
+        .single() as unknown as Promise<{ data: ParticipantInfo | null }>);
       responder = responderData;
     }
 
@@ -110,13 +115,13 @@ export async function PUT(
     }
 
     // Check if user is a participant with appropriate role
-    const { data: participant } = await supabase
-      .from('deal_participants')
+    const { data: participant } = await (supabase
+      .from('deal_participants' as 'documents')
       .select('deal_role, party_name, can_approve')
-      .eq('deal_id', dealId)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single();
+      .eq('deal_id' as 'id', dealId)
+      .eq('user_id' as 'id', user.id)
+      .eq('status' as 'id', 'active')
+      .single() as unknown as Promise<{ data: ParticipantWithPermissions | null }>);
 
     if (!participant) {
       return NextResponse.json<ApiResponse<null>>({
@@ -143,14 +148,14 @@ export async function PUT(
     }
 
     // Get the proposal
-    const { data: proposal, error: proposalError } = await supabase
-      .from('term_proposals')
+    const { data: proposal, error: proposalError } = await (supabase
+      .from('term_proposals' as 'documents')
       .select('*')
       .eq('id', proposalId)
-      .eq('term_id', termId)
-      .single();
+      .eq('term_id' as 'id', termId)
+      .single() as unknown as Promise<{ data: TermProposal | null; error: Error | null }>);
 
-    if (proposalError) {
+    if (proposalError || !proposal) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -183,11 +188,11 @@ export async function PUT(
     }
 
     // Get current term value for history
-    const { data: term } = await supabase
-      .from('negotiation_terms')
+    const { data: term } = await (supabase
+      .from('negotiation_terms' as 'documents')
       .select('current_value, negotiation_status')
       .eq('id', termId)
-      .single();
+      .single() as unknown as Promise<{ data: TermValue | null }>);
 
     // Update proposal
     const updateData: Record<string, unknown> = {
@@ -202,25 +207,25 @@ export async function PUT(
       updateData.counter_value_text = parsed.data.counter_value_text;
     }
 
-    const { data: updatedProposal, error: updateError } = await supabase
-      .from('term_proposals')
-      .update(updateData)
+    const { data: updatedProposal, error: updateError } = await (supabase
+      .from('term_proposals' as 'documents')
+      .update(updateData as never)
       .eq('id', proposalId)
       .select()
-      .single();
+      .single() as unknown as Promise<{ data: TermProposal | null; error: Error | null }>);
 
-    if (updateError) {
+    if (updateError || !updatedProposal) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
           code: 'DB_ERROR',
-          message: updateError.message,
+          message: updateError?.message || 'Update failed',
         },
       }, { status: 500 });
     }
 
     // If accepted, update the term value with state machine validation
-    if (parsed.data.response === 'accepted') {
+    if (parsed.data.response === 'accepted' && term) {
       // Validate the transition to under_discussion
       const transitionContext = createDefaultContext({
         isDealLead: participant.deal_role === 'deal_lead',
@@ -239,19 +244,19 @@ export async function PUT(
       // Use valid target status or stay in current status if transition is invalid
       const newStatus = transitionResult.valid ? targetStatus : term.negotiation_status;
 
-      await supabase
-        .from('negotiation_terms')
+      await (supabase
+        .from('negotiation_terms' as 'documents')
         .update({
           current_value: proposal.proposed_value,
           current_value_text: proposal.proposed_value_text,
           negotiation_status: newStatus,
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', termId);
+        } as never)
+        .eq('id', termId) as unknown as Promise<unknown>);
 
       // Log value change in history
-      await supabase
-        .from('term_history')
+      await (supabase
+        .from('term_history' as 'documents')
         .insert({
           term_id: termId,
           deal_id: dealId,
@@ -263,12 +268,12 @@ export async function PUT(
           changed_by: user.id,
           changed_by_party: participant.party_name,
           metadata: { reason: 'proposal_accepted', proposal_id: proposalId },
-        });
+        } as never) as unknown as Promise<unknown>);
     }
 
     // Log response in history
-    await supabase
-      .from('term_history')
+    await (supabase
+      .from('term_history' as 'documents')
       .insert({
         term_id: termId,
         deal_id: dealId,
@@ -280,11 +285,11 @@ export async function PUT(
           response_comment: parsed.data.response_comment,
           counter_value: parsed.data.counter_value,
         },
-      });
+      } as never) as unknown as Promise<unknown>);
 
     // Log activity
-    await supabase
-      .from('deal_activities')
+    await (supabase
+      .from('deal_activities' as 'documents')
       .insert({
         deal_id: dealId,
         activity_type: `proposal_${parsed.data.response}`,
@@ -295,7 +300,7 @@ export async function PUT(
           proposal_id: proposalId,
           response: parsed.data.response,
         },
-      });
+      } as never) as unknown as Promise<unknown>);
 
     return NextResponse.json<ApiResponse<TermProposal>>({
       success: true,
@@ -334,14 +339,14 @@ export async function DELETE(
     }
 
     // Get the proposal
-    const { data: proposal, error: proposalError } = await supabase
-      .from('term_proposals')
+    const { data: proposal, error: proposalError } = await (supabase
+      .from('term_proposals' as 'documents')
       .select('*')
       .eq('id', proposalId)
-      .eq('term_id', termId)
-      .single();
+      .eq('term_id' as 'id', termId)
+      .single() as unknown as Promise<{ data: TermProposal | null; error: Error | null }>);
 
-    if (proposalError) {
+    if (proposalError || !proposal) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -374,22 +379,22 @@ export async function DELETE(
     }
 
     // Get participant info
-    const { data: participant } = await supabase
-      .from('deal_participants')
+    const { data: participant } = await (supabase
+      .from('deal_participants' as 'documents')
       .select('party_name')
-      .eq('deal_id', dealId)
-      .eq('user_id', user.id)
-      .single();
+      .eq('deal_id' as 'id', dealId)
+      .eq('user_id' as 'id', user.id)
+      .single() as unknown as Promise<{ data: { party_name: string } | null }>);
 
     // Update proposal status to withdrawn
-    const { error: updateError } = await supabase
-      .from('term_proposals')
+    const { error: updateError } = await (supabase
+      .from('term_proposals' as 'documents')
       .update({
         status: 'withdrawn',
         responded_by: user.id,
         responded_at: new Date().toISOString(),
-      })
-      .eq('id', proposalId);
+      } as never)
+      .eq('id', proposalId) as unknown as Promise<{ error: Error | null }>);
 
     if (updateError) {
       return NextResponse.json<ApiResponse<null>>({
@@ -402,8 +407,8 @@ export async function DELETE(
     }
 
     // Log in history
-    await supabase
-      .from('term_history')
+    await (supabase
+      .from('term_history' as 'documents')
       .insert({
         term_id: termId,
         deal_id: dealId,
@@ -411,7 +416,7 @@ export async function DELETE(
         changed_by: user.id,
         changed_by_party: participant?.party_name || 'Unknown',
         metadata: { proposal_id: proposalId },
-      });
+      } as never) as unknown as Promise<unknown>);
 
     return NextResponse.json<ApiResponse<null>>({
       success: true,

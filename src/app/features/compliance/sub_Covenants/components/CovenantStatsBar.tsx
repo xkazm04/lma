@@ -1,8 +1,8 @@
 'use client';
 
 import React, { memo, useMemo } from 'react';
-import { CheckCircle, AlertTriangle, XCircle, FileText, TrendingUp, Activity, Zap } from 'lucide-react';
-import { CompactStatRow } from '@/components/ui/compact-stat-row';
+import { CheckCircle, AlertTriangle, XCircle, FileText, Shield, Activity, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { Covenant } from '../../lib';
 import { calculateCovenantEntropyMetrics } from '../../lib/entropy';
 
@@ -11,20 +11,52 @@ interface CovenantStatsBarProps {
   showEntropyStats?: boolean;
 }
 
+interface StatIndicatorProps {
+  icon: React.ComponentType<{ className?: string }>;
+  value: number;
+  label: string;
+  iconColor: string;
+  highlight?: 'warning' | 'error';
+}
+
+const StatIndicator = memo(function StatIndicator({
+  icon: Icon,
+  value,
+  label,
+  iconColor,
+  highlight,
+}: StatIndicatorProps) {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors',
+        highlight === 'error' && 'bg-red-50 border border-red-200',
+        highlight === 'warning' && 'bg-amber-50 border border-amber-200',
+        !highlight && 'bg-zinc-50'
+      )}
+      title={label}
+      data-testid={`stat-${label.toLowerCase().replace(/\s+/g, '-')}`}
+    >
+      <Icon className={cn('w-3.5 h-3.5 flex-shrink-0', iconColor)} />
+      <span className="text-sm font-semibold text-zinc-900 tabular-nums">{value}</span>
+      <span className="text-[10px] text-zinc-500 hidden sm:inline">{label}</span>
+    </div>
+  );
+});
+
 export const CovenantStatsBar = memo(function CovenantStatsBar({
   covenants,
   showEntropyStats = true
 }: CovenantStatsBarProps) {
-  const statItems = useMemo(() => {
+  const stats = useMemo(() => {
     const total = covenants.length;
     const passing = covenants.filter((c) => c.latest_test.test_result === 'pass').length;
     const failing = covenants.filter((c) => c.latest_test.test_result === 'fail').length;
     const atRisk = covenants.filter((c) => c.latest_test.test_result === 'pass' && c.latest_test.headroom_percentage < 15).length;
     const waived = covenants.filter((c) => c.status === 'waived').length;
 
-    // Calculate entropy-based metrics
-    let highAttention = 0;
     let criticalAttention = 0;
+    let highAttention = 0;
 
     if (showEntropyStats) {
       covenants.forEach(covenant => {
@@ -47,64 +79,65 @@ export const CovenantStatsBar = memo(function CovenantStatsBar({
       });
     }
 
-    const baseStats = [
-      {
-        label: 'Total',
-        value: total,
-        icon: <FileText className="w-4 h-4 text-zinc-500" />,
-      },
-      {
-        label: 'Passing',
-        value: passing,
-        icon: <CheckCircle className="w-4 h-4 text-green-500" />,
-        trend: 'up' as const,
-      },
-      {
-        label: 'At Risk',
-        value: atRisk,
-        icon: <AlertTriangle className="w-4 h-4 text-amber-500" />,
-        status: atRisk > 0 ? 'warning' as const : undefined,
-      },
-      {
-        label: 'Failing',
-        value: failing,
-        icon: <XCircle className="w-4 h-4 text-red-500" />,
-        status: failing > 0 ? 'error' as const : undefined,
-      },
-      {
-        label: 'Waived',
-        value: waived,
-        icon: <TrendingUp className="w-4 h-4 text-zinc-400" />,
-      },
-    ];
-
-    if (showEntropyStats) {
-      return [
-        ...baseStats,
-        {
-          label: 'Critical Entropy',
-          value: criticalAttention,
-          icon: <Zap className="w-4 h-4 text-red-500" />,
-          status: criticalAttention > 0 ? 'error' as const : undefined,
-        },
-        {
-          label: 'High Attention',
-          value: highAttention,
-          icon: <Activity className="w-4 h-4 text-orange-500" />,
-          status: highAttention > 0 ? 'warning' as const : undefined,
-        },
-      ];
-    }
-
-    return baseStats;
+    return { total, passing, failing, atRisk, waived, criticalAttention, highAttention };
   }, [covenants, showEntropyStats]);
 
   return (
     <div
-      className="animate-in fade-in slide-in-from-top-2 duration-500"
+      className="flex flex-wrap items-center gap-2"
       data-testid="covenant-stats-bar"
     >
-      <CompactStatRow stats={statItems} variant="pills" />
+      <StatIndicator
+        icon={FileText}
+        value={stats.total}
+        label="Total"
+        iconColor="text-zinc-500"
+      />
+      <StatIndicator
+        icon={CheckCircle}
+        value={stats.passing}
+        label="Passing"
+        iconColor="text-green-500"
+      />
+      <StatIndicator
+        icon={AlertTriangle}
+        value={stats.atRisk}
+        label="At Risk"
+        iconColor="text-amber-500"
+        highlight={stats.atRisk > 0 ? 'warning' : undefined}
+      />
+      <StatIndicator
+        icon={XCircle}
+        value={stats.failing}
+        label="Failing"
+        iconColor="text-red-500"
+        highlight={stats.failing > 0 ? 'error' : undefined}
+      />
+      <StatIndicator
+        icon={Shield}
+        value={stats.waived}
+        label="Waived"
+        iconColor="text-zinc-400"
+      />
+      {showEntropyStats && (
+        <>
+          <div className="w-px h-5 bg-zinc-200 mx-1" />
+          <StatIndicator
+            icon={Zap}
+            value={stats.criticalAttention}
+            label="Critical"
+            iconColor="text-red-500"
+            highlight={stats.criticalAttention > 0 ? 'error' : undefined}
+          />
+          <StatIndicator
+            icon={Activity}
+            value={stats.highAttention}
+            label="High Attn"
+            iconColor="text-orange-500"
+            highlight={stats.highAttention > 0 ? 'warning' : undefined}
+          />
+        </>
+      )}
     </div>
   );
 });

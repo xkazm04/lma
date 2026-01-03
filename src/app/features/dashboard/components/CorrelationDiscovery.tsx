@@ -287,21 +287,21 @@ export const CorrelationDiscovery = memo(function CorrelationDiscovery({
 
   return (
     <Card className={cn('animate-in fade-in slide-in-from-bottom-4', className)} data-testid="correlation-discovery">
-      <CardHeader className="py-3 px-4">
+      <CardHeader className="py-2.5 px-3 border-b border-zinc-100">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="p-1.5 rounded-md bg-gradient-to-br from-purple-500 to-pink-500">
+            <Sparkles className="w-3.5 h-3.5 text-white" />
           </div>
           <div>
-            <CardTitle className="text-base">Correlation Intelligence</CardTitle>
-            <p className="text-[10px] text-zinc-500">
-              Discover relationships between entities across the platform
+            <CardTitle className="text-sm font-medium">Correlation Intelligence</CardTitle>
+            <p className="text-[9px] text-zinc-400">
+              Cross-platform entity relationships
             </p>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0 px-4 pb-4">
+      <CardContent className="pt-3 px-3 pb-3">
         {loading && (
           <div className="space-y-3" data-testid="loading-skeleton">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">

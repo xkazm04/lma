@@ -1,19 +1,18 @@
 # LoanOS
 
-A comprehensive loan lifecycle management platform built with Next.js 16 (App Router) that leverages AI to help financial institutions manage loan documents, negotiate deals, track compliance, perform trade due diligence, and monitor ESG performance.
+A loan lifecycle management platform built with Next.js 16 (App Router) that uses AI to help financial institutions manage loan documents, negotiate deals, track compliance, and perform trade due diligence.
 
 ## Overview
 
-LoanOS provides six core modules to manage the complete loan lifecycle:
+LoanOS provides five core modules to manage the complete loan lifecycle:
 
 | Module | Route | Description |
 |--------|-------|-------------|
-| **Dashboard** | `/dashboard` | Portfolio-wide analytics with AI-powered autopilot, risk correlation engine, and stakeholder collaboration |
-| **Document Intelligence** | `/documents` | AI-powered document processing, extraction, comparison, translation, and risk detection |
-| **Deal Room** | `/deals` | Multi-party term negotiation with real-time collaboration and market intelligence |
-| **Compliance Tracker** | `/compliance` | Covenant monitoring, obligation calendar, and predictive compliance autopilot |
-| **Trade Due Diligence** | `/trading` | Secondary market trade lifecycle, DD checklists, and Q&A management |
-| **ESG Dashboard** | `/esg` | Sustainability KPI tracking, AI predictions, portfolio optimization, and governance |
+| **Dashboard** | `/dashboard` | Portfolio-wide analytics with health scoring, risk correlation, and activity tracking |
+| **Document Intelligence** | `/documents` | AI-powered document processing, extraction, comparison, and risk detection |
+| **Deal Room** | `/deals` | Multi-party term negotiation with real-time collaboration and pipeline management |
+| **Compliance Tracker** | `/compliance` | Covenant monitoring, obligation calendar, and predictive breach alerts |
+| **Trading** | `/trading` | Secondary market trade lifecycle, DD checklists, and position management |
 
 ---
 
@@ -23,82 +22,63 @@ LoanOS provides six core modules to manage the complete loan lifecycle:
 
 | Feature | Description |
 |---------|-------------|
-| Portfolio Health Score | Multi-dimensional health scoring with benchmark comparison and trend analysis |
-| Portfolio Autopilot | AI-driven predictive management with configurable auto-approval thresholds |
-| Action Queue | Confidence-weighted execution queue for pending portfolio actions |
+| Portfolio Health Score | Multi-dimensional health scoring with trend analysis |
 | Risk Correlation Engine | Cross-portfolio risk analysis with correlation discovery |
-| Stakeholder Command Center | Real-time team collaboration, activity streams, and counterparty tracking |
-| Stat Drilldown | Interactive drilldown into loans, documents, deadlines, negotiations, and ESG metrics |
-| 3D Portfolio Landscape | Immersive 3D visualization of borrower correlations |
+| Recent Activity Feed | Unified activity stream from all platform modules |
+| Upcoming Deadlines | Quick view of approaching compliance deadlines |
+| Stat Drilldown | Interactive drilldown into loans, documents, and deadlines |
 
 ### Document Intelligence Hub (`/documents`)
 
 | Feature | Description |
 |---------|-------------|
-| Document List | Folder-based organization with status tracking, saved views, and batch actions |
-| AI Extraction | Automated extraction of key terms, covenants, and obligations from loan documents |
-| Document Comparison | Side-by-side comparison of document versions with diff highlighting |
-| Document Translation | Convert structured data (covenants, obligations, terms) into legal clause language |
-| Risk Detection Dashboard | Proactive risk scanning with category/status filtering and export capability |
-| Document Evolution Engine | Autonomous monitoring with AI-generated amendment suggestions |
-| Portfolio Comparison | Cross-portfolio document analysis |
+| Document List | Folder-based organization with status tracking and saved views |
+| AI Extraction | Automated extraction of key terms, covenants, and obligations |
+| Document Comparison | Side-by-side version comparison with diff highlighting |
+| Risk Detection | Proactive risk scanning with category filtering |
+| Batch Operations | Multi-document actions for efficient processing |
 
 ### Deal Room (`/deals`)
 
 | Feature | Description |
 |---------|-------------|
-| Deal List | Multi-view layouts (list, grid, kanban, timeline) with Smart Inbox for triage |
-| New Deal Wizard | Multi-step deal creation with facility import and participant management |
-| Negotiation War Room | Real-time term negotiation with focus mode, live presence, and timeline theater |
-| Term Dependencies | Visual dependency graph between negotiation terms |
-| Acceleration Alerts | AI-detected negotiation velocity issues with intervention suggestions |
-| Term Intelligence | Market context for negotiated terms |
-| Market Intelligence | Competitive deal analysis and market benchmarks |
-| Calendar Integration | Export deadlines to Google, Outlook, or iCal |
+| Deal Pipeline | Multi-view layouts (list, grid, kanban, timeline) |
+| Smart Inbox | Priority-based deal triage with action recommendations |
+| Status Tracking | Visual deal stage progression with status counts |
+| Term Negotiation | Collaborative workspace for multi-party negotiations |
+| Deal Intelligence | Market context and competitive analysis |
 
 ### Compliance Tracker (`/compliance`)
 
 | Feature | Description |
 |---------|-------------|
-| Compliance Dashboard | Deadline grouping, facilities at risk, and recent activity feed |
+| Compliance Dashboard | Deadline grouping, facilities at risk, and activity feed |
 | Obligation Calendar | Interactive calendar view of all compliance deadlines |
-| Covenant Tracking | Test results, headroom monitoring, and waiver management |
-| Predictive Autopilot | 6-12 month breach prediction with multi-signal intelligence (market, transactions, news) |
-| Compliance Agent | Natural language AI assistant for compliance tasks and document generation |
-| Live Testing | Real-time covenant test monitoring |
-| Automated Calendar | Smart reminders with calendar provider sync |
-| Headroom Exchange | Trading covenant flexibility across facilities |
-| Covenant Network | Cross-facility correlation analysis |
-| Benchmark Network | Industry standard comparisons |
-| Event Notifications | Regulatory and compliance event monitoring |
+| Covenant Tracking | Test results, headroom monitoring, and trend analysis |
+| Predictive Autopilot | Multi-signal breach prediction with remediation suggestions |
+| Facility Management | Per-facility compliance status and document tracking |
 
-### Trade Due Diligence (`/trading`)
+### Trading (`/trading`)
 
 | Feature | Description |
 |---------|-------------|
-| Trading Dashboard | Position book, trade blotter, and settlement overview |
-| Trade Detail | Due diligence checklist with category-based verification workflow |
-| DD Item Verification | Atomic verification with timeline event creation |
-| Q&A Management | Buyer/seller question exchange with response tracking |
-| Trade Timeline | Complete event history for audit trail |
-| AI Trade Assistant | Natural language queries about trade risks and status |
-| Consent Tracking | Consent requirement monitoring and request workflow |
-| Settlement Calculator | Trade settlement amount computation |
+| Trading Dashboard | Upcoming settlements, recent activity, and portfolio stats |
+| Trades Table | Trade lifecycle tracking with DD progress indicators |
+| Positions Table | Position book with P&L monitoring and current pricing |
+| DD Checklists | Automated due diligence verification workflow |
+| Settlement Tracking | Countdown to settlement with alert indicators |
 
-### ESG Dashboard (`/esg`)
+---
 
-| Feature | Description |
-|---------|-------------|
-| ESG Overview | Portfolio-wide KPI status, target achievement, and proceeds allocation |
-| Facility Management | Individual facility KPI tracking, targets, and reporting |
-| AI Performance Predictor | 90-day KPI trajectory forecast with margin impact analysis |
-| Facilities at Risk | Identification of facilities with KPIs at risk of missing targets |
-| Portfolio Optimizer | ESG mix optimization with what-if scenarios |
-| Facility Comparison | Side-by-side facility ESG analysis |
-| Use of Proceeds | Sankey visualization of proceeds allocation |
-| Governance | Proxy voting signals and ESG governance tracking |
-| Decision Support | AI-powered ESG decision recommendations |
-| Report Export | PDF/Excel export of ESG dashboards and facility reports |
+## Explore Mode
+
+LoanOS includes a built-in **Explore Mode** that helps users discover features and understand each module:
+
+- **Module Introduction** - Overview text and key highlights for the current page
+- **Section Details** - Detailed information about clickable explorable areas
+- **Section Sidebar** - Interactive list of all explorable sections on the page
+
+Toggle Explore Mode using the compass button in the header to reveal guided documentation throughout the platform.
 
 ---
 
@@ -145,6 +125,31 @@ npm run build    # Production build
 npm run lint     # Run ESLint
 npm run test     # Run tests in watch mode
 npm run test:e2e # Run Playwright E2E tests
+```
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/           # Auth routes (login, register)
+│   ├── (platform)/       # Protected platform routes
+│   ├── api/              # API route handlers
+│   └── features/         # Feature-specific pages and components
+│       ├── dashboard/    # Portfolio dashboard
+│       ├── documents/    # Document Intelligence Hub
+│       ├── deals/        # Deal Room
+│       ├── compliance/   # Compliance Tracker
+│       └── trading/      # Trading module
+├── components/
+│   ├── ui/               # Reusable UI primitives
+│   └── layout/           # Shell, header, sidebar
+├── lib/
+│   ├── llm/              # LLM client and domain modules
+│   ├── supabase/         # Database client
+│   ├── demo-guide/       # Explore mode system
+│   └── utils/            # Formatters, helpers
+└── types/                # Application-level types
 ```
 
 See [CLAUDE.md](./CLAUDE.md) for detailed development guidelines and architecture documentation.

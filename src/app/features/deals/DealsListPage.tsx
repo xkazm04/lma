@@ -2,10 +2,11 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, BarChart3, Brain } from 'lucide-react';
+import { Plus, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { InlineAIAssist } from '@/components/intelligence';
+import { PageContainer } from '@/components/layout';
+import { DemoCard } from '@/lib/demo-guide';
 import { DealFiltersBar, DealStatsBar, DealListView, DealKanbanView, DealTimelineView, SmartInboxView, type ViewMode } from './components';
 import {
   mockDeals,
@@ -160,99 +161,95 @@ export function DealsListPage() {
   }, [deals, toast]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Deal Room</h1>
-          <p className="text-zinc-500">Manage and negotiate loan terms with counterparties</p>
+    <PageContainer>
+      <div className="space-y-3">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-zinc-900">Deal Room</h1>
+            <p className="text-sm text-zinc-500">Manage and negotiate loan terms</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Link href="/deals/intelligence">
+              <Button variant="outline" size="sm" className="h-8 text-xs" data-testid="deals-intelligence-btn">
+                <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                Intelligence
+              </Button>
+            </Link>
+            <Link href="/deals/new">
+              <Button size="sm" className="h-8 text-xs" data-testid="deals-new-btn">
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                New Deal
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* AI Assist */}
-          <InlineAIAssist
-            domain="deals"
-            context={{
-              domain: 'deals',
-              entityType: 'deal-room',
-              entityId: 'room',
-              entityName: 'Deal Room',
-            }}
-            variant="popover"
-            actions={['explain', 'suggest', 'analyze']}
-          />
 
-          <Link href="/deals/intelligence">
-            <Button variant="outline" className="transition-transform hover:scale-105" data-testid="deals-intelligence-btn">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Deal Intelligence
-            </Button>
-          </Link>
-          <Link href="/deals/new">
-            <Button className="transition-transform hover:scale-105" data-testid="deals-new-btn">
-              <Plus className="w-4 h-4 mr-2" />
-              New Deal
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <DealFiltersBar
-        searchQuery={searchQuery}
-        statusFilter={statusFilter}
-        typeFilter={typeFilter}
-        viewMode={viewMode}
-        statusCounts={statusCounts}
-        sortState={sortState}
-        onSearchChange={setSearchQuery}
-        onStatusChange={(status) => setStatusFilter(status as typeof statusFilter)}
-        onTypeChange={(type) => setTypeFilter(type as typeof typeFilter)}
-        onViewModeChange={setViewMode}
-        onSort={handleSort}
-      />
-
-      {viewMode !== 'inbox' && (
-        <DealStatsBar
+        {/* Filters */}
+        <DealFiltersBar
+          searchQuery={searchQuery}
+          statusFilter={statusFilter}
+          typeFilter={typeFilter}
+          viewMode={viewMode}
           statusCounts={statusCounts}
-          activeStatus={statusFilter}
-          onStatusClick={(status) => setStatusFilter(status as typeof statusFilter)}
+          sortState={sortState}
+          onSearchChange={setSearchQuery}
+          onStatusChange={(status) => setStatusFilter(status as typeof statusFilter)}
+          onTypeChange={(type) => setTypeFilter(type as typeof typeFilter)}
+          onViewModeChange={setViewMode}
+          onSort={handleSort}
         />
-      )}
 
-      {/* Skip link target - focusable container for keyboard navigation */}
-      <div id="deal-list-content" tabIndex={-1} className="outline-none" data-testid="deal-list-content">
-        {viewMode === 'inbox' && (
-          <SmartInboxView
-            data={viewData.inbox}
-            onTriageAction={handleTriageAction}
-          />
+        {/* Deal Stages/Stats - Explorable Section */}
+        {viewMode !== 'inbox' && (
+          <DemoCard sectionId="deals-stages" fullWidth>
+            <DealStatsBar
+              statusCounts={statusCounts}
+              activeStatus={statusFilter}
+              onStatusClick={(status) => setStatusFilter(status as typeof statusFilter)}
+            />
+          </DemoCard>
         )}
-        {(viewMode === 'list' || viewMode === 'grid') && (
-          <DealListView
-            deals={viewMode === 'list' ? viewData.list : viewData.grid}
-            layout={viewMode === 'list' ? 'table' : 'grid'}
-            sortState={sortState}
-            onSort={handleSort}
-            onDelete={handleDelete}
-            onStatusChange={handleStatusChange}
-            isStatusPending={isPending}
-          />
-        )}
-        {viewMode === 'kanban' && (
-          <DealKanbanView
-            data={viewData.kanban}
-            onDelete={handleDelete}
-            onStatusChange={handleStatusChange}
-            isStatusPending={isPending}
-          />
-        )}
-        {viewMode === 'timeline' && (
-          <DealTimelineView
-            data={viewData.timeline}
-            onDelete={handleDelete}
-            onStatusChange={handleStatusChange}
-            isStatusPending={isPending}
-          />
-        )}
+
+        {/* Deal List Content - Explorable Section */}
+        <DemoCard sectionId="deals-list" fullWidth>
+          <div id="deal-list-content" tabIndex={-1} className="outline-none" data-testid="deal-list-content">
+            {viewMode === 'inbox' && (
+              <SmartInboxView
+                data={viewData.inbox}
+                onTriageAction={handleTriageAction}
+              />
+            )}
+            {(viewMode === 'list' || viewMode === 'grid') && (
+              <DealListView
+                deals={viewMode === 'list' ? viewData.list : viewData.grid}
+                layout={viewMode === 'list' ? 'table' : 'grid'}
+                sortState={sortState}
+                onSort={handleSort}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                isStatusPending={isPending}
+              />
+            )}
+            {viewMode === 'kanban' && (
+              <DealKanbanView
+                data={viewData.kanban}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                isStatusPending={isPending}
+              />
+            )}
+            {viewMode === 'timeline' && (
+              <DealTimelineView
+                data={viewData.timeline}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                isStatusPending={isPending}
+              />
+            )}
+          </div>
+        </DemoCard>
       </div>
-    </div>
+    </PageContainer>
   );
 }

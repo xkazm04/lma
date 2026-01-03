@@ -8,11 +8,15 @@ import {
   Handshake,
   ClipboardCheck,
   ArrowLeftRight,
-  Leaf,
   LayoutDashboard,
   Brain,
   Shield,
   Zap,
+  Compass,
+  GitCompare,
+  Calendar,
+  BarChart3,
+  CheckCircle,
 } from 'lucide-react';
 
 // --- CONFIGURATION (NEXUS THEME) ---
@@ -38,59 +42,62 @@ const modules = [
     href: '/documents',
     icon: FileText,
     description: 'AI-powered document analysis',
-    details: 'Upload loan agreements, extract covenants, obligations, and key terms automatically using Claude AI.',
+    details: 'Upload credit agreements, extract key terms, compare versions, and detect risks automatically.',
+    highlights: ['Smart extraction', 'Version comparison', 'Risk detection'],
     color: 'bg-blue-50 text-blue-600',
   },
   {
     name: 'Deal Room',
     href: '/deals',
     icon: Handshake,
-    description: 'Negotiate terms collaboratively',
-    details: 'Multi-party term negotiation with proposals, comments, and real-time collaboration.',
+    description: 'Collaborative term negotiation',
+    details: 'Multi-party negotiation workspace with proposals, comments, and deal pipeline tracking.',
+    highlights: ['Real-time collaboration', 'Smart inbox triage', 'Multiple views'],
     color: 'bg-purple-50 text-purple-600',
   },
   {
     name: 'Compliance',
     href: '/compliance',
     icon: ClipboardCheck,
-    description: 'Track obligations & covenants',
-    details: 'Monitor reporting deadlines, covenant tests, and manage waivers with calendar views.',
+    description: 'Obligation & covenant tracking',
+    details: 'Monitor deadlines, track covenant tests, and predict potential breaches before they occur.',
+    highlights: ['Deadline calendar', 'Covenant monitoring', 'Predictive alerts'],
     color: 'bg-green-50 text-green-600',
   },
   {
-    name: 'Trade DD',
+    name: 'Trading',
     href: '/trading',
     icon: ArrowLeftRight,
-    description: 'Due diligence automation',
-    details: 'Streamline secondary loan trades with automated checklists and settlement tracking.',
+    description: 'Secondary market due diligence',
+    details: 'Streamline loan trades with automated DD checklists, settlement tracking, and position management.',
+    highlights: ['DD automation', 'Settlement tracking', 'P&L monitoring'],
     color: 'bg-orange-50 text-orange-600',
-  },
-  {
-    name: 'ESG Dashboard',
-    href: '/esg',
-    icon: Leaf,
-    description: 'Sustainability performance',
-    details: 'Track KPIs, targets, ratings, and use of proceeds for sustainability-linked loans.',
-    color: 'bg-emerald-50 text-emerald-600',
   },
 ];
 
 const features = [
   {
     title: 'AI-Powered Extraction',
-    description: 'Claude AI extracts covenants, obligations, and key terms from complex loan documents in seconds.',
+    description: 'Claude AI extracts covenants, obligations, and key terms from complex loan documents automatically.',
     icon: Brain,
   },
   {
-    title: 'Real-Time Collaboration',
-    description: 'Multi-party negotiation with proposals, comments, and instant notifications.',
-    icon: Zap,
+    title: 'Explore Mode',
+    description: 'Built-in guided exploration helps users discover features and understand each module.',
+    icon: Compass,
   },
   {
-    title: 'Enterprise Security',
+    title: 'Enterprise Ready',
     description: 'Bank-grade security with Supabase authentication and row-level security policies.',
     icon: Shield,
   },
+];
+
+const capabilities = [
+  { icon: GitCompare, label: 'Document Comparison', description: 'Side-by-side diff analysis' },
+  { icon: Calendar, label: 'Deadline Calendar', description: 'Never miss obligations' },
+  { icon: BarChart3, label: 'Portfolio Analytics', description: 'Health scoring & trends' },
+  { icon: CheckCircle, label: 'DD Checklists', description: 'Automated verification' },
 ];
 
 // --- SHARED COMPONENTS ---
@@ -121,7 +128,7 @@ const Header = () => (
       </div>
 
       <nav className="hidden md:flex items-center gap-6">
-        {modules.slice(0, 4).map((module) => (
+        {modules.map((module) => (
           <Link
             key={module.name}
             href={module.href}
@@ -162,8 +169,8 @@ const Hero = () => (
         </h1>
 
         <p className={`text-lg lg:text-xl leading-relaxed ${THEME.textSecondary} max-w-2xl mx-auto`}>
-          Extract insights from loan documents, negotiate terms collaboratively, track compliance,
-          manage trades, and monitor ESG performance—all powered by AI.
+          Extract insights from loan documents, negotiate terms collaboratively, track compliance deadlines,
+          and manage secondary market trades—all powered by Claude AI.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
@@ -201,14 +208,14 @@ const ModulesSection = () => (
     <div className="container mx-auto px-6">
       <div className="max-w-3xl mb-12">
         <h2 className={`text-3xl md:text-4xl ${THEME.fontHeading} ${THEME.text} mb-4`}>
-          Five integrated modules.
+          Four integrated modules.
         </h2>
         <p className={`text-lg ${THEME.textSecondary}`}>
-          Everything you need to manage the complete loan lifecycle from origination to trading.
+          Everything you need to manage the complete loan lifecycle from origination to secondary market trading.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 gap-6">
         {modules.map((module) => (
           <Link
             key={module.name}
@@ -220,18 +227,32 @@ const ModulesSection = () => (
               ${THEME.radius}
             `}
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.color}`}>
-              <module.icon className="w-6 h-6" />
+            <div className="flex items-start gap-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${module.color}`}>
+                <module.icon className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className={`text-lg font-bold mb-1 ${THEME.text} group-hover:text-blue-600 transition-colors`}>
+                  {module.name}
+                </h3>
+                <p className={`text-sm font-medium mb-2 ${THEME.textSecondary}`}>
+                  {module.description}
+                </p>
+                <p className={`text-sm ${THEME.textSecondary} leading-relaxed mb-3`}>
+                  {module.details}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {module.highlights.map((highlight) => (
+                    <span
+                      key={highlight}
+                      className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium bg-zinc-100 text-zinc-600 rounded"
+                    >
+                      {highlight}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-            <h3 className={`text-lg font-bold mb-2 ${THEME.text} group-hover:text-blue-600 transition-colors`}>
-              {module.name}
-            </h3>
-            <p className={`text-sm font-medium mb-2 ${THEME.textSecondary}`}>
-              {module.description}
-            </p>
-            <p className={`text-sm ${THEME.textSecondary} leading-relaxed`}>
-              {module.details}
-            </p>
             <div className="mt-4 flex items-center gap-1 text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
               <span>Open module</span>
               <ArrowRight className="w-4 h-4" />
@@ -243,8 +264,26 @@ const ModulesSection = () => (
   </section>
 );
 
+const CapabilitiesSection = () => (
+  <section className={`py-16 ${THEME.bg}`}>
+    <div className="container mx-auto px-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {capabilities.map((cap) => (
+          <div key={cap.label} className="text-center">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${THEME.bgSecondary}`}>
+              <cap.icon className={`w-6 h-6 ${THEME.accentSolid}`} />
+            </div>
+            <h3 className={`text-sm font-semibold mb-1 ${THEME.text}`}>{cap.label}</h3>
+            <p className={`text-xs ${THEME.textSecondary}`}>{cap.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 const FeaturesSection = () => (
-  <section className={`py-20 ${THEME.bg}`}>
+  <section className={`py-20 ${THEME.bgSecondary}`}>
     <div className="container mx-auto px-6">
       <div className="max-w-3xl mx-auto text-center mb-12">
         <h2 className={`text-3xl md:text-4xl ${THEME.fontHeading} ${THEME.text} mb-4`}>
@@ -257,12 +296,12 @@ const FeaturesSection = () => (
 
       <div className="grid md:grid-cols-3 gap-8">
         {features.map((feature, i) => (
-          <div key={i} className="text-center">
+          <div key={i} className={`text-center p-6 ${THEME.bg} ${THEME.radius} border ${THEME.border}`}>
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${THEME.bgSecondary}`}>
               <feature.icon className={`w-7 h-7 ${THEME.accentSolid}`} />
             </div>
             <h3 className={`text-lg font-bold mb-2 ${THEME.text}`}>{feature.title}</h3>
-            <p className={`${THEME.textSecondary} leading-relaxed`}>{feature.description}</p>
+            <p className={`${THEME.textSecondary} leading-relaxed text-sm`}>{feature.description}</p>
           </div>
         ))}
       </div>
@@ -271,7 +310,7 @@ const FeaturesSection = () => (
 );
 
 const QuickAccessSection = () => (
-  <section className={`py-16 ${THEME.bgSecondary} border-t ${THEME.border}`}>
+  <section className={`py-16 ${THEME.bg} border-t ${THEME.border}`}>
     <div className="container mx-auto px-6">
       <div className="flex flex-col md:flex-row items-center justify-between gap-8">
         <div>
@@ -281,6 +320,16 @@ const QuickAccessSection = () => (
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <Link
+            href="/dashboard"
+            className={`
+              inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
+              ${THEME.primary} ${THEME.primaryFg} ${THEME.radius} transition-opacity hover:opacity-90
+            `}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            <span>Dashboard</span>
+          </Link>
           {modules.map((module) => (
             <Link
               key={module.name}
@@ -310,6 +359,7 @@ export default function Page() {
       <main>
         <Hero />
         <ModulesSection />
+        <CapabilitiesSection />
         <FeaturesSection />
         <QuickAccessSection />
       </main>

@@ -3,7 +3,7 @@
 import React, { memo, useState } from 'react';
 import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, Grid, List, X, Kanban, CalendarDays, Inbox } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -78,68 +78,67 @@ export const DealFiltersBar = memo(function DealFiltersBar({
   };
 
   return (
-    <Card className="animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
-      <CardContent className="py-4">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <Input
-              placeholder="Search deals..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10"
-              data-testid="deals-search-input"
-            />
-          </div>
+    <div className="bg-white rounded-lg border border-zinc-200 px-3 py-2 shadow-sm">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+          <Input
+            placeholder="Search deals..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-8 h-8 text-sm border-zinc-200"
+            data-testid="deals-search-input"
+          />
+        </div>
 
-          <Select value={statusFilter} onValueChange={onStatusChange}>
-            <SelectTrigger className="w-40" data-testid="deals-status-filter">
-              <Filter className="w-4 h-4 mr-2 text-zinc-400" />
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
+        <Select value={statusFilter} onValueChange={onStatusChange}>
+          <SelectTrigger className="w-32 h-8 text-xs border-zinc-200" data-testid="deals-status-filter">
+            <Filter className="w-3 h-3 mr-1.5 text-zinc-400" />
+            <SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status ({statusCounts.all})</SelectItem>
-              <SelectItem value="draft">Draft ({statusCounts.draft})</SelectItem>
-              <SelectItem value="active">Active ({statusCounts.active})</SelectItem>
-              <SelectItem value="paused">Paused ({statusCounts.paused})</SelectItem>
-              <SelectItem value="agreed">Agreed ({statusCounts.agreed})</SelectItem>
-              <SelectItem value="closed">Closed ({statusCounts.closed})</SelectItem>
+              <SelectItem value="all" className="text-xs">All ({statusCounts.all})</SelectItem>
+              <SelectItem value="draft" className="text-xs">Draft ({statusCounts.draft})</SelectItem>
+              <SelectItem value="active" className="text-xs">Active ({statusCounts.active})</SelectItem>
+              <SelectItem value="paused" className="text-xs">Paused ({statusCounts.paused})</SelectItem>
+              <SelectItem value="agreed" className="text-xs">Agreed ({statusCounts.agreed})</SelectItem>
+              <SelectItem value="closed" className="text-xs">Closed ({statusCounts.closed})</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={typeFilter} onValueChange={onTypeChange}>
-            <SelectTrigger className="w-48" data-testid="deals-type-filter">
+            <SelectTrigger className="w-36 h-8 text-xs border-zinc-200" data-testid="deals-type-filter">
               <SelectValue placeholder="Deal Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="new_facility">New Facility</SelectItem>
-              <SelectItem value="amendment">Amendment</SelectItem>
-              <SelectItem value="refinancing">Refinancing</SelectItem>
-              <SelectItem value="extension">Extension</SelectItem>
-              <SelectItem value="consent">Consent</SelectItem>
-              <SelectItem value="waiver">Waiver</SelectItem>
+              <SelectItem value="all" className="text-xs">All Types</SelectItem>
+              <SelectItem value="new_facility" className="text-xs">New Facility</SelectItem>
+              <SelectItem value="amendment" className="text-xs">Amendment</SelectItem>
+              <SelectItem value="refinancing" className="text-xs">Refinancing</SelectItem>
+              <SelectItem value="extension" className="text-xs">Extension</SelectItem>
+              <SelectItem value="consent" className="text-xs">Consent</SelectItem>
+              <SelectItem value="waiver" className="text-xs">Waiver</SelectItem>
             </SelectContent>
           </Select>
 
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button
-                variant={hasCustomSort ? 'default' : 'outline'}
-                className={hasCustomSort ? 'gap-2' : ''}
+                variant={hasCustomSort ? 'default' : 'ghost'}
+                size="sm"
+                className={cn('h-8', hasCustomSort ? 'gap-1.5 px-2' : 'w-8 p-0')}
                 data-testid="deals-sort-btn"
               >
                 {hasCustomSort ? (
                   <>
                     {sortState.primary.direction === 'asc' ? (
-                      <ArrowUp className="w-4 h-4" />
+                      <ArrowUp className="w-3.5 h-3.5" />
                     ) : (
-                      <ArrowDown className="w-4 h-4" />
+                      <ArrowDown className="w-3.5 h-3.5" />
                     )}
-                    <span className="text-xs max-w-[120px] truncate">{getSortLabel()}</span>
+                    <span className="text-[10px] max-w-[80px] truncate">{getSortLabel()}</span>
                   </>
                 ) : (
-                  <ArrowUpDown className="w-4 h-4" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-zinc-500" />
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -198,43 +197,43 @@ export const DealFiltersBar = memo(function DealFiltersBar({
 
           <TooltipProvider>
             <Tabs value={viewMode} onValueChange={(v) => onViewModeChange(v as ViewMode)}>
-              <TabsList>
+              <TabsList className="h-8 p-0.5 bg-zinc-100">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="inbox" data-testid="deals-view-inbox-btn">
-                      <Inbox className="w-4 h-4" />
+                    <TabsTrigger value="inbox" className="h-7 px-2" data-testid="deals-view-inbox-btn">
+                      <Inbox className="w-3.5 h-3.5" />
                     </TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent>Smart Inbox</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="grid" data-testid="deals-view-grid-btn">
-                      <Grid className="w-4 h-4" />
+                    <TabsTrigger value="grid" className="h-7 px-2" data-testid="deals-view-grid-btn">
+                      <Grid className="w-3.5 h-3.5" />
                     </TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent>Grid View</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="list" data-testid="deals-view-list-btn">
-                      <List className="w-4 h-4" />
+                    <TabsTrigger value="list" className="h-7 px-2" data-testid="deals-view-list-btn">
+                      <List className="w-3.5 h-3.5" />
                     </TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent>List View</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="kanban" data-testid="deals-view-kanban-btn">
-                      <Kanban className="w-4 h-4" />
+                    <TabsTrigger value="kanban" className="h-7 px-2" data-testid="deals-view-kanban-btn">
+                      <Kanban className="w-3.5 h-3.5" />
                     </TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent>Kanban Board</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="timeline" data-testid="deals-view-timeline-btn">
-                      <CalendarDays className="w-4 h-4" />
+                    <TabsTrigger value="timeline" className="h-7 px-2" data-testid="deals-view-timeline-btn">
+                      <CalendarDays className="w-3.5 h-3.5" />
                     </TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent>Timeline View</TooltipContent>
@@ -243,7 +242,6 @@ export const DealFiltersBar = memo(function DealFiltersBar({
             </Tabs>
           </TooltipProvider>
         </div>
-      </CardContent>
-    </Card>
+      </div>
   );
 });

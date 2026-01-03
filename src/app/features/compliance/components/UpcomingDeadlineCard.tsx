@@ -8,7 +8,6 @@ import { getItemTypeColor, getItemTypeLabel } from '../lib';
 import {
   getUrgencyInfo as getUrgencyInfoBase,
   getTimeDisplay,
-  type UrgencyLevel,
 } from '@/lib/utils/urgency';
 
 interface UpcomingDeadlineCardProps {
@@ -31,17 +30,6 @@ function getUrgencyInfo(dateStr: string) {
   return { ...urgency, level };
 }
 
-function getUrgencyBorderClass(level: 'critical' | 'warning' | 'normal'): string {
-  switch (level) {
-    case 'critical':
-      return 'border-l-4 border-l-red-500';
-    case 'warning':
-      return 'border-l-4 border-l-amber-500';
-    case 'normal':
-      return 'border-l-4 border-l-zinc-200';
-  }
-}
-
 export const UpcomingDeadlineCard = memo(function UpcomingDeadlineCard({
   item,
   index = 0
@@ -52,76 +40,68 @@ export const UpcomingDeadlineCard = memo(function UpcomingDeadlineCard({
   const isCritical = urgency.level === 'critical';
   const isWarning = urgency.level === 'warning';
 
+  const dateFormatted = new Date(item.date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+
   return (
     <div
       data-testid={`deadline-card-${item.id}`}
       className={cn(
-        'flex items-center justify-between py-3 pl-3 pr-2 first:pt-0 last:pb-0',
-        'animate-in fade-in slide-in-from-left-2',
-        'rounded-r-md transition-all',
-        getUrgencyBorderClass(urgency.level),
-        isCritical && 'bg-red-50/50 animate-pulse-urgent',
+        'flex items-center gap-3 py-2 px-2 rounded-md transition-all hover:bg-zinc-50',
+        'animate-in fade-in',
+        isCritical && 'bg-red-50/50',
         isWarning && 'bg-amber-50/30'
       )}
-      style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'both' }}
+      style={{ animationDelay: `${index * 20}ms`, animationFillMode: 'both' }}
     >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div
-          className={cn(
-            'flex flex-col items-center w-12 py-1 px-2 rounded text-center transition-colors',
-            isCritical
-              ? 'bg-red-100 hover:bg-red-200'
-              : isWarning
-                ? 'bg-amber-100 hover:bg-amber-200'
-                : 'bg-zinc-100 hover:bg-zinc-200'
-          )}
-          data-testid={`deadline-date-${item.id}`}
-        >
-          <span className={cn(
-            'text-xs',
-            isCritical ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-zinc-500'
-          )}>
-            {new Date(item.date).toLocaleDateString('en-US', { month: 'short' })}
-          </span>
-          <span className={cn(
-            'text-lg font-bold',
-            isCritical ? 'text-red-700' : isWarning ? 'text-amber-700' : 'text-zinc-900'
-          )}>
-            {new Date(item.date).getDate()}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <p
-              className={cn(
-                'text-sm font-medium truncate',
-                isCritical ? 'text-red-900' : 'text-zinc-900'
-              )}
-              data-testid={`deadline-title-${item.id}`}
-            >
-              {item.title}
-            </p>
-            <Badge
-              variant="secondary"
-              className={cn(getItemTypeColor(item.type), 'shrink-0')}
-              data-testid={`deadline-type-badge-${item.id}`}
-            >
-              {getItemTypeLabel(item.type)}
-            </Badge>
-          </div>
-          <p
-            className="text-sm text-zinc-500 truncate"
-            data-testid={`deadline-facility-${item.id}`}
-          >
-            {item.facility_name}
-          </p>
-        </div>
-      </div>
+      {/* Urgency indicator dot */}
+      <div
+        className={cn(
+          'w-2 h-2 rounded-full flex-shrink-0',
+          isCritical ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-zinc-300'
+        )}
+      />
+
+      {/* Date */}
+      <span
+        className={cn(
+          'text-xs font-medium w-14 flex-shrink-0',
+          isCritical ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-zinc-500'
+        )}
+        data-testid={`deadline-date-${item.id}`}
+      >
+        {dateFormatted}
+      </span>
+
+      {/* Title */}
+      <span
+        className={cn(
+          'text-sm flex-1 truncate',
+          isCritical ? 'text-red-900 font-medium' : 'text-zinc-900'
+        )}
+        data-testid={`deadline-title-${item.id}`}
+        title={item.title}
+      >
+        {item.title}
+      </span>
+
+      {/* Type badge */}
+      <Badge
+        variant="secondary"
+        className={cn('text-[10px] px-1.5 py-0 h-5 flex-shrink-0', getItemTypeColor(item.type))}
+        data-testid={`deadline-type-badge-${item.id}`}
+      >
+        {getItemTypeLabel(item.type)}
+      </Badge>
+
+      {/* Time until */}
       <Badge
         variant={isCritical ? 'destructive' : isWarning ? 'warning' : 'secondary'}
         className={cn(
-          'shrink-0 ml-2',
-          isCritical && 'bg-red-600 hover:bg-red-700'
+          'text-[10px] px-1.5 py-0 h-5 flex-shrink-0',
+          isCritical && 'bg-red-600'
         )}
         data-testid={`deadline-urgency-badge-${item.id}`}
       >

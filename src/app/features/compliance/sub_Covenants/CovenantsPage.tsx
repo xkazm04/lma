@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BarChart3, Upload, History, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageContainer } from '@/components/layout';
 import { ComplianceFiltersBar } from '../components';
 import { mockCovenants, useFilterPersistence, FILTER_PRESETS, DEFAULT_AT_RISK_HEADROOM_THRESHOLD } from '../lib';
 import type { Covenant, CovenantTestResult } from '../lib/types';
@@ -201,110 +202,110 @@ function CovenantsPageContent() {
   }, []);
 
   return (
-    <div className="space-y-6 animate-in fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 text-sm text-zinc-500 mb-1">
-            <Link href="/compliance" className="hover:text-zinc-900 transition-colors">
-              Compliance
-            </Link>
-            <span>/</span>
-            <span className="text-zinc-900">Covenants</span>
+    <PageContainer>
+      <div className="space-y-4 animate-in fade-in">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm text-zinc-500 mb-1">
+              <Link href="/compliance" className="hover:text-zinc-900 transition-colors">
+                Compliance
+              </Link>
+              <span>/</span>
+              <span className="text-zinc-900">Covenants</span>
+            </div>
+            <h1 className="text-2xl font-bold text-zinc-900">Covenant Tracking</h1>
+            <p className="text-zinc-500 text-sm">Monitor covenant tests and headroom across all facilities</p>
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900">Covenant Tracking</h1>
-          <p className="text-zinc-500">Monitor covenant tests and headroom across all facilities</p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+              data-testid="toggle-history-btn"
+            >
+              <History className="w-4 h-4 mr-1" />
+              {showHistory ? 'Hide' : 'History'}
+            </Button>
+            <Button size="sm" onClick={() => setIsImportDialogOpen(true)} data-testid="bulk-import-btn">
+              <Upload className="w-4 h-4 mr-1" />
+              Import
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowHistory(!showHistory)}
-            data-testid="toggle-history-btn"
+
+        {showHistory && (
+          <div className="animate-in fade-in slide-in-from-top-2">
+            <ImportHistoryPanel />
+          </div>
+        )}
+
+        {/* Import success notification */}
+        {lastImportResult && (
+          <div
+            className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg animate-in fade-in slide-in-from-top-2"
+            data-testid="import-success-notification"
           >
-            <History className="w-4 h-4 mr-2" />
-            {showHistory ? 'Hide History' : 'Import History'}
-          </Button>
-          <Button onClick={() => setIsImportDialogOpen(true)} data-testid="bulk-import-btn">
-            <Upload className="w-4 h-4 mr-2" />
-            Bulk Import
-          </Button>
-        </div>
+            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-emerald-700">
+                {lastImportResult.count} covenant test{lastImportResult.count !== 1 ? 's' : ''} imported successfully.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 h-7 text-xs"
+              onClick={() => setLastImportResult(null)}
+              data-testid="dismiss-import-notification-btn"
+            >
+              Dismiss
+            </Button>
+          </div>
+        )}
+
+        <CovenantStatsBar covenants={covenants} />
+
+        <ComplianceFiltersBar
+          searchQuery={filters.search}
+          onSearchChange={(value) => setFilter('search', value)}
+          statusFilter={filters.status}
+          onStatusChange={(value) => setFilter('status', value)}
+          typeFilter={filters.type}
+          onTypeChange={(value) => setFilter('type', value)}
+          covenantStatusMode={true}
+          showPresets={true}
+          showActiveChips={true}
+          presets={COVENANT_PRESETS}
+          onApplyPreset={applyPreset}
+          isPresetActive={isPresetActive}
+          activeFilters={activeFilters}
+          onRemoveFilter={clearFilter}
+          onClearAll={clearAllFilters}
+        />
+
+        {filteredCovenants.length > 0 ? (
+          <div className="space-y-3">
+            {filteredCovenants.map((covenant, index) => (
+              <CovenantCard key={covenant.id} covenant={covenant} index={index} />
+            ))}
+          </div>
+        ) : (
+          <Card className="py-12 animate-in fade-in">
+            <CardContent className="text-center">
+              <BarChart3 className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
+              <p className="text-zinc-500">No covenants found matching your filters.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <BulkImportDialog
+          open={isImportDialogOpen}
+          onOpenChange={setIsImportDialogOpen}
+          existingCovenants={covenants}
+          onImportComplete={handleImportComplete}
+        />
       </div>
-
-      {showHistory && (
-        <div className="animate-in fade-in slide-in-from-top-2">
-          <ImportHistoryPanel />
-        </div>
-      )}
-
-      {/* Import success notification */}
-      {lastImportResult && (
-        <div
-          className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg animate-in fade-in slide-in-from-top-2"
-          data-testid="import-success-notification"
-        >
-          <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-emerald-800">
-              Import completed successfully
-            </p>
-            <p className="text-sm text-emerald-600">
-              {lastImportResult.count} covenant test{lastImportResult.count !== 1 ? 's' : ''} imported and updated.
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100"
-            onClick={() => setLastImportResult(null)}
-            data-testid="dismiss-import-notification-btn"
-          >
-            Dismiss
-          </Button>
-        </div>
-      )}
-
-      <CovenantStatsBar covenants={covenants} />
-
-      <ComplianceFiltersBar
-        searchQuery={filters.search}
-        onSearchChange={(value) => setFilter('search', value)}
-        statusFilter={filters.status}
-        onStatusChange={(value) => setFilter('status', value)}
-        typeFilter={filters.type}
-        onTypeChange={(value) => setFilter('type', value)}
-        covenantStatusMode={true}
-        showPresets={true}
-        showActiveChips={true}
-        presets={COVENANT_PRESETS}
-        onApplyPreset={applyPreset}
-        isPresetActive={isPresetActive}
-        activeFilters={activeFilters}
-        onRemoveFilter={clearFilter}
-        onClearAll={clearAllFilters}
-      />
-
-      {filteredCovenants.length > 0 ? (
-        <div className="space-y-4">
-          {filteredCovenants.map((covenant, index) => (
-            <CovenantCard key={covenant.id} covenant={covenant} index={index} />
-          ))}
-        </div>
-      ) : (
-        <Card className="py-12 animate-in fade-in">
-          <CardContent className="text-center">
-            <BarChart3 className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
-            <p className="text-zinc-500">No covenants found matching your filters.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      <BulkImportDialog
-        open={isImportDialogOpen}
-        onOpenChange={setIsImportDialogOpen}
-        existingCovenants={covenants}
-        onImportComplete={handleImportComplete}
-      />
-    </div>
+    </PageContainer>
   );
 }
 

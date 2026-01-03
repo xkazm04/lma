@@ -26,6 +26,7 @@ export interface DashboardStat {
   change: string;
   trend: 'up' | 'down' | 'neutral';
   icon: React.ComponentType<{ className?: string }>;
+  sparklineData?: number[];
 }
 
 export interface ActivityItem {
@@ -179,6 +180,7 @@ export const stats: DashboardStat[] = [
     change: '+3 this month',
     trend: 'up',
     icon: FileText,
+    sparklineData: [18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 24, 24],
   },
   {
     label: 'Documents Processed',
@@ -186,6 +188,7 @@ export const stats: DashboardStat[] = [
     change: '+28 this month',
     trend: 'up',
     icon: Upload,
+    sparklineData: [95, 102, 108, 115, 122, 128, 135, 140, 145, 150, 154, 156],
   },
   {
     label: 'Upcoming Deadlines',
@@ -193,6 +196,7 @@ export const stats: DashboardStat[] = [
     change: 'Next 30 days',
     trend: 'neutral',
     icon: Calendar,
+    sparklineData: [6, 7, 8, 9, 8, 7, 8, 9, 10, 9, 8, 8],
   },
   {
     label: 'Open Negotiations',
@@ -200,6 +204,7 @@ export const stats: DashboardStat[] = [
     change: '2 awaiting response',
     trend: 'neutral',
     icon: Handshake,
+    sparklineData: [4, 5, 4, 3, 4, 5, 4, 3, 3, 4, 3, 3],
   },
   {
     label: 'ESG At Risk',
@@ -207,6 +212,7 @@ export const stats: DashboardStat[] = [
     change: 'Action required',
     trend: 'down',
     icon: AlertTriangle,
+    sparklineData: [0, 0, 1, 1, 1, 2, 1, 2, 2, 3, 2, 2],
   },
 ];
 

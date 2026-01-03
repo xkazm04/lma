@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Shield, ArrowLeft, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageContainer } from '@/components/layout';
+import { DemoCard } from '@/lib/demo-guide';
 import {
   RiskStatsCards,
   RiskFiltersBar,
@@ -172,7 +173,9 @@ export function RiskDashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <RiskStatsCards stats={stats} />
+      <DemoCard sectionId="risk-summary" fullWidth>
+        <RiskStatsCards stats={stats} />
+      </DemoCard>
 
       {/* Filters Bar */}
       <RiskFiltersBar
@@ -208,41 +211,43 @@ export function RiskDashboardPage() {
         </div>
 
         {/* Main Content - Alert List */}
-        <div className="lg:col-span-3">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-zinc-900">
-              Risk Alerts
-              <span className="ml-2 text-sm font-normal text-zinc-500">
-                ({filteredAlerts.length} of {alerts.length})
-              </span>
-            </h2>
-            {(severityFilter !== 'all' ||
-              categoryFilter !== 'all' ||
-              statusFilter !== 'all' ||
-              searchQuery) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSeverityFilter('all');
-                  setCategoryFilter('all');
-                  setStatusFilter('all');
-                  setSearchQuery('');
-                }}
-                className="text-xs text-zinc-500"
-                data-testid="risk-clear-filters-btn"
-              >
-                Clear filters
-              </Button>
-            )}
-          </div>
+        <DemoCard sectionId="risk-details" className="lg:col-span-3">
+          <div className="bg-white rounded-lg border border-zinc-200 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-zinc-900">
+                Risk Alerts
+                <span className="ml-2 text-sm font-normal text-zinc-500">
+                  ({filteredAlerts.length} of {alerts.length})
+                </span>
+              </h2>
+              {(severityFilter !== 'all' ||
+                categoryFilter !== 'all' ||
+                statusFilter !== 'all' ||
+                searchQuery) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSeverityFilter('all');
+                    setCategoryFilter('all');
+                    setStatusFilter('all');
+                    setSearchQuery('');
+                  }}
+                  className="text-xs text-zinc-500"
+                  data-testid="risk-clear-filters-btn"
+                >
+                  Clear filters
+                </Button>
+              )}
+            </div>
 
-          <RiskAlertsList
-            alerts={filteredAlerts}
-            onStatusChange={handleStatusChange}
-            onViewDocument={handleViewDocument}
-          />
-        </div>
+            <RiskAlertsList
+              alerts={filteredAlerts}
+              onStatusChange={handleStatusChange}
+              onViewDocument={handleViewDocument}
+            />
+          </div>
+        </DemoCard>
       </div>
       </div>
     </PageContainer>

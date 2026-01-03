@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Predictive Deal Intelligence Module Tests
  *

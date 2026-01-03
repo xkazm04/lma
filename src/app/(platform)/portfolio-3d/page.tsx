@@ -89,9 +89,6 @@ export default function Portfolio3DPage() {
                 <li>
                   <strong>Terrain height</strong> represents portfolio health in that region
                 </li>
-                <li>
-                  <strong>VR Mode</strong> available for Apple Vision Pro and Meta Quest headsets
-                </li>
               </ul>
             </div>
           </div>

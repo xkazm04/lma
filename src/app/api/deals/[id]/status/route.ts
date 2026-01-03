@@ -3,6 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 import { updateDealStatusSchema } from '@/lib/validations';
 import type { ApiResponse, Deal } from '@/types';
 
+// Type for partial deal data from queries
+interface DealStatusQuery {
+  status: string;
+}
+
 // PUT /api/deals/[id]/status - Update deal status
 export async function PUT(
   request: NextRequest,
@@ -42,11 +47,11 @@ export async function PUT(
     // Get current deal
     const { data: currentDeal, error: fetchError } = await supabase
       .from('deals')
-      .select('*')
+      .select('status')
       .eq('id', id)
-      .single();
+      .single() as { data: DealStatusQuery | null; error: Error | null };
 
-    if (fetchError) {
+    if (fetchError || !currentDeal) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -78,24 +83,24 @@ export async function PUT(
     }
 
     // Update the deal status
-    const { data: deal, error: updateError } = await supabase
-      .from('deals')
+    const { data: deal, error: updateError } = await (supabase
+      .from('deals') as ReturnType<typeof supabase.from>)
       .update({
         status: parsed.data.status,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
       .select()
-      .single();
+      .single() as unknown as { data: Deal | null; error: Error | null };
 
-    if (updateError) {
+    if (updateError || !deal) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
-          code: 'DB_ERROR',
-          message: updateError.message,
+          code: updateError ? 'DB_ERROR' : 'NOT_FOUND',
+          message: updateError?.message ?? 'Deal not found',
         },
-      }, { status: 500 });
+      }, { status: updateError ? 500 : 404 });
     }
 
     // Get participant info for actor_party
@@ -104,11 +109,11 @@ export async function PUT(
       .select('party_name')
       .eq('deal_id', id)
       .eq('user_id', user.id)
-      .single();
+      .single() as { data: { party_name?: string } | null };
 
     // Log activity
-    await supabase
-      .from('deal_activities')
+    await (supabase
+      .from('deal_activities') as ReturnType<typeof supabase.from>)
       .insert({
         deal_id: id,
         activity_type: 'status_changed',

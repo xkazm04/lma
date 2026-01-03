@@ -86,29 +86,29 @@ export const GroupedDeadlinesList = memo(function GroupedDeadlinesList({
 
   return (
     <div
-      className="space-y-0.5 max-h-[400px] overflow-y-auto"
+      className="max-h-[350px] overflow-y-auto -mx-2"
       data-testid="grouped-deadlines-list"
     >
       {groups.map((group) => (
-        <div key={group.date} className="relative mb-2" data-testid={`deadline-group-${group.date}`}>
+        <div key={group.date} className="mb-1" data-testid={`deadline-group-${group.date}`}>
           <div
             className={cn(
-              'sticky top-0 z-10 py-1 px-2 -mx-2 text-xs font-semibold uppercase tracking-wider',
-              'backdrop-blur-sm',
+              'sticky top-0 z-10 py-1 px-3 text-[10px] font-semibold uppercase tracking-wider',
+              'backdrop-blur-sm flex items-center gap-2',
               group.isUrgent
-                ? 'bg-red-100/90 text-red-700 border-b border-red-200'
+                ? 'bg-red-100/95 text-red-700'
                 : group.isWarning
-                  ? 'bg-amber-100/90 text-amber-700 border-b border-amber-200'
-                  : 'bg-zinc-100/90 text-zinc-600 border-b border-zinc-200'
+                  ? 'bg-amber-100/95 text-amber-700'
+                  : 'bg-zinc-100/95 text-zinc-500'
             )}
             data-testid={`deadline-group-header-${group.date}`}
           >
             <span>{group.label}</span>
-            <span className="ml-2 font-normal">
-              ({group.items.length})
+            <span className="text-[9px] font-normal opacity-70">
+              {group.items.length}
             </span>
           </div>
-          <div className="divide-y divide-zinc-100">
+          <div className="px-1">
             {group.items.map((item) => {
               const currentIndex = itemIndex++;
               return (

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Brain,
   Activity,
@@ -24,9 +23,7 @@ interface StatItemProps {
   label: string;
   value: string | number;
   subValue?: string;
-  iconBg: string;
   iconColor: string;
-  trend?: 'up' | 'down' | 'neutral';
   highlight?: boolean;
 }
 
@@ -35,26 +32,25 @@ const StatItem = memo(function StatItem({
   label,
   value,
   subValue,
-  iconBg,
   iconColor,
   highlight,
 }: StatItemProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-3 p-3 rounded-lg transition-colors',
-        highlight && 'bg-red-50 border border-red-200'
+        'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
+        highlight ? 'bg-red-50 border border-red-200' : 'bg-zinc-50'
       )}
       data-testid={`stat-${label.toLowerCase().replace(/\s+/g, '-')}`}
     >
-      <div className={cn('p-2 rounded-lg', iconBg)}>
-        <Icon className={cn('w-5 h-5', iconColor)} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-zinc-500 truncate">{label}</p>
-        <p className="text-lg font-bold text-zinc-900">{value}</p>
+      <Icon className={cn('w-4 h-4 flex-shrink-0', iconColor)} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-sm font-bold text-zinc-900">{value}</span>
+          <span className="text-[10px] text-zinc-500 truncate">{label}</span>
+        </div>
         {subValue && (
-          <p className="text-xs text-zinc-500">{subValue}</p>
+          <p className="text-[10px] text-zinc-400 truncate">{subValue}</p>
         )}
       </div>
     </div>
@@ -69,75 +65,69 @@ export const AutopilotStatsBar = memo(function AutopilotStatsBar({
     stats.predictions_by_risk_level.high;
 
   return (
-    <Card data-testid="autopilot-stats-bar">
-      <CardContent className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          <StatItem
-            icon={Brain}
-            label="Active Predictions"
-            value={stats.total_predictions_active}
-            iconBg="bg-purple-100"
-            iconColor="text-purple-600"
-          />
-          <StatItem
-            icon={AlertTriangle}
-            label="High/Critical Risk"
-            value={criticalCount}
-            highlight={criticalCount > 0}
-            iconBg="bg-red-100"
-            iconColor="text-red-600"
-          />
-          <StatItem
-            icon={TrendingDown}
-            label="Breaches Projected (12m)"
-            value={stats.projected_breaches_12m}
-            subValue={`${stats.projected_breaches_6m} in 6m`}
-            iconBg="bg-orange-100"
-            iconColor="text-orange-600"
-          />
-          <StatItem
-            icon={Activity}
-            label="Signals Processed"
-            value={stats.total_signals_processed.toLocaleString()}
-            subValue={`+${stats.new_signals_24h} today`}
-            iconBg="bg-blue-100"
-            iconColor="text-blue-600"
-          />
-          <StatItem
-            icon={Shield}
-            label="Active Remediations"
-            value={stats.active_remediations}
-            subValue={`${stats.remediation_success_rate}% success`}
-            iconBg="bg-green-100"
-            iconColor="text-green-600"
-          />
-          <StatItem
-            icon={Bell}
-            label="Notifications (24h)"
-            value={stats.notifications_sent_24h}
-            subValue={`${stats.notifications_pending} pending`}
-            iconBg="bg-amber-100"
-            iconColor="text-amber-600"
-          />
-          <StatItem
-            icon={Target}
-            label="Model Accuracy (6m)"
-            value={`${stats.prediction_accuracy_6m}%`}
-            subValue={`${stats.prediction_accuracy_12m}% at 12m`}
-            iconBg="bg-indigo-100"
-            iconColor="text-indigo-600"
-          />
-          <StatItem
-            icon={Zap}
-            label="Data Coverage"
-            value={`${stats.data_coverage_percentage}%`}
-            subValue={`${stats.covenants_monitored} covenants`}
-            iconBg="bg-cyan-100"
-            iconColor="text-cyan-600"
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-2" data-testid="autopilot-stats-bar">
+      {/* Row 1: Primary stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <StatItem
+          icon={Brain}
+          label="Predictions"
+          value={stats.total_predictions_active}
+          iconColor="text-purple-600"
+        />
+        <StatItem
+          icon={AlertTriangle}
+          label="High/Critical"
+          value={criticalCount}
+          highlight={criticalCount > 0}
+          iconColor="text-red-600"
+        />
+        <StatItem
+          icon={TrendingDown}
+          label="Breaches (12m)"
+          value={stats.projected_breaches_12m}
+          subValue={`${stats.projected_breaches_6m} in 6m`}
+          iconColor="text-orange-600"
+        />
+        <StatItem
+          icon={Activity}
+          label="Signals"
+          value={stats.total_signals_processed.toLocaleString()}
+          subValue={`+${stats.new_signals_24h} today`}
+          iconColor="text-blue-600"
+        />
+      </div>
+      {/* Row 2: Secondary stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <StatItem
+          icon={Shield}
+          label="Remediations"
+          value={stats.active_remediations}
+          subValue={`${stats.remediation_success_rate}% success`}
+          iconColor="text-green-600"
+        />
+        <StatItem
+          icon={Bell}
+          label="Notifications"
+          value={stats.notifications_sent_24h}
+          subValue={`${stats.notifications_pending} pending`}
+          iconColor="text-amber-600"
+        />
+        <StatItem
+          icon={Target}
+          label="Accuracy"
+          value={`${stats.prediction_accuracy_6m}%`}
+          subValue={`${stats.prediction_accuracy_12m}% at 12m`}
+          iconColor="text-indigo-600"
+        />
+        <StatItem
+          icon={Zap}
+          label="Coverage"
+          value={`${stats.data_coverage_percentage}%`}
+          subValue={`${stats.covenants_monitored} covenants`}
+          iconColor="text-cyan-600"
+        />
+      </div>
+    </div>
   );
 });
 

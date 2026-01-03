@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { DemoCard } from '@/lib/demo-guide';
 import {
   ProgressSteps,
   StepBasics,
@@ -206,28 +207,30 @@ export function NewDealPage() {
 
       <ProgressSteps currentStep={currentStep} onStepClick={handleStepClick} />
 
-      <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
-        <CardContent className="pt-6">
-          {currentStep === 0 && (
-            <StepBasics formData={formData} onUpdate={updateForm} />
-          )}
-          {currentStep === 1 && (
-            <StepImportSource formData={formData} onUpdate={updateForm} />
-          )}
-          {currentStep === 2 && (
-            <StepParticipants
-              formData={formData}
-              onUpdate={updateForm}
-              onAddParticipant={addParticipant}
-              onRemoveParticipant={removeParticipant}
-              onUpdateParticipant={updateParticipant}
-            />
-          )}
-          {currentStep === 3 && (
-            <StepSettings formData={formData} onUpdate={updateForm} />
-          )}
-        </CardContent>
-      </Card>
+      <DemoCard sectionId="deal-wizard" fullWidth>
+        <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+          <CardContent className="pt-6">
+            {currentStep === 0 && (
+              <StepBasics formData={formData} onUpdate={updateForm} />
+            )}
+            {currentStep === 1 && (
+              <StepImportSource formData={formData} onUpdate={updateForm} />
+            )}
+            {currentStep === 2 && (
+              <StepParticipants
+                formData={formData}
+                onUpdate={updateForm}
+                onAddParticipant={addParticipant}
+                onRemoveParticipant={removeParticipant}
+                onUpdateParticipant={updateParticipant}
+              />
+            )}
+            {currentStep === 3 && (
+              <StepSettings formData={formData} onUpdate={updateForm} />
+            )}
+          </CardContent>
+        </Card>
+      </DemoCard>
 
       <div className="flex items-center justify-between animate-in fade-in duration-500 delay-300">
         <Button

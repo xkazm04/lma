@@ -28,6 +28,54 @@ export const dashboardStats: DashboardStats = {
   pending_waivers: 3,
 };
 
+// Key covenant trends for dashboard sparklines
+export interface CovenantTrendData {
+  title: string;
+  currentValue: number;
+  threshold: number;
+  thresholdType: 'min' | 'max';
+  data: Array<{ date: string; value: number }>;
+}
+
+export const keyCovenantTrends: CovenantTrendData[] = [
+  {
+    title: 'ABC Holdings Leverage',
+    currentValue: 3.2,
+    threshold: 4.0,
+    thresholdType: 'max',
+    data: [
+      { date: '2024-Q1', value: 2.8 },
+      { date: '2024-Q2', value: 3.1 },
+      { date: '2024-Q3', value: 3.0 },
+      { date: '2024-Q4', value: 3.2 },
+    ],
+  },
+  {
+    title: 'XYZ Corp Interest Coverage',
+    currentValue: 2.1,
+    threshold: 2.0,
+    thresholdType: 'min',
+    data: [
+      { date: '2024-Q1', value: 2.8 },
+      { date: '2024-Q2', value: 2.4 },
+      { date: '2024-Q3', value: 2.2 },
+      { date: '2024-Q4', value: 2.1 },
+    ],
+  },
+  {
+    title: 'Delta Manufacturing DSCR',
+    currentValue: 1.15,
+    threshold: 1.25,
+    thresholdType: 'min',
+    data: [
+      { date: '2024-Q1', value: 1.4 },
+      { date: '2024-Q2', value: 1.3 },
+      { date: '2024-Q3', value: 1.2 },
+      { date: '2024-Q4', value: 1.15 },
+    ],
+  },
+];
+
 export const upcomingItems: UpcomingItem[] = [
   {
     id: '1',

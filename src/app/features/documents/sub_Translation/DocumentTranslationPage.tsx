@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Sparkles, FileText, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { DemoCard } from '@/lib/demo-guide';
 import {
   ClauseTypeSelector,
   CovenantForm,
@@ -400,23 +401,25 @@ export function DocumentTranslationPage({ documentId }: DocumentTranslationPageP
           {/* Left Column - Input Form */}
           <div className="space-y-6">
             {/* Clause Type Selector */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-zinc-500" />
-                  Clause Type
-                </CardTitle>
-                <CardDescription>
-                  Select the type of clause you want to generate
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ClauseTypeSelector
-                  selected={selectedClauseType}
-                  onSelect={setSelectedClauseType}
-                />
-              </CardContent>
-            </Card>
+            <DemoCard sectionId="clause-input" fullWidth>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-zinc-500" />
+                    Clause Type
+                  </CardTitle>
+                  <CardDescription>
+                    Select the type of clause you want to generate
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ClauseTypeSelector
+                    selected={selectedClauseType}
+                    onSelect={setSelectedClauseType}
+                  />
+                </CardContent>
+              </Card>
+            </DemoCard>
 
             {/* Clause-Specific Form */}
             <Card>
@@ -475,14 +478,14 @@ export function DocumentTranslationPage({ documentId }: DocumentTranslationPageP
           </div>
 
           {/* Right Column - Preview */}
-          <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]">
+          <DemoCard sectionId="clause-preview" className="lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]">
             <TranslatedClausePreview
               clause={translatedClause}
               isLoading={isLoading}
               onExport={handleExport}
               onRegenerate={handleRegenerate}
             />
-          </div>
+          </DemoCard>
         </div>
       </div>
     </div>

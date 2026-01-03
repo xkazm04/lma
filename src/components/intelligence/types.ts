@@ -6,7 +6,7 @@ import type { LucideIcon } from 'lucide-react';
 // Domain & Core Types
 // ============================================
 
-export type Domain = 'documents' | 'deals' | 'compliance' | 'esg';
+export type Domain = 'documents' | 'deals' | 'compliance' | 'esg' | 'trading';
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
 

@@ -3,6 +3,12 @@ import { createClient } from '@/lib/supabase/server';
 import { updateParticipantSchema } from '@/lib/validations';
 import type { ApiResponse, DealParticipant } from '@/types';
 
+// Type for partial participant data returned from queries
+interface ParticipantRoleQuery {
+  deal_role: string;
+  party_name?: string;
+}
+
 // PUT /api/deals/[id]/participants/[participantId] - Update a participant
 export async function PUT(
   request: NextRequest,
@@ -46,7 +52,7 @@ export async function PUT(
       .eq('deal_id', dealId)
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .single();
+      .single() as { data: ParticipantRoleQuery | null };
 
     if (!currentParticipant || currentParticipant.deal_role !== 'deal_lead') {
       return NextResponse.json<ApiResponse<null>>({
@@ -58,23 +64,23 @@ export async function PUT(
       }, { status: 403 });
     }
 
-    // Update participant
-    const { data: participant, error: updateError } = await supabase
-      .from('deal_participants')
+    // Update participant (table not in generated Supabase types)
+    const { data: participant, error: updateError } = await (supabase
+      .from('deal_participants') as ReturnType<typeof supabase.from>)
       .update(parsed.data)
       .eq('id', participantId)
       .eq('deal_id', dealId)
       .select()
-      .single();
+      .single() as unknown as { data: DealParticipant | null; error: Error | null };
 
-    if (updateError) {
+    if (updateError || !participant) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
-          code: 'DB_ERROR',
-          message: updateError.message,
+          code: updateError ? 'DB_ERROR' : 'NOT_FOUND',
+          message: updateError?.message ?? 'Participant not found',
         },
-      }, { status: 500 });
+      }, { status: updateError ? 500 : 404 });
     }
 
     return NextResponse.json<ApiResponse<DealParticipant>>({
@@ -120,7 +126,7 @@ export async function DELETE(
       .eq('deal_id', dealId)
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .single();
+      .single() as { data: ParticipantRoleQuery | null };
 
     if (!currentParticipant || currentParticipant.deal_role !== 'deal_lead') {
       return NextResponse.json<ApiResponse<null>>({
@@ -138,7 +144,7 @@ export async function DELETE(
       .select('party_name, deal_role')
       .eq('id', participantId)
       .eq('deal_id', dealId)
-      .single();
+      .single() as { data: ParticipantRoleQuery | null };
 
     if (!targetParticipant) {
       return NextResponse.json<ApiResponse<null>>({
@@ -152,14 +158,14 @@ export async function DELETE(
 
     // Don't allow removing the last deal lead
     if (targetParticipant.deal_role === 'deal_lead') {
-      const { count } = await supabase
-        .from('deal_participants')
+      const { count } = await (supabase
+        .from('deal_participants') as ReturnType<typeof supabase.from>)
         .select('*', { count: 'exact', head: true })
         .eq('deal_id', dealId)
         .eq('deal_role', 'deal_lead')
-        .eq('status', 'active');
+        .eq('status', 'active') as unknown as { count: number | null };
 
-      if (count <= 1) {
+      if ((count ?? 0) <= 1) {
         return NextResponse.json<ApiResponse<null>>({
           success: false,
           error: {
@@ -171,11 +177,11 @@ export async function DELETE(
     }
 
     // Soft delete - mark as removed
-    const { error: updateError } = await supabase
-      .from('deal_participants')
+    const { error: updateError } = await (supabase
+      .from('deal_participants') as ReturnType<typeof supabase.from>)
       .update({ status: 'removed' })
       .eq('id', participantId)
-      .eq('deal_id', dealId);
+      .eq('deal_id', dealId) as unknown as { error: Error | null };
 
     if (updateError) {
       return NextResponse.json<ApiResponse<null>>({
@@ -188,8 +194,8 @@ export async function DELETE(
     }
 
     // Log activity
-    await supabase
-      .from('deal_activities')
+    await (supabase
+      .from('deal_activities') as ReturnType<typeof supabase.from>)
       .insert({
         deal_id: dealId,
         activity_type: 'participant_removed',

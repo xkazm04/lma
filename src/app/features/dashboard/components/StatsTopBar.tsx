@@ -12,6 +12,7 @@ export interface StatItem {
     trend?: TrendDirection;
     icon?: React.ReactNode;
     onClick?: () => void;
+    sparklineData?: number[];
 }
 
 interface StatsTopBarProps {
@@ -30,7 +31,7 @@ export const StatsTopBar = memo(function StatsTopBar({
     return (
         <div
             className={cn(
-                'flex flex-wrap items-stretch border-b border-zinc-200 bg-white',
+                'flex flex-wrap items-stretch bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden',
                 className
             )}
             data-testid="stats-top-bar"
@@ -46,6 +47,7 @@ export const StatsTopBar = memo(function StatsTopBar({
                         icon={stat.icon}
                         onClick={stat.onClick}
                         index={index}
+                        sparklineData={stat.sparklineData}
                         testId={`stat-block-${stat.label ? stat.label.toLowerCase().replace(/\s+/g, '-') : `index-${index}`}`}
                     />
                     {index < stats.length - 1 && (

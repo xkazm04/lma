@@ -6,6 +6,7 @@ import { ArrowLeft, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DocumentUploadZone } from '@/components/documents';
+import { DemoCard } from '@/lib/demo-guide';
 
 const supportedDocTypes = [
   { type: 'Facility Agreement', desc: 'Primary loan documents' },
@@ -52,39 +53,43 @@ export function DocumentUploadPage() {
       </div>
 
       {/* Upload Card */}
-      <Card className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-        <CardHeader>
-          <CardTitle>Select Files</CardTitle>
-          <CardDescription>
-            Upload PDF or Word documents (DOCX, DOC). Files will be automatically processed to
-            extract structured loan data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DocumentUploadZone onUploadComplete={handleUploadComplete} />
-        </CardContent>
-      </Card>
+      <DemoCard sectionId="upload-zone" fullWidth>
+        <Card className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <CardHeader>
+            <CardTitle>Select Files</CardTitle>
+            <CardDescription>
+              Upload PDF or Word documents (DOCX, DOC). Files will be automatically processed to
+              extract structured loan data.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DocumentUploadZone onUploadComplete={handleUploadComplete} />
+          </CardContent>
+        </Card>
+      </DemoCard>
 
       {/* Help Section */}
-      <Card
-        className="bg-blue-50 border-blue-200 animate-in fade-in slide-in-from-bottom-4 duration-300"
-        style={{ animationDelay: '100ms', animationFillMode: 'both' }}
-      >
-        <CardContent className="py-4">
-          <div className="flex items-start gap-3">
-            <HelpCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-blue-900">What happens after upload?</p>
-              <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-                <li>Documents are securely stored and encrypted</li>
-                <li>AI extracts key terms: parties, dates, covenants, obligations</li>
-                <li>Low-confidence fields are flagged for your review</li>
-                <li>Extracted data is linked across all modules</li>
-              </ol>
+      <DemoCard sectionId="ai-processing" fullWidth>
+        <Card
+          className="bg-blue-50 border-blue-200 animate-in fade-in slide-in-from-bottom-4 duration-300"
+          style={{ animationDelay: '100ms', animationFillMode: 'both' }}
+        >
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <HelpCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-blue-900">What happens after upload?</p>
+                <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                  <li>Documents are securely stored and encrypted</li>
+                  <li>AI extracts key terms: parties, dates, covenants, obligations</li>
+                  <li>Low-confidence fields are flagged for your review</li>
+                  <li>Extracted data is linked across all modules</li>
+                </ol>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </DemoCard>
 
       {/* Supported Document Types */}
       <Card

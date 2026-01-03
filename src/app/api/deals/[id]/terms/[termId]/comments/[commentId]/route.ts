@@ -3,6 +3,17 @@ import { createClient } from '@/lib/supabase/server';
 import { updateCommentSchema } from '@/lib/validations';
 import type { ApiResponse, TermComment } from '@/types';
 
+// Type for comment query data
+interface CommentQuery {
+  author_id: string;
+}
+
+// Type for participant query data
+interface ParticipantQuery {
+  deal_role: string;
+  party_name?: string;
+}
+
 // PUT /api/deals/[id]/terms/[termId]/comments/[commentId] - Update a comment
 export async function PUT(
   request: NextRequest,
@@ -42,12 +53,12 @@ export async function PUT(
     // Get the comment
     const { data: comment, error: commentError } = await supabase
       .from('term_comments')
-      .select('*')
+      .select('author_id')
       .eq('id', commentId)
       .eq('term_id', termId)
-      .single();
+      .single() as { data: CommentQuery | null; error: Error | null };
 
-    if (commentError) {
+    if (commentError || !comment) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -64,7 +75,7 @@ export async function PUT(
       .eq('deal_id', dealId)
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .single();
+      .single() as { data: ParticipantQuery | null };
 
     if (!participant) {
       return NextResponse.json<ApiResponse<null>>({
@@ -108,27 +119,27 @@ export async function PUT(
     }
 
     // Update comment
-    const { data: updatedComment, error: updateError } = await supabase
-      .from('term_comments')
+    const { data: updatedComment, error: updateError } = await (supabase
+      .from('term_comments') as ReturnType<typeof supabase.from>)
       .update(updateData)
       .eq('id', commentId)
       .select()
-      .single();
+      .single() as unknown as { data: TermComment | null; error: Error | null };
 
-    if (updateError) {
+    if (updateError || !updatedComment) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
-          code: 'DB_ERROR',
-          message: updateError.message,
+          code: updateError ? 'DB_ERROR' : 'NOT_FOUND',
+          message: updateError?.message ?? 'Comment not found',
         },
-      }, { status: 500 });
+      }, { status: updateError ? 500 : 404 });
     }
 
     // Log activity if resolved
     if (parsed.data.is_resolved !== undefined) {
-      await supabase
-        .from('deal_activities')
+      await (supabase
+        .from('deal_activities') as ReturnType<typeof supabase.from>)
         .insert({
           deal_id: dealId,
           activity_type: parsed.data.is_resolved ? 'comment_resolved' : 'comment_reopened',
@@ -180,12 +191,12 @@ export async function DELETE(
     // Get the comment
     const { data: comment, error: commentError } = await supabase
       .from('term_comments')
-      .select('*')
+      .select('author_id')
       .eq('id', commentId)
       .eq('term_id', termId)
-      .single();
+      .single() as { data: CommentQuery | null; error: Error | null };
 
-    if (commentError) {
+    if (commentError || !comment) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: {
@@ -202,7 +213,7 @@ export async function DELETE(
       .eq('deal_id', dealId)
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .single();
+      .single() as { data: ParticipantQuery | null };
 
     if (!participant) {
       return NextResponse.json<ApiResponse<null>>({
@@ -226,16 +237,16 @@ export async function DELETE(
     }
 
     // Delete replies first
-    await supabase
-      .from('term_comments')
+    await (supabase
+      .from('term_comments') as ReturnType<typeof supabase.from>)
       .delete()
       .eq('parent_comment_id', commentId);
 
     // Delete the comment
-    const { error: deleteError } = await supabase
-      .from('term_comments')
+    const { error: deleteError } = await (supabase
+      .from('term_comments') as ReturnType<typeof supabase.from>)
       .delete()
-      .eq('id', commentId);
+      .eq('id', commentId) as unknown as { error: Error | null };
 
     if (deleteError) {
       return NextResponse.json<ApiResponse<null>>({

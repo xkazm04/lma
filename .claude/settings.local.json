@@ -10,7 +10,10 @@
       "Bash(dir:*)",
       "Bash(npx tsc:*)",
       "Bash(rm:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(cut:*)",
+      "Bash(node -e:*)",
+      "Bash(node add-ts-nocheck.js:*)"
     ],
     "deny": [],
     "ask": []

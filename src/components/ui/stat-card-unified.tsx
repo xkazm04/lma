@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendIcon, type TrendDirection } from '@/components/ui/trend-icon';
+import { Sparkline } from '@/components/ui/sparkline';
 import { cn } from '@/lib/utils';
 
 export type StatCardVariant = 'full' | 'compact' | 'inline';
@@ -44,6 +45,8 @@ export interface StatCardUnifiedProps {
   };
   /** Whether this card is highlighted/primary */
   isPrimary?: boolean;
+  /** Optional sparkline data for mini trend visualization */
+  sparklineData?: number[];
 }
 
 // Helper to format change value
@@ -53,6 +56,23 @@ function formatChange(change: string | number | undefined): string | null {
     return `${change > 0 ? '+' : ''}${change}%`;
   }
   return change;
+}
+
+// Helper to check if something is a React component (function, forwardRef, or memo)
+function isReactComponent(
+  value: unknown
+): value is React.ComponentType<{ className?: string }> {
+  if (typeof value === 'function') return true;
+  // forwardRef and memo components are objects with $$typeof
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    '$$typeof' in value &&
+    typeof (value as { render?: unknown }).render === 'function'
+  ) {
+    return true;
+  }
+  return false;
 }
 
 // Helper to render icon
@@ -69,13 +89,13 @@ function renderIcon(
     lg: 'w-5 h-5',
   };
 
-  // Check if it's a component (function or class)
-  if (typeof icon === 'function') {
+  // Check if it's a component (function, forwardRef, or memo)
+  if (isReactComponent(icon)) {
     const IconComponent = icon as React.ComponentType<{ className?: string }>;
     return <IconComponent className={cn(sizeClasses[size], iconColorClass)} />;
   }
 
-  // It's already a ReactNode
+  // It's already a ReactNode (rendered element)
   return icon;
 }
 
@@ -196,6 +216,7 @@ const CompactStatCard = memo(function CompactStatCard({
   testId,
   className,
   colorClasses,
+  sparklineData,
 }: Omit<StatCardUnifiedProps, 'variant'>) {
   const isClickable = Boolean(onClick);
   const formattedChange = formatChange(change);
@@ -244,6 +265,21 @@ const CompactStatCard = memo(function CompactStatCard({
           <p className={cn('text-xs text-zinc-400 mt-0.5', colorClasses?.subValue)}>{subValue}</p>
         )}
       </div>
+
+      {/* Sparkline */}
+      {sparklineData && sparklineData.length > 0 && (
+        <div className="flex-shrink-0 ml-2">
+          <Sparkline
+            data={sparklineData}
+            width={56}
+            height={20}
+            strokeColor="auto"
+            fillColor="auto"
+            showEndDot={false}
+            smoothing={0.3}
+          />
+        </div>
+      )}
     </button>
   );
 });

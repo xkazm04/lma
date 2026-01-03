@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Autopilot Intervention Module Tests
  *

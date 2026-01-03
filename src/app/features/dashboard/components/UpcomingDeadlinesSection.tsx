@@ -82,12 +82,17 @@ export const UpcomingDeadlinesSection = memo(function UpcomingDeadlinesSection({
 }: UpcomingDeadlinesSectionProps) {
   return (
     <Card
-      className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+      className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-full"
       style={{ animationDelay: '100ms', animationFillMode: 'both' }}
     >
-      <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
-        <CardTitle className="text-base">Upcoming Deadlines</CardTitle>
-        <Button variant="ghost" size="sm" className="h-7 text-xs">
+      <CardHeader className="flex flex-row items-center justify-between py-2.5 px-3 border-b border-zinc-100">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-md bg-amber-50">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
+          </div>
+          <CardTitle className="text-sm font-medium">Upcoming Deadlines</CardTitle>
+        </div>
+        <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-zinc-500 hover:text-zinc-900">
           View all
         </Button>
       </CardHeader>
@@ -97,7 +102,7 @@ export const UpcomingDeadlinesSection = memo(function UpcomingDeadlinesSection({
           columns={columns}
           rowHeight="sm"
           showHeader={false}
-          maxHeight="280px"
+          maxHeight="260px"
           emptyMessage="No upcoming deadlines"
         />
       </CardContent>

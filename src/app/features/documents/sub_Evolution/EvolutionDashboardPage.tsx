@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/layout';
+import { DemoCard } from '@/lib/demo-guide';
 import {
   EvolutionStatsCards,
   MarketTrendCard,
@@ -197,7 +198,9 @@ export function EvolutionDashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      {stats && <EvolutionStatsCards stats={stats} />}
+      <DemoCard sectionId="evolution-stats" fullWidth>
+        {stats && <EvolutionStatsCards stats={stats} />}
+      </DemoCard>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -219,28 +222,30 @@ export function EvolutionDashboardPage() {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Left column - Recent Suggestions */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-zinc-900">Recent Suggestions</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setActiveTab('suggestions')}
-                  className="text-blue-600"
-                  data-testid="view-all-suggestions-btn"
-                >
-                  View all
-                </Button>
+            <DemoCard sectionId="amendment-suggestions" className="lg:col-span-2">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-zinc-900">Recent Suggestions</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setActiveTab('suggestions')}
+                    className="text-blue-600"
+                    data-testid="view-all-suggestions-btn"
+                  >
+                    View all
+                  </Button>
+                </div>
+                {suggestions.slice(0, 3).map((suggestion) => (
+                  <SuggestionCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    onUpdateStatus={handleUpdateStatus}
+                    onInitiateCommunication={handleInitiateCommunication}
+                  />
+                ))}
               </div>
-              {suggestions.slice(0, 3).map((suggestion) => (
-                <SuggestionCard
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  onUpdateStatus={handleUpdateStatus}
-                  onInitiateCommunication={handleInitiateCommunication}
-                />
-              ))}
-            </div>
+            </DemoCard>
 
             {/* Right column - Alerts & Market */}
             <div className="space-y-4">

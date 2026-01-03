@@ -9,9 +9,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   ArrowLeft,
   Brain,
-  Zap,
-  RefreshCw,
-  Settings,
   Filter,
   AlertTriangle,
   Activity,
@@ -19,6 +16,8 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PageContainer } from '@/components/layout';
+import { DemoCard } from '@/lib/demo-guide';
 import {
   AutopilotStatsBar,
   PredictionCard,
@@ -75,9 +74,9 @@ export const AutopilotPage = memo(function AutopilotPage() {
   };
 
   return (
-    <div className="space-y-4 animate-in fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <PageContainer>
+      <div className="space-y-4 animate-in fade-in">
+        {/* Header */}
         <div className="flex items-center gap-4">
           <Link href="/compliance">
             <Button
@@ -91,35 +90,19 @@ export const AutopilotPage = memo(function AutopilotPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
-              <Brain className="w-7 h-7 text-purple-600" />
+              <Brain className="w-6 h-6 text-purple-600" />
               Predictive Compliance Autopilot
             </h1>
-            <p className="text-zinc-500">
+            <p className="text-zinc-500 text-sm">
               AI-powered early warning system with multi-signal intelligence
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            className="hover:shadow-sm transition-all"
-            data-testid="run-analysis-btn"
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            Run Analysis
-          </Button>
-          <Button
-            variant="outline"
-            className="hover:shadow-sm transition-all"
-            data-testid="autopilot-settings-btn"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
 
-      {/* Stats Bar */}
-      <AutopilotStatsBar stats={mockAutopilotDashboardStats} />
+        {/* Stats Bar */}
+        <DemoCard sectionId="autopilot-stats" fullWidth>
+          <AutopilotStatsBar stats={mockAutopilotDashboardStats} />
+        </DemoCard>
 
       {/* Critical Alerts Banner */}
       {criticalPredictions.length > 0 && (
@@ -251,35 +234,37 @@ export const AutopilotPage = memo(function AutopilotPage() {
           </div>
 
           {/* Top Predictions */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Top Risk Predictions</CardTitle>
-                <CardDescription>
-                  Covenants requiring immediate attention
-                </CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setActiveTab('predictions')}
-                data-testid="view-all-predictions-btn"
-              >
-                View All
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {criticalPredictions.slice(0, 2).map((prediction) => (
-                  <PredictionCard
-                    key={prediction.id}
-                    prediction={prediction}
-                    onViewDetails={handleViewPrediction}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <DemoCard sectionId="predictions" fullWidth>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Top Risk Predictions</CardTitle>
+                  <CardDescription>
+                    Covenants requiring immediate attention
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('predictions')}
+                  data-testid="view-all-predictions-btn"
+                >
+                  View All
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {criticalPredictions.slice(0, 2).map((prediction) => (
+                    <PredictionCard
+                      key={prediction.id}
+                      prediction={prediction}
+                      onViewDetails={handleViewPrediction}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </DemoCard>
         </TabsContent>
 
         {/* Predictions Tab */}
@@ -395,8 +380,9 @@ export const AutopilotPage = memo(function AutopilotPage() {
             ))}
           </div>
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </PageContainer>
   );
 });
 

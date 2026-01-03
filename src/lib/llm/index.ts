@@ -5,7 +5,6 @@ export * from './negotiation';
 export * from './compliance';
 export * from './compliance-agent';
 export * from './trading';
-export * from './esg';
 export * from './document-generation';
 export * from './amendment';
 export * from './similarity';

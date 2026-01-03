@@ -17,7 +17,6 @@ import {
   ZapOff,
   Box,
   Square,
-  Glasses,
   ChevronDown,
   X,
   Info,
@@ -204,20 +203,6 @@ export function Portfolio3DVisualization({
             >
               <Square className="w-3.5 h-3.5" />
             </button>
-            {webglSupported && (
-              <button
-                onClick={() => setViewMode('xr')}
-                className={cn(
-                  'px-2 py-1 text-xs rounded-md transition-colors',
-                  viewMode === 'xr'
-                    ? 'bg-white text-zinc-900 shadow-sm'
-                    : 'text-zinc-600 hover:text-zinc-900'
-                )}
-                data-testid="view-mode-xr-btn"
-              >
-                <Glasses className="w-3.5 h-3.5" />
-              </button>
-            )}
           </div>
 
           {/* Settings toggle */}
@@ -267,7 +252,7 @@ export function Portfolio3DVisualization({
           )}
         >
           {/* 3D or 2D view */}
-          {(viewMode === '3d' || viewMode === 'xr') && webglSupported ? (
+          {viewMode === '3d' && webglSupported ? (
             <Suspense
               fallback={
                 <div className="flex items-center justify-center h-full">
@@ -283,7 +268,6 @@ export function Portfolio3DVisualization({
                 onNodeHover={handleNodeHover}
                 onLinkClick={onLinkClick}
                 onCameraChange={onCameraChange}
-                enableXR={viewMode === 'xr'}
               />
             </Suspense>
           ) : (
@@ -294,26 +278,6 @@ export function Portfolio3DVisualization({
               onNodeClick={handleNodeClick}
               onNodeHover={handleNodeHover}
             />
-          )}
-
-          {/* XR mode overlay */}
-          {viewMode === 'xr' && webglSupported && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-              <div className="text-center">
-                <Glasses className="w-12 h-12 text-white mx-auto mb-3" />
-                <p className="text-white text-lg font-medium">XR Mode</p>
-                <p className="text-zinc-400 text-sm mb-4">
-                  Put on your headset to explore the portfolio in VR
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setViewMode('3d')}
-                  className="text-white border-white hover:bg-white/20"
-                >
-                  Exit XR Mode
-                </Button>
-              </div>
-            </div>
           )}
 
           {/* Settings panel */}

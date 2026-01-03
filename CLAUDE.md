@@ -100,18 +100,38 @@ feature/
 #### API Response Helpers
 Use standardized response helpers from `@/lib/utils` in all API routes:
 ```typescript
-import { respondSuccess, respondNotFound, respondValidationError } from '@/lib/utils';
+import { respondSuccess, respondNotFound, respondValidationError, ErrorBuilder } from '@/lib/utils';
 
 // Success with data
 return respondSuccess(data);
 return respondSuccess(data, { status: 201 });
 return respondSuccess(items, { pagination: { page, pageSize, total, totalPages } });
 
-// Errors
+// Simple errors
 return respondUnauthorized();
 return respondNotFound('Document not found');
 return respondValidationError('Invalid request', parsed.error.flatten());
 return respondDatabaseError(error.message);
+
+// ErrorBuilder for rich error responses with context
+return ErrorBuilder.database(`Failed to fetch: ${error.message}`)
+  .withRequestId(requestId)
+  .withPath(path)
+  .withMethod('GET')
+  .withContext({ resourceId, dbErrorCode: error.code })
+  .build();
+```
+
+#### Request Validation with Zod
+Zod schemas are defined per module in `@/lib/validations/`:
+```typescript
+import { uploadDocumentSchema } from '@/lib/validations';
+
+const parsed = uploadDocumentSchema.safeParse(await request.json());
+if (!parsed.success) {
+  return respondValidationError('Invalid request', parsed.error.flatten());
+}
+const { filename, documentType } = parsed.data;
 ```
 
 #### LLM Integration

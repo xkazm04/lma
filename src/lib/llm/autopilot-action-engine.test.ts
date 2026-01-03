@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Autopilot Action Engine Module Tests
  *

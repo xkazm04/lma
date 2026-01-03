@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { DemoCard } from '@/lib/demo-guide';
 
 import {
   MarginDeltaChart,
@@ -104,9 +105,11 @@ export function TermIntelligenceDashboard() {
       </div>
 
       {/* Portfolio Performance Summary */}
-      <div className="animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
-        <PortfolioPerformanceCard performance={data.portfolioPerformance} />
-      </div>
+      <DemoCard sectionId="portfolio-performance" fullWidth>
+        <div className="animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
+          <PortfolioPerformanceCard performance={data.portfolioPerformance} />
+        </div>
+      </DemoCard>
 
       {/* Main Content Tabs */}
       <Tabs
@@ -174,12 +177,14 @@ export function TermIntelligenceDashboard() {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
             {/* Margin Delta Chart - Compact View */}
-            <MarginDeltaChart
-              marginDeltas={filteredMarginDeltas}
-              timeSeries={data.marginDeltaTimeSeries}
-              avgDelta={data.portfolioPerformance.avgMarginDelta}
-              marketAvgDelta={-0.08}
-            />
+            <DemoCard sectionId="margin-analysis">
+              <MarginDeltaChart
+                marginDeltas={filteredMarginDeltas}
+                timeSeries={data.marginDeltaTimeSeries}
+                avgDelta={data.portfolioPerformance.avgMarginDelta}
+                marketAvgDelta={-0.08}
+              />
+            </DemoCard>
 
             {/* Counterparty Relationships - Compact View */}
             <CounterpartyHeatmap

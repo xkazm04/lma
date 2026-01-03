@@ -10,6 +10,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DemoCard } from '@/lib/demo-guide';
 import {
   ComparisonCategorySection,
   ComparisonStats,
@@ -882,7 +883,9 @@ function DocumentComparePageContent() {
               )}
 
               {/* Summary Stats */}
-              <ComparisonStats result={result} />
+              <DemoCard sectionId="comparison-results" fullWidth>
+                <ComparisonStats result={result} />
+              </DemoCard>
 
           {/* AI Risk Analysis Loading State */}
           {isAnalyzingRisk && (
@@ -898,30 +901,32 @@ function DocumentComparePageContent() {
 
           {/* Compact Risk Summary (shown when risk analysis available) */}
           {riskAnalysis && !isAnalyzingRisk && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-zinc-500" />
-                  <span className="text-sm font-medium text-zinc-700">AI Risk Analysis</span>
+            <DemoCard sectionId="ai-risk-analysis" fullWidth>
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-zinc-500" />
+                    <span className="text-sm font-medium text-zinc-700">AI Risk Analysis</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowRiskDetails(!showRiskDetails)}
+                    className="text-sm"
+                    data-testid="toggle-risk-details-btn"
+                  >
+                    {showRiskDetails ? 'Hide Details' : 'Show Details'}
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowRiskDetails(!showRiskDetails)}
-                  className="text-sm"
-                  data-testid="toggle-risk-details-btn"
-                >
-                  {showRiskDetails ? 'Hide Details' : 'Show Details'}
-                </Button>
+                <CompactRiskSummary
+                  overallScore={riskAnalysis.summary.overallRiskScore}
+                  severity={riskAnalysis.summary.overallSeverity}
+                  direction={riskAnalysis.summary.overallDirection}
+                  highRiskCount={riskAnalysis.summary.highRiskCount}
+                  totalChanges={riskAnalysis.summary.totalChangesAnalyzed}
+                />
               </div>
-              <CompactRiskSummary
-                overallScore={riskAnalysis.summary.overallRiskScore}
-                severity={riskAnalysis.summary.overallSeverity}
-                direction={riskAnalysis.summary.overallDirection}
-                highRiskCount={riskAnalysis.summary.highRiskCount}
-                totalChanges={riskAnalysis.summary.totalChangesAnalyzed}
-              />
-            </div>
+            </DemoCard>
           )}
 
           {/* Full Risk Analysis (expandable) */}

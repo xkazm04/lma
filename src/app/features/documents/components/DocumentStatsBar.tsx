@@ -27,33 +27,33 @@ export const DocumentStatsBar = memo(function DocumentStatsBar({ documents }: Do
       {
         label: 'Total',
         value: counts.total,
-        icon: <FileText className="w-4 h-4 text-zinc-600" />,
+        icon: <FileText className="w-3.5 h-3.5 text-zinc-500" />,
       },
       {
         label: 'Completed',
         value: counts.completed,
-        icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+        icon: <CheckCircle className="w-3.5 h-3.5 text-green-500" />,
       },
       {
         label: 'Processing',
         value: counts.processing,
-        icon: <Loader2 className="w-4 h-4 text-blue-500" />,
+        icon: <Loader2 className="w-3.5 h-3.5 text-blue-500" />,
       },
       {
         label: 'Review',
         value: counts.review,
-        icon: <AlertTriangle className="w-4 h-4 text-orange-500" />,
+        icon: <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />,
       },
       {
         label: 'Failed',
         value: counts.failed,
-        icon: <Clock className="w-4 h-4 text-red-500" />,
+        icon: <Clock className="w-3.5 h-3.5 text-red-500" />,
       },
     ];
   }, [documents]);
 
   return (
-    <div className="animate-in fade-in slide-in-from-top-2 duration-300" data-testid="document-stats-bar">
+    <div data-testid="document-stats-bar">
       <CompactStatRow stats={stats} variant="bordered" animated />
     </div>
   );
