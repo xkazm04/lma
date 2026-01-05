@@ -283,7 +283,7 @@ export async function PUT(
 }
 
 // Helper to update checklist status based on items
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 async function updateChecklistStatus(supabase: TypedSupabaseClient, checklistId: string) {
   const { data: items } = await supabase
     .from('due_diligence_items')

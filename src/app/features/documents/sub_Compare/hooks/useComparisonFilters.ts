@@ -301,7 +301,7 @@ export function useComparisonFilters(options: UseComparisonFiltersOptions = {}) 
 
       // Count total changes and enrich all changes
       categories.forEach((category) => {
-        category.changes.forEach((change) => {
+        (category.changes ?? []).forEach((change) => {
           totalChangesCount++;
           const changeId = createChangeId(category.category, change.field);
           const enriched = enrichChangeWithLensData(change, changeId, providers);
@@ -353,7 +353,7 @@ export function useComparisonFilters(options: UseComparisonFiltersOptions = {}) 
       // Filter categories and changes in a single pass
       const filteredCategories = categories
         .map((category) => {
-          const filteredChanges = category.changes.filter((change) => {
+          const filteredChanges = (category.changes ?? []).filter((change) => {
             const changeId = createChangeId(category.category, change.field);
 
             // Apply change type filter
@@ -466,7 +466,7 @@ export function createComparisonFilter(
 
     // Count total
     categories.forEach((category) => {
-      totalChangesCount += category.changes.length;
+      totalChangesCount += (category.changes ?? []).length;
     });
 
     // If no filters active, return all
@@ -486,7 +486,7 @@ export function createComparisonFilter(
     // Filter
     const filteredCategories = categories
       .map((category) => {
-        const filteredChanges = category.changes.filter((change) => {
+        const filteredChanges = (category.changes ?? []).filter((change) => {
           const changeId = createChangeId(category.category, change.field);
 
           if (!matchesChangeType(change)) return false;

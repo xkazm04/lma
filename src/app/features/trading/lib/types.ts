@@ -150,3 +150,88 @@ export interface Activity {
   trade_reference: string;
   occurred_at: string;
 }
+
+// ============================================================================
+// Settlement Calendar Types
+// ============================================================================
+
+/**
+ * Risk level for settlements based on various factors
+ */
+export type SettlementRiskLevel = 'low' | 'medium' | 'high' | 'critical';
+
+/**
+ * Reminder interval type (T minus days)
+ */
+export type ReminderInterval = 7 | 3 | 1;
+
+/**
+ * Reminder status for auto-reminders
+ */
+export interface SettlementReminder {
+  id: string;
+  settlement_id: string;
+  days_before: ReminderInterval;
+  scheduled_date: string;
+  sent: boolean;
+  sent_at: string | null;
+  channel: 'email' | 'slack' | 'in_app';
+}
+
+/**
+ * Extended settlement with calendar-specific data
+ */
+export interface CalendarSettlement extends Settlement {
+  risk_level: SettlementRiskLevel;
+  has_flagged_items: boolean;
+  missing_consents: boolean;
+  dd_complete: boolean;
+  days_until: number;
+  funding_requirement: number;
+  reminders: SettlementReminder[];
+  borrower_name: string;
+  facility_name: string;
+}
+
+/**
+ * Funding forecast for a specific date
+ */
+export interface FundingForecast {
+  date: string;
+  total_inflows: number;
+  total_outflows: number;
+  net_position: number;
+  settlements: CalendarSettlement[];
+}
+
+/**
+ * Calendar day with settlements
+ */
+export interface CalendarDay {
+  date: string;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isWeekend: boolean;
+  settlements: CalendarSettlement[];
+  totalAmount: number;
+  highestRisk: SettlementRiskLevel | null;
+  fundingForecast: FundingForecast | null;
+}
+
+/**
+ * Calendar view mode
+ */
+export type CalendarViewMode = 'month' | 'week' | 'list';
+
+/**
+ * Settlement calendar state
+ */
+export interface SettlementCalendarState {
+  currentDate: Date;
+  viewMode: CalendarViewMode;
+  selectedDate: string | null;
+  settlements: CalendarSettlement[];
+  forecasts: FundingForecast[];
+  isLoading: boolean;
+  error: string | null;
+}

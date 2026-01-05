@@ -431,7 +431,7 @@ export async function POST(
 
 // Handle confirmation
 async function handleConfirmation(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   supabase: TypedSupabaseClient,
   trade: { id: string; trade_reference: string; seller_organization_id: string; buyer_organization_id: string; status: string },
   userData: { organization_id: string },

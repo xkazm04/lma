@@ -16,13 +16,10 @@ export { MetricCard } from './cards/MetricCard';
 
 // Inline AI
 export { InlineAIAssist } from './inline-ai/InlineAIAssist';
-export { AIExplanation } from './inline-ai/AIExplanation';
-export { AISuggestionRow } from './inline-ai/AISuggestionRow';
 export { useInlineAI } from './inline-ai/hooks/useInlineAI';
 
 // Panels
 export { IntelligencePanel } from './panels/IntelligencePanel';
-export { SignalFeedPanel } from './panels/SignalFeedPanel';
 
 // Stats
 export { StatsBar } from './stats/StatsBar';

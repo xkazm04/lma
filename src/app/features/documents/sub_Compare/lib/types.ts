@@ -31,6 +31,16 @@ export interface Comment {
   isEdited: boolean;
 }
 
+export type ThreadResolutionStatus = 'open' | 'resolved';
+
+export interface ThreadResolution {
+  status: ThreadResolutionStatus;
+  resolvedAt?: string;
+  resolvedBy?: User;
+  reopenedAt?: string;
+  reopenedBy?: User;
+}
+
 export interface Annotation {
   id: string;
   changeId: string; // References ComparisonChange
@@ -40,6 +50,8 @@ export interface Annotation {
   createdAt: string;
   updatedAt: string;
   createdBy: User;
+  // Thread resolution tracking
+  resolution: ThreadResolution;
 }
 
 export interface AnnotationSummary {
@@ -47,6 +59,10 @@ export interface AnnotationSummary {
   byStatus: Record<ReviewStatus, number>;
   withComments: number;
   withMentions: number;
+  // Thread resolution counts
+  resolved: number;
+  unresolved: number;
+  allThreadsResolved: boolean;
 }
 
 // Maps changeId -> Annotation

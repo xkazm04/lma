@@ -14,14 +14,13 @@ import {
   BarChart3,
   Wallet,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatTimeAgo, getSignalStrengthColor } from '@/lib/utils';
 import type {
   MarketSignal,
   TransactionPatternSignal,
   NewsSentimentSignal,
   BenchmarkSignal,
 } from '../lib/types';
-import { getSignalStrengthColor } from '../lib/types';
 
 interface SignalFeedProps {
   marketSignals: MarketSignal[];
@@ -40,19 +39,6 @@ function getDirectionIcon(direction: 'positive' | 'negative' | 'neutral') {
     case 'neutral':
       return <Minus className="w-4 h-4 text-zinc-500" />;
   }
-}
-
-function formatTimeAgo(timestamp: string): string {
-  const now = new Date();
-  const time = new Date(timestamp);
-  const diffMs = now.getTime() - time.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
 }
 
 const MarketSignalItem = memo(function MarketSignalItem({

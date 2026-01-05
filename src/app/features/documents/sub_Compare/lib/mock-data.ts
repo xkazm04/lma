@@ -79,6 +79,9 @@ export const mockAnnotations: Annotation[] = [
     createdAt: '2024-12-06T14:30:00Z',
     updatedAt: '2024-12-06T15:45:00Z',
     createdBy: mockUsers[1],
+    resolution: {
+      status: 'open',
+    },
   },
   {
     id: 'ann-2',
@@ -99,6 +102,9 @@ export const mockAnnotations: Annotation[] = [
     createdAt: '2024-12-06T10:00:00Z',
     updatedAt: '2024-12-06T10:00:00Z',
     createdBy: mockUsers[2],
+    resolution: {
+      status: 'open',
+    },
   },
   {
     id: 'ann-3',
@@ -119,5 +125,10 @@ export const mockAnnotations: Annotation[] = [
     createdAt: '2024-12-05T16:20:00Z',
     updatedAt: '2024-12-05T16:20:00Z',
     createdBy: mockUsers[3],
+    resolution: {
+      status: 'resolved',
+      resolvedAt: '2024-12-05T16:25:00Z',
+      resolvedBy: mockUsers[3],
+    },
   },
 ];

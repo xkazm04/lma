@@ -3,7 +3,6 @@
 import React, { useState, useMemo, memo } from 'react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AnimatedViewTransition } from '@/components/ui';
 import { List, Grid } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { ComplianceFiltersBar } from '../components';
@@ -114,7 +113,7 @@ export const CalendarPage = memo(function CalendarPage() {
           </div>
         </div>
 
-        <AnimatedViewTransition viewKey={viewMode} data-testid="calendar-view-transition">
+        <div className="transition-all duration-200" data-testid="calendar-view-transition">
           {viewMode === 'list' ? (
             <ListView groupedItems={groupedItems} sortedDates={sortedDates} today={calendarState.today} />
           ) : (
@@ -128,7 +127,7 @@ export const CalendarPage = memo(function CalendarPage() {
               onEventStatusChange={calendarState.handleEventStatusChange}
             />
           )}
-        </AnimatedViewTransition>
+        </div>
       </div>
     </PageContainer>
   );

@@ -25,7 +25,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RemediationStrategy, ImplementationStep } from '../lib/types';
-import { getNotificationPriorityColor, getRemediationStrategyLabel } from '../lib/types';
+import { getRemediationStrategyLabel } from '../lib/types';
+import { getNotificationPriorityColor } from '@/lib/utils';
 
 interface RemediationCardProps {
   remediation: RemediationStrategy;

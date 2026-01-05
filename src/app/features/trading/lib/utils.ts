@@ -89,18 +89,6 @@ export function getDDItemStatusIcon(status: string): React.ReactElement {
 }
 
 /**
- * @deprecated Use getTradeEventIcon instead
- * Returns the appropriate icon element for a given activity type.
- * Used by RecentActivity component to display activity-specific icons.
- *
- * @param type - The activity type string
- * @returns A React element containing the appropriate icon
- */
-export function getActivityIcon(type: string): React.ReactElement {
-  return getTradeEventIcon(type);
-}
-
-/**
  * Returns the appropriate badge element for a given facility/position status.
  * Used by PositionCard component to display status badges.
  *

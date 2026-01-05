@@ -569,45 +569,9 @@ export interface AutopilotFilterOptions {
 // Helper Functions
 // =============================================================================
 
-/**
- * Get color for signal strength
- */
-export function getSignalStrengthColor(strength: SignalStrength): string {
-  switch (strength) {
-    case 'weak':
-      return 'bg-zinc-100 text-zinc-700';
-    case 'moderate':
-      return 'bg-blue-100 text-blue-700';
-    case 'strong':
-      return 'bg-amber-100 text-amber-700';
-    case 'very_strong':
-      return 'bg-red-100 text-red-700';
-  }
-}
-
-/**
- * Get color for signal source
- */
-export function getSignalSourceColor(source: SignalSource): string {
-  switch (source) {
-    case 'market_data':
-      return 'bg-blue-100 text-blue-700';
-    case 'transaction_patterns':
-      return 'bg-purple-100 text-purple-700';
-    case 'news_sentiment':
-      return 'bg-orange-100 text-orange-700';
-    case 'industry_benchmarks':
-      return 'bg-green-100 text-green-700';
-    case 'historical_trends':
-      return 'bg-indigo-100 text-indigo-700';
-    case 'seasonal_patterns':
-      return 'bg-cyan-100 text-cyan-700';
-    case 'peer_comparison':
-      return 'bg-pink-100 text-pink-700';
-    case 'macro_indicators':
-      return 'bg-amber-100 text-amber-700';
-  }
-}
+// Note: Color helper functions (getSignalStrengthColor, getSignalSourceColor,
+// getNotificationPriorityColor) have been moved to @/lib/utils/color-resolver.ts
+// for centralized color management. Import from '@/lib/utils' instead.
 
 /**
  * Get label for signal source
@@ -681,18 +645,3 @@ export function getRemediationStrategyLabel(type: RemediationStrategyType): stri
   }
 }
 
-/**
- * Get notification priority color
- */
-export function getNotificationPriorityColor(priority: NotificationPriority): string {
-  switch (priority) {
-    case 'low':
-      return 'bg-zinc-100 text-zinc-700';
-    case 'medium':
-      return 'bg-blue-100 text-blue-700';
-    case 'high':
-      return 'bg-amber-100 text-amber-700';
-    case 'critical':
-      return 'bg-red-100 text-red-700';
-  }
-}

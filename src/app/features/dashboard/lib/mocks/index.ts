@@ -11,6 +11,76 @@
  */
 
 // =============================================================================
+// Date Factory Utilities
+// =============================================================================
+
+export {
+  // Core utilities
+  getNow,
+  addDays,
+  addHours,
+  addMinutes,
+  addMonths,
+  // Relative date generators
+  daysAgo,
+  daysFromNow,
+  hoursAgo,
+  minutesAgo,
+  monthsAgo,
+  monthsFromNow,
+  // Formatters
+  toISOString,
+  toDateString,
+  toShortDate,
+  toMonthShort,
+  toRelativeTime,
+  // Relative time formatters
+  relativeMinutesAgo,
+  relativeHoursAgo,
+  relativeDaysAgo,
+  // Mock data helpers
+  createDeadline,
+  getRecentMonths,
+  maturityDate,
+  eventTimestamp,
+  eventTimestampHoursAgo,
+  eventTimestampDaysAgo,
+  scheduledTimestamp,
+  lastUpdated,
+  createHolidayBlackouts,
+  // Types
+  type DeadlineInfo,
+  type BlackoutPeriod,
+} from './date-factory';
+
+// =============================================================================
+// Canonical Borrower Registry (Single Source of Truth)
+// =============================================================================
+
+export {
+  // Types
+  type Borrower,
+  type Facility,
+  type BorrowerWithFacility,
+  type BorrowerId,
+  type FacilityId,
+  // Registry Data
+  borrowers,
+  facilities,
+  BORROWER_IDS,
+  FACILITY_IDS,
+  // Helper Functions
+  getBorrower,
+  getFacility,
+  getFacilityForBorrower,
+  getBorrowerWithFacility,
+  getAllBorrowers,
+  getAllFacilities,
+  getAllBorrowersWithFacilities,
+  getTotalPortfolioExposure,
+} from './borrower-registry';
+
+// =============================================================================
 // Dashboard Core Data
 // =============================================================================
 

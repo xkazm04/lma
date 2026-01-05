@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, Plus, RefreshCw, Settings, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getIntegrationStatusColor } from '@/lib/utils';
 import type { DataIntegration } from '../lib/types';
-import { getIntegrationStatusColor, getAccountingProviderLabel } from '../lib/types';
+import { getAccountingProviderLabel } from '../lib/types';
 
 interface IntegrationSetupDialogProps {
   integrations: DataIntegration[];

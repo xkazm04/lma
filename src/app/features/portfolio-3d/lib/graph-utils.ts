@@ -10,6 +10,10 @@ import type {
   TerrainPoint,
   VisualizationSettings,
 } from './types';
+import {
+  getSeverityHexColor,
+  getCorrelationHexColor,
+} from '@/lib/utils/color-resolver';
 
 // Default settings
 export const DEFAULT_SETTINGS: VisualizationSettings = {
@@ -26,14 +30,7 @@ export const DEFAULT_SETTINGS: VisualizationSettings = {
   colorScheme: 'risk',
 };
 
-// Color palettes
-const RISK_COLORS = {
-  critical: '#ef4444', // red-500
-  high: '#f97316', // orange-500
-  medium: '#eab308', // yellow-500
-  low: '#22c55e', // green-500
-};
-
+// Color palettes for sector and geography (domain-specific, not unified)
 const SECTOR_COLORS: Record<string, string> = {
   Technology: '#8b5cf6', // violet-500
   Manufacturing: '#3b82f6', // blue-500
@@ -52,10 +49,10 @@ const GEOGRAPHY_COLORS: Record<string, string> = {
 };
 
 /**
- * Get color based on risk severity
+ * Get color based on risk severity (uses unified color resolver)
  */
 export function getRiskColor(severity: RiskSeverity): string {
-  return RISK_COLORS[severity] || RISK_COLORS.medium;
+  return getSeverityHexColor(severity);
 }
 
 /**
@@ -172,13 +169,10 @@ export function calculateHealthScore(borrower: BorrowerRiskProfile): number {
 }
 
 /**
- * Get correlation line color
+ * Get correlation line color (uses unified color resolver)
  */
 export function getCorrelationColor(strength: number): string {
-  if (strength >= 0.7) return '#ef4444'; // red - high risk correlation
-  if (strength >= 0.5) return '#f97316'; // orange
-  if (strength >= 0.3) return '#eab308'; // yellow
-  return '#6b7280'; // gray - low correlation
+  return getCorrelationHexColor(strength);
 }
 
 /**

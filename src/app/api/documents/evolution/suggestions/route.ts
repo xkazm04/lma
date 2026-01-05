@@ -18,7 +18,7 @@ import type {
 } from '@/app/features/documents/sub_Evolution/lib/types';
 
 // In-memory storage for demo (would be database in production)
-let suggestionStore: AmendmentSuggestion[] = generateMockAmendmentSuggestions();
+const suggestionStore: AmendmentSuggestion[] = generateMockAmendmentSuggestions();
 
 /**
  * GET /api/documents/evolution/suggestions

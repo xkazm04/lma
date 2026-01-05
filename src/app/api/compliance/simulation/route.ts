@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { generateStructuredOutput } from '@/lib/llm';
 import {
   stressTestTemplates,
   savedScenarios,
@@ -263,59 +262,133 @@ async function handleRunSimulation(body: unknown) {
 }
 
 async function handleAnalyzeScenario(body: unknown) {
-  const { params, context } = body as { params: unknown[]; context: string };
+  const { params } = body as { params: unknown[]; context: string };
 
-  try {
-    // Use LLM to generate insights about the scenario
-    const systemPrompt = `You are a financial analyst specializing in loan covenant analysis and stress testing.
-Analyze the given stress scenario parameters and provide:
-1. Key risk factors to monitor
-2. Likely cascade effects
-3. Recommended mitigation strategies
+  // Mock analysis responses based on scenario type
+  const mockAnalyses: Record<string, {
+    key_risks: string[];
+    cascade_effects: string[];
+    recommendations: string[];
+    severity_assessment: string;
+  }> = {
+    rate_change: {
+      key_risks: [
+        'Interest rate exposure on floating rate facilities',
+        'EBITDA sensitivity to increased debt service costs',
+        'Cash flow adequacy for covenant compliance',
+        'Cross-default triggers from margin compression',
+      ],
+      cascade_effects: [
+        'Potential rating downgrades across correlated borrowers',
+        'Increased monitoring requirements for watchlist facilities',
+        'Repricing pressure on new deal pipeline',
+        'Lender appetite reduction for sector',
+      ],
+      recommendations: [
+        'Review interest coverage headroom for all affected facilities',
+        'Engage borrowers proactively on hedging strategies',
+        'Update pricing models to reflect higher rate environment',
+        'Consider covenant reset negotiations where headroom <15%',
+      ],
+      severity_assessment: 'High - immediate action required for 3 facilities',
+    },
+    ebitda_fluctuation: {
+      key_risks: [
+        'Leverage ratio breaches across manufacturing sector',
+        'EBITDA decline impact on debt service coverage',
+        'Asset coverage deterioration on secured facilities',
+        'Working capital strain affecting liquidity ratios',
+      ],
+      cascade_effects: [
+        'Multiple covenant test failures in Q2/Q3',
+        'Waiver request volume increase by 40%',
+        'Portfolio risk rating migration to watchlist',
+        'Syndicate relationship strain from amendment fatigue',
+      ],
+      recommendations: [
+        'Prioritize borrower engagement for top 5 at-risk facilities',
+        'Prepare waiver documentation templates in advance',
+        'Model covenant reset scenarios with borrowers',
+        'Increase financial reporting frequency to monthly',
+      ],
+      severity_assessment: 'Critical - 5 facilities projected to breach within 2 quarters',
+    },
+    ma_event: {
+      key_risks: [
+        'Change of control trigger provisions',
+        'Mandatory prepayment obligations',
+        'Assignment consent requirements',
+        'Post-merger integration execution risk',
+      ],
+      cascade_effects: [
+        'Cash sweep to retiring facilities',
+        'Syndicate voting delays on consents',
+        'Documentation renegotiation requirements',
+        'Rating agency review and potential downgrade',
+      ],
+      recommendations: [
+        'Review change of control definitions across all facilities',
+        'Map mandatory prepayment triggers and amounts',
+        'Prepare consent solicitation materials',
+        'Engage legal counsel for documentation review',
+      ],
+      severity_assessment: 'Moderate - dependent on transaction structure',
+    },
+    industry_downturn: {
+      key_risks: [
+        'Sector-wide revenue decline impact',
+        'Collateral value deterioration',
+        'Counterparty credit risk concentration',
+        'Market liquidity constraints for secondary trades',
+      ],
+      cascade_effects: [
+        'Portfolio-wide covenant pressure',
+        'Increased provision requirements',
+        'Regulatory scrutiny on concentration',
+        'Limited workout capacity from volume',
+      ],
+      recommendations: [
+        'Conduct sector-specific portfolio review',
+        'Update collateral valuations and monitoring',
+        'Diversification analysis for new commitments',
+        'Enhance early warning indicators for sector',
+      ],
+      severity_assessment: 'High - systemic sector risk requires portfolio-level response',
+    },
+    custom: {
+      key_risks: [
+        'Scenario-specific risk factors identified',
+        'Cross-portfolio correlation effects',
+        'Timing and magnitude uncertainty',
+        'Model assumption sensitivity',
+      ],
+      cascade_effects: [
+        'Downstream covenant test impacts',
+        'Interconnected borrower effects',
+        'Market sentiment contagion',
+        'Operational capacity constraints',
+      ],
+      recommendations: [
+        'Validate scenario assumptions with market data',
+        'Run sensitivity analysis on key variables',
+        'Prepare contingency plans for adverse outcomes',
+        'Document analysis for audit trail',
+      ],
+      severity_assessment: 'Moderate - requires further analysis based on specific parameters',
+    },
+  };
 
-Be specific and actionable in your recommendations.`;
-
-    const userPrompt = `Analyze this stress scenario for a loan portfolio:
-
-Scenario Parameters:
-${JSON.stringify(params, null, 2)}
-
-Portfolio Context:
-${context}
-
-Provide your analysis with specific insights and recommendations.
-
-IMPORTANT: Respond ONLY with a valid JSON object containing these fields:
-- key_risks: array of strings describing key risk factors to monitor
-- cascade_effects: array of strings describing potential cascade effects
-- recommendations: array of strings with mitigation recommendations
-- severity_assessment: string with overall severity assessment`;
-
-    const analysis = await generateStructuredOutput<{
-      key_risks: string[];
-      cascade_effects: string[];
-      recommendations: string[];
-      severity_assessment: string;
-    }>(
-      systemPrompt,
-      userPrompt
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: analysis,
-    });
-  } catch (error) {
-    console.error('Error analyzing scenario:', error);
-    // Fallback to basic analysis
-    return NextResponse.json({
-      success: true,
-      data: {
-        key_risks: ['Interest rate exposure', 'EBITDA sensitivity', 'Cross-default triggers'],
-        cascade_effects: ['Potential rating downgrades', 'Increased monitoring requirements'],
-        recommendations: ['Review covenant headroom', 'Engage borrower proactively', 'Update stress testing models'],
-        severity_assessment: 'Moderate - requires monitoring',
-      },
-    });
+  // Determine scenario type from params
+  let scenarioType = 'custom';
+  if (Array.isArray(params) && params.length > 0) {
+    const firstParam = params[0] as { type?: string };
+    if (firstParam.type && mockAnalyses[firstParam.type]) {
+      scenarioType = firstParam.type;
+    }
   }
+
+  return NextResponse.json({
+    success: true,
+    data: mockAnalyses[scenarioType],
+  });
 }

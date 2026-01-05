@@ -1,17 +1,22 @@
 'use client';
 
 import React, { memo, useState } from 'react';
-import { ChevronDown, ChevronRight, AlertTriangle, BarChart3, TrendingUp, TrendingDown, Minus, Users } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertTriangle, BarChart3, TrendingUp, TrendingDown, Minus, Users, Library, FileStack } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { ChangeIcon, ChangeBadge } from './ChangeIcon';
 import { ChangeAnnotationButton, AnnotationSummaryBadge } from './ChangeAnnotationButton';
 import { getInlineDiffPair } from './InlineDiff';
+import { CopyableValue } from './CopyableValue';
 import { RiskScoreBadge } from './RiskScoreBadge';
 import { MarketBenchmarkBadge } from './MarketBenchmark';
+import { ClauseMatchBadge } from './ClauseMatchIndicator';
 import type { ComparisonCategory, ComparisonChange, ChangeRiskScore, ChangeMarketBenchmark, CategoryRiskSummary } from '../../lib/types';
 import type { Annotation } from '../lib/types';
+import type { ChangeClauseMatch } from '../lib/clause-library-types';
 import { createChangeId } from '../lib/mock-data';
 
 interface ComparisonCategorySectionProps {
@@ -27,6 +32,11 @@ interface ComparisonCategorySectionProps {
   getRiskScore?: (changeId: string) => ChangeRiskScore | undefined;
   getMarketBenchmark?: (changeId: string) => ChangeMarketBenchmark | undefined;
   categorySummary?: CategoryRiskSummary;
+  // Clause library props
+  getClauseMatch?: (changeId: string) => ChangeClauseMatch | undefined;
+  onClauseMatchClick?: (changeId: string, match: ChangeClauseMatch) => void;
+  // PDF overlay props
+  onViewInPDF?: (changeId: string) => void;
 }
 
 export const ComparisonCategorySection = memo(function ComparisonCategorySection({
@@ -39,6 +49,9 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
   getRiskScore,
   getMarketBenchmark,
   categorySummary,
+  getClauseMatch,
+  onClauseMatchClick,
+  onViewInPDF,
 }: ComparisonCategorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -50,6 +63,18 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
       const annotation = getAnnotation(changeId);
       if (annotation) {
         categoryAnnotations.push(annotation);
+      }
+    });
+  }
+
+  // Count clause matches for this category
+  let clauseMatchCount = 0;
+  if (getClauseMatch) {
+    category.changes.forEach((change) => {
+      const changeId = createChangeId(category.category, change.field);
+      const match = getClauseMatch(changeId);
+      if (match?.doc2Match) {
+        clauseMatchCount++;
       }
     });
   }
@@ -124,6 +149,17 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
                 )}
               </Badge>
             )}
+            {/* Clause match count badge */}
+            {clauseMatchCount > 0 && (
+              <Badge
+                variant="secondary"
+                className="text-xs bg-indigo-100 text-indigo-700 flex items-center gap-1"
+                data-testid="category-clause-match-badge"
+              >
+                <Library className="w-3 h-3" />
+                {clauseMatchCount} matched
+              </Badge>
+            )}
             {/* Annotation summary for the category */}
             <AnnotationSummaryBadge annotations={categoryAnnotations} />
           </div>
@@ -141,6 +177,7 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
               const annotation = getAnnotation?.(changeId) || null;
               const riskScore = getRiskScore?.(changeId);
               const marketBenchmark = getMarketBenchmark?.(changeId);
+              const clauseMatch = getClauseMatch?.(changeId);
 
               return (
                 <div
@@ -173,6 +210,33 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
                         {marketBenchmark && (
                           <MarketBenchmarkBadge benchmark={marketBenchmark} compact />
                         )}
+                        {/* Clause Match Badge */}
+                        {clauseMatch?.doc2Match && (
+                          <ClauseMatchBadge
+                            match={clauseMatch.doc2Match}
+                            compact
+                            onClick={() => onClauseMatchClick?.(changeId, clauseMatch)}
+                          />
+                        )}
+                        {/* View in PDF button */}
+                        {onViewInPDF && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-zinc-400 hover:text-blue-600 hover:bg-blue-50"
+                                  onClick={() => onViewInPDF(changeId)}
+                                  data-testid={`view-in-pdf-btn-${changeId}`}
+                                >
+                                  <FileStack className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>View in PDF</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                         {/* Annotation button */}
                         {onAnnotationClick && (
                           <ChangeAnnotationButton
@@ -203,14 +267,16 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
                               data-testid={`doc1-value-${changeId}`}
                             >
                               <p className="text-xs text-zinc-500 mb-1" data-testid={`doc1-label-${changeId}`}>{doc1Name}</p>
-                              <p
+                              <CopyableValue
+                                value={change.doc1Value}
                                 className={cn(
                                   'text-sm p-2 rounded bg-white border break-words overflow-wrap-anywhere max-w-full',
                                   change.changeType === 'removed' && 'border-red-200'
                                 )}
+                                data-testid={`doc1-copyable-${changeId}`}
                               >
                                 {oldDisplay}
-                              </p>
+                              </CopyableValue>
                             </div>
                             {/* Visual separator for mobile (visible only on small screens) */}
                             <div
@@ -223,14 +289,16 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
                               data-testid={`doc2-value-${changeId}`}
                             >
                               <p className="text-xs text-zinc-500 mb-1" data-testid={`doc2-label-${changeId}`}>{doc2Name}</p>
-                              <p
+                              <CopyableValue
+                                value={change.doc2Value}
                                 className={cn(
                                   'text-sm p-2 rounded bg-white border break-words overflow-wrap-anywhere max-w-full',
                                   change.changeType === 'added' && 'border-green-200'
                                 )}
+                                data-testid={`doc2-copyable-${changeId}`}
                               >
                                 {newDisplay}
-                              </p>
+                              </CopyableValue>
                             </div>
                           </>
                         );

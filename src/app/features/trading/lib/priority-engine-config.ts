@@ -36,37 +36,6 @@ export interface PrioritizedSettlement {
 }
 
 /**
- * DD completion factor
- */
-const ddCompletionFactor = (ddProgress: number): FactorExtractor<Trade> => {
-  return (trade) => {
-    if (trade.status !== 'in_due_diligence') return { score: 0 };
-
-    if (ddProgress < 30) {
-      return {
-        score: 25,
-        reason: {
-          type: 'dd_progress',
-          label: `Only ${ddProgress}% DD complete`,
-          weight: 25,
-        },
-      };
-    } else if (ddProgress < 60) {
-      return {
-        score: 12,
-        reason: {
-          type: 'dd_progress',
-          label: `${ddProgress}% DD complete`,
-          weight: 12,
-        },
-      };
-    }
-
-    return { score: 0 };
-  };
-};
-
-/**
  * Flagged items factor
  */
 const flaggedItemsFactor: FactorExtractor<Trade> = (trade) => {

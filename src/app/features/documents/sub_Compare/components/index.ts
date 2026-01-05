@@ -1,4 +1,5 @@
 export { ChangeIcon, ChangeBadge } from './ChangeIcon';
+export { CopyableValue } from './CopyableValue';
 export { ComparisonCategorySection } from './ComparisonCategorySection';
 export { ComparisonStats } from './ComparisonStats';
 export { ComparisonFilters } from './ComparisonFilters';
@@ -32,3 +33,18 @@ export { RiskScoreSummary, CompactRiskSummary } from './RiskScoreSummary';
 
 // Temporal comparison components
 export { DocumentEvolutionTimeline } from './DocumentEvolutionTimeline';
+
+// Export components
+export { ExportModal } from './ExportModal';
+
+// Clause Library components
+export { ClauseLibraryPanel } from './ClauseLibraryPanel';
+export { ClauseMatchBadge, ClauseMatchCard, InlineClauseMatch, ClauseDropZone } from './ClauseMatchIndicator';
+
+// Keyboard shortcuts components
+export { ShortcutReferenceCard, ShortcutHint, FloatingNavigationHint } from './ShortcutReferenceCard';
+
+// PDF Overlay components
+export { PDFHighlightOverlay, PDFHighlightLayer } from './PDFHighlightOverlay';
+export { PDFPageView } from './PDFPageView';
+export { PDFComparisonPanel } from './PDFComparisonPanel';

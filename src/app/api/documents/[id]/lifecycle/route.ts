@@ -431,7 +431,7 @@ import type {
 } from '@/lib/llm/document-lifecycle';
 
 async function processComplianceModule(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   supabase: TypedSupabaseClient,
   cascadeData: CascadeDataPackage,
   config: DocumentLifecycleConfig
@@ -540,7 +540,7 @@ async function processComplianceModule(
 }
 
 async function processDealsModule(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   supabase: TypedSupabaseClient,
   cascadeData: CascadeDataPackage,
   config: DocumentLifecycleConfig
@@ -585,7 +585,7 @@ async function processDealsModule(
 }
 
 async function processTradingModule(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   supabase: TypedSupabaseClient,
   cascadeData: CascadeDataPackage,
   config: DocumentLifecycleConfig
@@ -644,7 +644,7 @@ async function processTradingModule(
 }
 
 async function processESGModule(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   supabase: TypedSupabaseClient,
   cascadeData: CascadeDataPackage,
   config: DocumentLifecycleConfig

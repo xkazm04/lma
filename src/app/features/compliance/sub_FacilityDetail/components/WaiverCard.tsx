@@ -1,9 +1,15 @@
 'use client';
 
-import React, { memo, useState } from 'react';
+import React, { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   ShieldCheck,
   ShieldX,
@@ -27,6 +33,244 @@ import {
   getWaiverPriorityColor,
   getWaiverPriorityLabel,
 } from '../../lib';
+
+// =============================================================================
+// Headroom Visualization Component
+// =============================================================================
+
+interface HeadroomVisualizationProps {
+  actualValue: number;
+  threshold: number;
+  headroomPercentage: number;
+  testDate: string;
+  thresholdType?: 'maximum' | 'minimum';
+}
+
+/**
+ * Proportional bar chart visualization for covenant headroom.
+ * Shows threshold vs actual value with color gradient indicating status.
+ */
+function HeadroomVisualization({
+  actualValue,
+  threshold,
+  headroomPercentage,
+  testDate,
+  thresholdType = 'maximum',
+}: HeadroomVisualizationProps) {
+  // Determine the range for visualization
+  // For a maximum threshold (e.g., leverage ≤ 4.0x), breach happens when actual > threshold
+  // For a minimum threshold (e.g., coverage ≥ 2.0x), breach happens when actual < threshold
+  const isBreached = headroomPercentage < 0;
+  const isAtRisk = headroomPercentage >= 0 && headroomPercentage < 15;
+
+  // Calculate visualization parameters
+  // We need to show both the threshold and actual value proportionally
+  const visualData = useMemo(() => {
+    const maxValue = Math.max(actualValue, threshold) * 1.25; // Add 25% padding
+    const minValue = 0;
+    const range = maxValue - minValue;
+
+    // Calculate positions as percentages of the bar
+    const thresholdPosition = ((threshold - minValue) / range) * 100;
+    const actualPosition = ((actualValue - minValue) / range) * 100;
+
+    // Determine fill width based on threshold type
+    // For maximum thresholds: fill from 0 to actual (breach if actual > threshold)
+    // For minimum thresholds: fill from actual to max (breach if actual < threshold)
+    let fillWidth: number;
+    let fillStart: number;
+
+    if (thresholdType === 'maximum') {
+      fillStart = 0;
+      fillWidth = actualPosition;
+    } else {
+      fillStart = actualPosition;
+      fillWidth = 100 - actualPosition;
+    }
+
+    return {
+      thresholdPosition: Math.min(100, Math.max(0, thresholdPosition)),
+      actualPosition: Math.min(100, Math.max(0, actualPosition)),
+      fillWidth: Math.min(100, Math.max(0, fillWidth)),
+      fillStart: Math.min(100, Math.max(0, fillStart)),
+      maxValue,
+    };
+  }, [actualValue, threshold, thresholdType]);
+
+  // Determine the gradient/color based on headroom status
+  const getBarColor = () => {
+    if (isBreached) {
+      return 'bg-gradient-to-r from-red-400 to-red-500';
+    }
+    if (isAtRisk) {
+      return 'bg-gradient-to-r from-amber-400 to-amber-500';
+    }
+    return 'bg-gradient-to-r from-green-400 to-green-500';
+  };
+
+  const getIndicatorColor = () => {
+    if (isBreached) return 'bg-red-600';
+    if (isAtRisk) return 'bg-amber-600';
+    return 'bg-green-600';
+  };
+
+  const getStatusText = () => {
+    if (isBreached) return 'Breached';
+    if (isAtRisk) return 'At Risk';
+    return 'Compliant';
+  };
+
+  return (
+    <TooltipProvider>
+      <div
+        className="space-y-2"
+        data-testid="headroom-visualization"
+      >
+        {/* Header with test date and status */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className={cn(
+              'w-4 h-4',
+              isBreached ? 'text-red-500' : isAtRisk ? 'text-amber-500' : 'text-green-500'
+            )} />
+            <span className="text-xs font-medium text-zinc-700">Triggering Test Result</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-500">{formatDate(testDate)}</span>
+            <Badge
+              className={cn(
+                'text-xs',
+                isBreached ? 'bg-red-100 text-red-700' :
+                isAtRisk ? 'bg-amber-100 text-amber-700' :
+                'bg-green-100 text-green-700'
+              )}
+              data-testid="headroom-status-badge"
+            >
+              {getStatusText()}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Proportional bar visualization */}
+        <div className="relative">
+          {/* Background bar with gridlines */}
+          <div
+            className="relative h-6 bg-zinc-100 rounded-md overflow-hidden"
+            data-testid="headroom-bar"
+          >
+            {/* Subtle gridlines at 25% intervals */}
+            <div className="absolute inset-0 flex">
+              {[25, 50, 75].map((pct) => (
+                <div
+                  key={pct}
+                  className="absolute top-0 bottom-0 w-px bg-zinc-200"
+                  style={{ left: `${pct}%` }}
+                />
+              ))}
+            </div>
+
+            {/* Fill bar showing actual value */}
+            <div
+              className={cn(
+                'absolute top-0 bottom-0 transition-all duration-500 ease-out',
+                getBarColor()
+              )}
+              style={{
+                left: `${visualData.fillStart}%`,
+                width: `${visualData.fillWidth}%`,
+              }}
+              data-testid="headroom-fill"
+            />
+
+            {/* Threshold marker */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-zinc-800 z-10 cursor-help"
+                  style={{ left: `${visualData.thresholdPosition}%` }}
+                  data-testid="headroom-threshold-marker"
+                >
+                  {/* Triangle indicator at top */}
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2">
+                    <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[5px] border-l-transparent border-r-transparent border-t-zinc-800" />
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                <p>Threshold: {threshold.toFixed(2)}x</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Actual value indicator */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className={cn(
+                    'absolute top-0 bottom-0 w-1 z-20 cursor-help shadow-sm',
+                    getIndicatorColor()
+                  )}
+                  style={{ left: `${visualData.actualPosition}%`, transform: 'translateX(-50%)' }}
+                  data-testid="headroom-actual-marker"
+                >
+                  {/* Diamond indicator */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div className={cn(
+                      'w-2.5 h-2.5 rotate-45 border-2 border-white shadow-sm',
+                      getIndicatorColor()
+                    )} />
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                <p>Actual: {actualValue.toFixed(2)}x</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Scale labels */}
+          <div className="flex justify-between mt-1 text-[10px] text-zinc-400">
+            <span>0x</span>
+            <span>{(visualData.maxValue / 2).toFixed(1)}x</span>
+            <span>{visualData.maxValue.toFixed(1)}x</span>
+          </div>
+        </div>
+
+        {/* Value summary row */}
+        <div className="grid grid-cols-3 gap-3 text-xs pt-1">
+          <div className="text-center p-1.5 bg-zinc-50 rounded">
+            <p className="text-zinc-500 mb-0.5">Actual</p>
+            <p className="font-semibold text-zinc-900">{actualValue.toFixed(2)}x</p>
+          </div>
+          <div className="text-center p-1.5 bg-zinc-50 rounded">
+            <p className="text-zinc-500 mb-0.5">Threshold</p>
+            <p className="font-semibold text-zinc-900">{threshold.toFixed(2)}x</p>
+          </div>
+          <div className="text-center p-1.5 bg-zinc-50 rounded">
+            <p className="text-zinc-500 mb-0.5">Headroom</p>
+            <p className={cn(
+              'font-semibold',
+              isBreached ? 'text-red-600' : isAtRisk ? 'text-amber-600' : 'text-green-600'
+            )}>
+              {headroomPercentage >= 0 ? '+' : ''}{headroomPercentage.toFixed(1)}%
+            </p>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-4 text-[10px] text-zinc-500 pt-1">
+          <div className="flex items-center gap-1">
+            <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+            <span>Threshold</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className={cn('w-2.5 h-2.5 rounded-full', getIndicatorColor())} />
+            <span>Actual Value</span>
+          </div>
+        </div>
+      </div>
+    </TooltipProvider>
+  );
+}
 
 interface WaiverCardProps {
   waiver: Waiver;
@@ -174,36 +418,16 @@ export const WaiverCard = memo(function WaiverCard({
               </div>
             </div>
 
-            {/* Triggering test info */}
+            {/* Triggering test info with proportional headroom visualization */}
             {waiver.triggering_test && (
               <div className="mt-4 p-3 bg-zinc-50 rounded-lg border border-zinc-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                  <span className="text-xs font-medium text-zinc-700">Triggering Test Result</span>
-                </div>
-                <div className="grid grid-cols-4 gap-3 text-xs">
-                  <div>
-                    <p className="text-zinc-500">Test Date</p>
-                    <p className="font-medium">{formatDate(waiver.triggering_test.test_date)}</p>
-                  </div>
-                  <div>
-                    <p className="text-zinc-500">Actual</p>
-                    <p className="font-medium">{waiver.triggering_test.calculated_ratio.toFixed(2)}x</p>
-                  </div>
-                  <div>
-                    <p className="text-zinc-500">Threshold</p>
-                    <p className="font-medium">{waiver.triggering_test.threshold.toFixed(2)}x</p>
-                  </div>
-                  <div>
-                    <p className="text-zinc-500">Headroom</p>
-                    <p className={cn(
-                      'font-medium',
-                      waiver.triggering_test.headroom_percentage < 0 ? 'text-red-600' : 'text-green-600'
-                    )}>
-                      {waiver.triggering_test.headroom_percentage.toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
+                <HeadroomVisualization
+                  actualValue={waiver.triggering_test.calculated_ratio}
+                  threshold={waiver.triggering_test.threshold}
+                  headroomPercentage={waiver.triggering_test.headroom_percentage}
+                  testDate={waiver.triggering_test.test_date}
+                  thresholdType="maximum"
+                />
               </div>
             )}
           </div>

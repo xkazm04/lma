@@ -6,6 +6,18 @@
  */
 
 import { FileText, Handshake, ClipboardCheck, Leaf } from 'lucide-react';
+import {
+  borrowers,
+  facilities,
+  BORROWER_IDS,
+  FACILITY_IDS,
+} from './borrower-registry';
+import {
+  relativeMinutesAgo,
+  relativeHoursAgo,
+  eventTimestamp,
+  eventTimestampHoursAgo,
+} from './date-factory';
 
 // =============================================================================
 // Types
@@ -85,6 +97,21 @@ export interface Mention {
 // Mock Data
 // =============================================================================
 
+// Helper references from canonical registry
+const bAbc = borrowers[BORROWER_IDS.ABC_HOLDINGS];
+const bXyz = borrowers[BORROWER_IDS.XYZ_CORP];
+const bApollo = borrowers[BORROWER_IDS.APOLLO_INDUSTRIES];
+const bNeptune = borrowers[BORROWER_IDS.NEPTUNE_LLC];
+const bDelta = borrowers[BORROWER_IDS.DELTA_CORP];
+const bEcotech = borrowers[BORROWER_IDS.ECOTECH_LTD];
+
+const fApollo = facilities[FACILITY_IDS.APOLLO_PROJECT];
+const fNeptune = facilities[FACILITY_IDS.NEPTUNE_SYNDICATED];
+const fAbc = facilities[FACILITY_IDS.ABC_TERM_A];
+const fXyz = facilities[FACILITY_IDS.XYZ_REVOLVER];
+const fEcotech = facilities[FACILITY_IDS.ECOTECH_GREEN];
+const fDelta = facilities[FACILITY_IDS.DELTA_WC];
+
 export const teamMembers: TeamMember[] = [
   {
     id: 'user-1',
@@ -96,8 +123,8 @@ export const teamMembers: TeamMember[] = [
     lastActive: 'Now',
     currentFocus: {
       type: 'document',
-      resourceId: 'doc-apollo',
-      resourceName: 'Facility Agreement - Project Apollo',
+      resourceId: `doc-${bApollo.id}`,
+      resourceName: `Facility Agreement - ${fApollo.name}`,
     },
   },
   {
@@ -110,8 +137,8 @@ export const teamMembers: TeamMember[] = [
     lastActive: 'Now',
     currentFocus: {
       type: 'deal',
-      resourceId: 'deal-neptune',
-      resourceName: 'Neptune Refinancing',
+      resourceId: `deal-${bNeptune.id}`,
+      resourceName: `${bNeptune.shortName} Refinancing`,
     },
   },
   {
@@ -121,11 +148,11 @@ export const teamMembers: TeamMember[] = [
     email: 'emily.rodriguez@bank.com',
     initials: 'ER',
     status: 'busy',
-    lastActive: '5 min ago',
+    lastActive: relativeMinutesAgo(5),
     currentFocus: {
       type: 'compliance',
-      resourceId: 'comp-abc',
-      resourceName: 'ABC Holdings - Q4 Review',
+      resourceId: `comp-${bAbc.id}`,
+      resourceName: `${bAbc.name} - Q4 Review`,
     },
   },
   {
@@ -135,7 +162,7 @@ export const teamMembers: TeamMember[] = [
     email: 'david.park@bank.com',
     initials: 'DP',
     status: 'away',
-    lastActive: '15 min ago',
+    lastActive: relativeMinutesAgo(15),
   },
   {
     id: 'user-5',
@@ -147,8 +174,8 @@ export const teamMembers: TeamMember[] = [
     lastActive: 'Now',
     currentFocus: {
       type: 'trading',
-      resourceId: 'trade-xyz',
-      resourceName: 'XYZ Corp Trade DD',
+      resourceId: `trade-${bXyz.id}`,
+      resourceName: `${bXyz.name} Trade DD`,
     },
   },
   {
@@ -158,94 +185,94 @@ export const teamMembers: TeamMember[] = [
     email: 'james.wilson@bank.com',
     initials: 'JW',
     status: 'offline',
-    lastActive: '2 hours ago',
+    lastActive: relativeHoursAgo(2),
   },
 ];
 
 export const loanActivityStream: LoanActivityEvent[] = [
   {
     id: 'evt-1',
-    loanId: 'loan-apollo',
-    loanName: 'Project Apollo',
+    loanId: fApollo.id,
+    loanName: fApollo.name,
     type: 'upload',
     description: 'Uploaded Amendment No. 4 for review',
     userId: 'user-1',
     userName: 'Sarah Johnson',
     userInitials: 'SJ',
-    timestamp: '2024-12-10T14:30:00Z',
-    relativeTime: '2 min ago',
+    timestamp: eventTimestamp(2),
+    relativeTime: relativeMinutesAgo(2),
     metadata: {
-      documentName: 'Amendment No. 4 - Project Apollo.pdf',
+      documentName: `Amendment No. 4 - ${fApollo.name}.pdf`,
     },
   },
   {
     id: 'evt-2',
-    loanId: 'loan-neptune',
-    loanName: 'Project Neptune',
+    loanId: fNeptune.id,
+    loanName: fNeptune.name,
     type: 'proposal',
     description: 'Submitted margin ratchet proposal',
     userId: 'user-2',
     userName: 'Mike Chen',
     userInitials: 'MC',
-    timestamp: '2024-12-10T14:25:00Z',
-    relativeTime: '7 min ago',
+    timestamp: eventTimestamp(7),
+    relativeTime: relativeMinutesAgo(7),
     metadata: {
       fieldName: 'Margin Ratchet',
     },
   },
   {
     id: 'evt-3',
-    loanId: 'loan-abc',
-    loanName: 'ABC Holdings - Term Loan A',
+    loanId: fAbc.id,
+    loanName: `${bAbc.name} - ${fAbc.name}`,
     type: 'comment',
     description: 'Added comment on covenant compliance',
     userId: 'user-3',
     userName: 'Emily Rodriguez',
     userInitials: 'ER',
-    timestamp: '2024-12-10T14:15:00Z',
-    relativeTime: '17 min ago',
+    timestamp: eventTimestamp(17),
+    relativeTime: relativeMinutesAgo(17),
     metadata: {
       commentText: 'Need to verify Q3 leverage ratio calculation',
     },
   },
   {
     id: 'evt-4',
-    loanId: 'loan-xyz',
-    loanName: 'XYZ Corp - Revolving Facility',
+    loanId: fXyz.id,
+    loanName: `${bXyz.name} - ${fXyz.name}`,
     type: 'view',
     description: 'Reviewed trade due diligence checklist',
     userId: 'user-5',
     userName: 'Lisa Thompson',
     userInitials: 'LT',
-    timestamp: '2024-12-10T14:10:00Z',
-    relativeTime: '22 min ago',
+    timestamp: eventTimestamp(22),
+    relativeTime: relativeMinutesAgo(22),
   },
   {
     id: 'evt-5',
-    loanId: 'loan-ecotech',
-    loanName: 'EcoTech Green Bond',
+    loanId: fEcotech.id,
+    loanName: `${bEcotech.name} ${fEcotech.name}`,
     type: 'edit',
     description: 'Updated ESG performance targets',
     userId: 'user-4',
     userName: 'David Park',
     userInitials: 'DP',
-    timestamp: '2024-12-10T13:45:00Z',
-    relativeTime: '47 min ago',
+    timestamp: eventTimestamp(47),
+    relativeTime: relativeMinutesAgo(47),
     metadata: {
       fieldName: 'Carbon Reduction Target',
     },
   },
   {
     id: 'evt-6',
-    loanId: 'loan-apollo',
-    loanName: 'Project Apollo',
+    loanId: fApollo.id,
+    loanName: fApollo.name,
     type: 'mention',
     description: 'Mentioned you in document review',
     userId: 'user-2',
     userName: 'Mike Chen',
     userInitials: 'MC',
-    timestamp: '2024-12-10T13:30:00Z',
-    relativeTime: '1 hour ago',
+    timestamp: eventTimestampHoursAgo(1),
+    relativeTime: relativeHoursAgo(1),
     metadata: {
       mentionedUsers: ['Current User'],
       commentText: '@you Please review the interest rate cap terms',
@@ -256,14 +283,14 @@ export const loanActivityStream: LoanActivityEvent[] = [
 export const counterpartyActions: CounterpartyAction[] = [
   {
     id: 'cpa-1',
-    dealId: 'deal-neptune',
-    dealName: 'Neptune Refinancing',
-    counterpartyId: 'cp-neptune-llc',
+    dealId: `deal-${bNeptune.id}`,
+    dealName: `${bNeptune.shortName} Refinancing`,
+    counterpartyId: `cp-${bNeptune.id}`,
     counterpartyName: 'Robert Martinez',
-    counterpartyOrg: 'Neptune LLC',
+    counterpartyOrg: bNeptune.name,
     actionType: 'viewing',
     description: 'Currently viewing pricing terms',
-    timestamp: '2024-12-10T14:32:00Z',
+    timestamp: eventTimestamp(0),
     relativeTime: 'Now',
     isActive: true,
     resourceType: 'term',
@@ -271,60 +298,60 @@ export const counterpartyActions: CounterpartyAction[] = [
   },
   {
     id: 'cpa-2',
-    dealId: 'deal-apollo',
-    dealName: 'Project Apollo Amendment',
-    counterpartyId: 'cp-apollo-ind',
+    dealId: `deal-${bApollo.id}`,
+    dealName: `${fApollo.name} Amendment`,
+    counterpartyId: `cp-${bApollo.id}`,
     counterpartyName: 'Jennifer Lee',
-    counterpartyOrg: 'Apollo Industries',
+    counterpartyOrg: bApollo.name,
     actionType: 'proposing',
     description: 'Drafting counter-proposal on financial covenants',
-    timestamp: '2024-12-10T14:28:00Z',
-    relativeTime: '4 min ago',
+    timestamp: eventTimestamp(4),
+    relativeTime: relativeMinutesAgo(4),
     isActive: true,
     resourceType: 'condition',
     resourceName: 'Leverage Ratio Covenant',
   },
   {
     id: 'cpa-3',
-    dealId: 'deal-delta',
-    dealName: 'Delta Working Capital Increase',
-    counterpartyId: 'cp-delta-corp',
+    dealId: `deal-${bDelta.id}`,
+    dealName: `${bDelta.shortName} Working Capital Increase`,
+    counterpartyId: `cp-${bDelta.id}`,
     counterpartyName: 'Tom Anderson',
-    counterpartyOrg: 'Delta Corp',
+    counterpartyOrg: bDelta.name,
     actionType: 'commented',
     description: 'Left feedback on security package',
-    timestamp: '2024-12-10T14:15:00Z',
-    relativeTime: '17 min ago',
+    timestamp: eventTimestamp(17),
+    relativeTime: relativeMinutesAgo(17),
     isActive: false,
     resourceType: 'document',
     resourceName: 'Security Agreement Draft',
   },
   {
     id: 'cpa-4',
-    dealId: 'deal-neptune',
-    dealName: 'Neptune Refinancing',
-    counterpartyId: 'cp-neptune-llc',
+    dealId: `deal-${bNeptune.id}`,
+    dealName: `${bNeptune.shortName} Refinancing`,
+    counterpartyId: `cp-${bNeptune.id}`,
     counterpartyName: 'Robert Martinez',
-    counterpartyOrg: 'Neptune LLC',
+    counterpartyOrg: bNeptune.name,
     actionType: 'approved',
     description: 'Accepted maturity date extension',
-    timestamp: '2024-12-10T13:45:00Z',
-    relativeTime: '47 min ago',
+    timestamp: eventTimestamp(47),
+    relativeTime: relativeMinutesAgo(47),
     isActive: false,
     resourceType: 'term',
     resourceName: 'Maturity Date',
   },
   {
     id: 'cpa-5',
-    dealId: 'deal-apollo',
-    dealName: 'Project Apollo Amendment',
-    counterpartyId: 'cp-apollo-ind',
+    dealId: `deal-${bApollo.id}`,
+    dealName: `${fApollo.name} Amendment`,
+    counterpartyId: `cp-${bApollo.id}`,
     counterpartyName: 'Jennifer Lee',
-    counterpartyOrg: 'Apollo Industries',
+    counterpartyOrg: bApollo.name,
     actionType: 'requested',
     description: 'Requested additional time for document review',
-    timestamp: '2024-12-10T12:30:00Z',
-    relativeTime: '2 hours ago',
+    timestamp: eventTimestampHoursAgo(2),
+    relativeTime: relativeHoursAgo(2),
     isActive: false,
     resourceType: 'general',
   },
@@ -336,14 +363,14 @@ export const recentMentions: Mention[] = [
     fromUserId: 'user-2',
     fromUserName: 'Mike Chen',
     fromUserInitials: 'MC',
-    message: '@you Please review the interest rate cap terms in the Apollo amendment',
+    message: `@you Please review the interest rate cap terms in the ${bApollo.shortName} amendment`,
     context: {
       type: 'document',
-      resourceId: 'doc-apollo-amendment',
-      resourceName: 'Project Apollo - Amendment No. 4',
+      resourceId: `doc-${bApollo.id}-amendment`,
+      resourceName: `${fApollo.name} - Amendment No. 4`,
     },
-    timestamp: '2024-12-10T13:30:00Z',
-    relativeTime: '1 hour ago',
+    timestamp: eventTimestampHoursAgo(1),
+    relativeTime: relativeHoursAgo(1),
     read: false,
   },
   {
@@ -351,14 +378,14 @@ export const recentMentions: Mention[] = [
     fromUserId: 'user-3',
     fromUserName: 'Emily Rodriguez',
     fromUserInitials: 'ER',
-    message: '@you Need your sign-off on the ABC Holdings compliance certificate',
+    message: `@you Need your sign-off on the ${bAbc.name} compliance certificate`,
     context: {
       type: 'compliance',
-      resourceId: 'comp-abc-q4',
-      resourceName: 'ABC Holdings - Q4 Compliance',
+      resourceId: `comp-${bAbc.id}-q4`,
+      resourceName: `${bAbc.name} - Q4 Compliance`,
     },
-    timestamp: '2024-12-10T11:15:00Z',
-    relativeTime: '3 hours ago',
+    timestamp: eventTimestampHoursAgo(3),
+    relativeTime: relativeHoursAgo(3),
     read: false,
   },
   {
@@ -366,14 +393,14 @@ export const recentMentions: Mention[] = [
     fromUserId: 'user-5',
     fromUserName: 'Lisa Thompson',
     fromUserInitials: 'LT',
-    message: '@you Trade documentation for XYZ is ready for your review',
+    message: `@you Trade documentation for ${bXyz.shortName} is ready for your review`,
     context: {
       type: 'trading',
-      resourceId: 'trade-xyz-dd',
-      resourceName: 'XYZ Corp - Trade DD',
+      resourceId: `trade-${bXyz.id}-dd`,
+      resourceName: `${bXyz.name} - Trade DD`,
     },
-    timestamp: '2024-12-10T09:00:00Z',
-    relativeTime: '5 hours ago',
+    timestamp: eventTimestampHoursAgo(5),
+    relativeTime: relativeHoursAgo(5),
     read: true,
   },
 ];

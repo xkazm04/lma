@@ -9,6 +9,7 @@ export * from './correlation-engine';
 export * from './domain-correlations';
 export * from './time-series';
 export * from './group-by';
+export * from './color-resolver';
 // Re-export selected urgency utilities (avoid conflicts with legacy types below)
 export {
   getDaysUntil,
@@ -86,6 +87,26 @@ export function formatRelativeTime(date: Date | string, fieldHint?: string): str
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
   return formatDate(then);
+}
+
+/**
+ * Returns a compact relative time string (e.g., "5m ago", "2h ago", "3d ago").
+ * Useful for feeds, lists, and compact UI components.
+ *
+ * @param timestamp - ISO date string or Date object
+ * @returns Compact time ago string
+ */
+export function formatTimeAgo(timestamp: string | Date): string {
+  const now = new Date();
+  const time = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+  const diffMs = now.getTime() - time.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
 }
 
 export function formatFileSize(bytes: number): string {

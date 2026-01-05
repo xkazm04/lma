@@ -18,12 +18,18 @@ import {
   Calendar,
   Mail,
   MessageSquare,
+  ArrowUp,
+  Pause,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AutomatedCalendarEvent } from '../lib/types';
 import {
   getEventPriorityColor,
   getEventPriorityBadgeVariant,
+  getEscalationStatusColor,
+  getEscalationStatusLabel,
+  getEscalationLevelLabel,
 } from '../lib/types';
 import {
   getItemTypeColor,
@@ -37,6 +43,8 @@ interface EventCardProps {
   index?: number;
   onMarkComplete?: (eventId: string) => void;
   onUploadCertificate?: (eventId: string) => void;
+  onSnooze?: (eventId: string) => void;
+  onViewEscalation?: (eventId: string) => void;
 }
 
 export const EventCard = memo(function EventCard({
@@ -44,6 +52,8 @@ export const EventCard = memo(function EventCard({
   index = 0,
   onMarkComplete,
   onUploadCertificate,
+  onSnooze,
+  onViewEscalation,
 }: EventCardProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -228,12 +238,65 @@ export const EventCard = memo(function EventCard({
                   </div>
                 </div>
               )}
+
+              {/* Escalation status */}
+              {event.escalation && (
+                <div className="flex items-center gap-2 mt-2">
+                  {event.escalation.is_snoozed ? (
+                    <Badge
+                      className={cn(
+                        'text-xs cursor-pointer transition-all hover:scale-105',
+                        getEscalationStatusColor('snoozed')
+                      )}
+                      onClick={() => onViewEscalation?.(event.id)}
+                      data-testid={`escalation-badge-${event.id}`}
+                    >
+                      <Pause className="w-3 h-3 mr-1" />
+                      Snoozed
+                    </Badge>
+                  ) : event.escalation.current_level ? (
+                    <Badge
+                      className={cn(
+                        'text-xs cursor-pointer transition-all hover:scale-105',
+                        getEscalationStatusColor(event.escalation.status)
+                      )}
+                      onClick={() => onViewEscalation?.(event.id)}
+                      data-testid={`escalation-badge-${event.id}`}
+                    >
+                      <ArrowUp className="w-3 h-3 mr-1" />
+                      Level {event.escalation.current_level} - {getEscalationLevelLabel(event.escalation.current_level)}
+                    </Badge>
+                  ) : null}
+                  {event.escalation.current_assignee_name && (
+                    <span className="text-xs text-zinc-500 flex items-center gap-1">
+                      <User className="w-3 h-3" />
+                      {event.escalation.current_assignee_name}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             {event.status !== 'completed' && (
               <>
+                {/* Snooze button - only show if escalated and not already snoozed */}
+                {event.escalation &&
+                  event.escalation.current_level &&
+                  !event.escalation.is_snoozed &&
+                  onSnooze && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onSnooze(event.id)}
+                      className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                      data-testid={`snooze-btn-${event.id}`}
+                    >
+                      <Pause className="w-4 h-4 mr-1" />
+                      Snooze
+                    </Button>
+                  )}
                 <Button
                   variant="outline"
                   size="sm"

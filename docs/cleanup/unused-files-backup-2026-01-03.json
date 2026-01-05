@@ -1,0 +1,103 @@
+{
+  "backupDate": "2026-01-03",
+  "totalFiles": 19,
+  "files": [
+    {
+      "path": "src/app/features/compliance/sub_Covenants/components/PortfolioStateAnalytics.tsx",
+      "exports": ["PortfolioStateAnalyticsPanel"],
+      "reason": "Only exported from index.ts, no JSX usage or imports found"
+    },
+    {
+      "path": "src/app/features/compliance/sub_Covenants/components/PredictionAlertBanner.tsx",
+      "exports": ["PredictionAlertBanner"],
+      "reason": "Only exported from index.ts, no JSX usage or imports found"
+    },
+    {
+      "path": "src/app/features/dashboard/components/ActionQueuePanel.tsx",
+      "exports": ["ActionQueuePanel"],
+      "reason": "Only exported from index.ts, referenced only in documentation"
+    },
+    {
+      "path": "src/app/features/dashboard/components/AutopilotSettingsPanel.tsx",
+      "exports": ["AutopilotSettingsPanel"],
+      "reason": "Only exported from index.ts, referenced only in documentation"
+    },
+    {
+      "path": "src/app/features/dashboard/components/ModuleCard.tsx",
+      "exports": ["ModuleCard"],
+      "reason": "Only exported from index.ts, referenced only in documentation"
+    },
+    {
+      "path": "src/app/features/dashboard/components/PortfolioAutopilot.tsx",
+      "exports": ["PortfolioAutopilot"],
+      "reason": "Only exported from index.ts, referenced only in documentation"
+    },
+    {
+      "path": "src/app/features/dashboard/components/StakeholderCommandCenter.tsx",
+      "exports": ["StakeholderCommandCenter"],
+      "reason": "Only exported from index.ts, referenced only in documentation"
+    },
+    {
+      "path": "src/app/features/documents/components/DocumentLifecycleAutomation.tsx",
+      "exports": ["DocumentLifecycleAutomation"],
+      "reason": "Only exported from index.ts, no JSX usage found"
+    },
+    {
+      "path": "src/app/features/documents/components/FolderSuggestionPopover.tsx",
+      "exports": ["FolderSuggestionPopover", "DocumentFolderBadge"],
+      "reason": "Only exported from index.ts, no JSX usage found"
+    },
+    {
+      "path": "src/app/features/documents/components/SavedViewsSidebar.tsx",
+      "exports": ["SavedViewsSidebar"],
+      "reason": "Only exported from index.ts, no JSX usage found"
+    },
+    {
+      "path": "src/app/features/documents/PortfolioIntelligencePage.tsx",
+      "exports": ["PortfolioIntelligencePage"],
+      "reason": "Standalone page never imported or used in router"
+    },
+    {
+      "path": "src/app/features/trading/components/PositionCard.tsx",
+      "exports": ["PositionCard"],
+      "reason": "Only exported from index.ts, only self-reference in memo"
+    },
+    {
+      "path": "src/app/features/trading/components/TradeCard.tsx",
+      "exports": ["TradeCard"],
+      "reason": "Only exported from index.ts, no JSX usage found"
+    },
+    {
+      "path": "src/app/features/trading/components/UpcomingSettlements.tsx",
+      "exports": ["UpcomingSettlements"],
+      "reason": "Only exported from index.ts, no JSX usage found"
+    },
+    {
+      "path": "src/app/features/trading/sub_TradeDetail/QuestionsPanel.tsx",
+      "exports": ["QuestionsPanel"],
+      "reason": "Only exported from index.ts, only self-reference in memo"
+    },
+    {
+      "path": "src/app/features/trading/sub_TradeDetail/TradeTimeline.tsx",
+      "exports": ["TradeTimeline"],
+      "reason": "Only exported from index.ts, only self-reference in memo"
+    },
+    {
+      "path": "src/components/intelligence/inline-ai/AIExplanation.tsx",
+      "exports": ["AIExplanation"],
+      "reason": "Only exported from index.ts files, no JSX usage found"
+    },
+    {
+      "path": "src/components/intelligence/inline-ai/AISuggestionRow.tsx",
+      "exports": ["AISuggestionRow"],
+      "reason": "Only exported from index.ts files, no JSX usage found"
+    },
+    {
+      "path": "src/components/intelligence/panels/SignalFeedPanel.tsx",
+      "exports": ["SignalFeedPanel"],
+      "reason": "Only exported from index.ts files, no JSX usage found"
+    }
+  ],
+  "rollbackInstructions": "To restore any deleted file: git checkout HEAD~1 -- <filepath>",
+  "note": "File contents are available in git history. This manifest only contains metadata."
+}

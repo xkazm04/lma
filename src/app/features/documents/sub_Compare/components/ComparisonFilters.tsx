@@ -20,6 +20,7 @@ import {
   Save,
   type LucideIcon,
 } from 'lucide-react';
+import { ShortcutHint } from './ShortcutReferenceCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +64,7 @@ const changeTypeButtons: Array<{
   icon: LucideIcon;
   activeClass: string;
   hoverClass: string;
+  shortcutKey: string;
 }> = [
   {
     type: 'added',
@@ -70,6 +72,7 @@ const changeTypeButtons: Array<{
     icon: Plus,
     activeClass: 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200',
     hoverClass: 'hover:bg-green-50 hover:border-green-200',
+    shortcutKey: '1',
   },
   {
     type: 'modified',
@@ -77,6 +80,7 @@ const changeTypeButtons: Array<{
     icon: Edit3,
     activeClass: 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200',
     hoverClass: 'hover:bg-blue-50 hover:border-blue-200',
+    shortcutKey: '2',
   },
   {
     type: 'removed',
@@ -84,6 +88,7 @@ const changeTypeButtons: Array<{
     icon: Minus,
     activeClass: 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200',
     hoverClass: 'hover:bg-red-50 hover:border-red-200',
+    shortcutKey: '3',
   },
 ];
 
@@ -390,6 +395,8 @@ interface ComparisonFiltersProps {
   showLensFilters?: boolean;
   /** Show presets panel for lens filters */
   showPresets?: boolean;
+  /** Show keyboard shortcut hints on buttons */
+  showShortcutHints?: boolean;
   className?: string;
 }
 
@@ -400,6 +407,7 @@ export const ComparisonFilters = memo(function ComparisonFilters({
   filteredCount,
   showLensFilters = false,
   showPresets = true,
+  showShortcutHints = true,
   className,
 }: ComparisonFiltersProps) {
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
@@ -507,7 +515,7 @@ export const ComparisonFilters = memo(function ComparisonFilters({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-zinc-700">Filter by:</span>
           <div className="flex gap-1">
-            {changeTypeButtons.map(({ type, label, icon: Icon, activeClass, hoverClass }) => {
+            {changeTypeButtons.map(({ type, label, icon: Icon, activeClass, hoverClass, shortcutKey }) => {
               const isActive = filters.changeTypes.includes(type);
               return (
                 <Button
@@ -524,6 +532,7 @@ export const ComparisonFilters = memo(function ComparisonFilters({
                 >
                   <Icon className="w-3.5 h-3.5 mr-1" />
                   {label}
+                  <ShortcutHint shortcutKey={shortcutKey} show={showShortcutHints} />
                 </Button>
               );
             })}

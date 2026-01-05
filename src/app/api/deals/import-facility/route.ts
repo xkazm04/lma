@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
 
 // Helper function to fetch and format facility data for import
 async function fetchFacilityForImport(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   supabase: TypedSupabaseClient,
   facilityId: string
 ): Promise<ImportableFacilityData | null> {

@@ -267,7 +267,7 @@ export async function POST(
 }
 
 // Helper function to generate compliance events
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 async function generateComplianceEvents(supabase: TypedSupabaseClient, obligation: ComplianceObligation, facilityId: string) {
   const events: Partial<ComplianceEvent>[] = [];
   const now = new Date();

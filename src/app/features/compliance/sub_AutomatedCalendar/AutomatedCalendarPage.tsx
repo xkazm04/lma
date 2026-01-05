@@ -17,14 +17,19 @@ import {
   Plus,
   Zap,
   ArrowRight,
+  ArrowUp,
+  Link2,
 } from 'lucide-react';
 import type { ItemType, ItemStatus } from '../lib/types';
-import type { EventPriority, AutomatedCalendarEvent, NotificationPreferences } from './lib/types';
+import type { EventPriority, AutomatedCalendarEvent, NotificationPreferences, EscalationChain, EscalationAuditEntry } from './lib/types';
 import {
   mockAutomatedEvents,
   mockCalendarStats,
   mockCalendarSyncConfigs,
   mockNotificationPreferences,
+  mockEscalationChains,
+  mockEscalationAssignees,
+  mockEscalationAuditEntries,
 } from './lib/mock-data';
 import { filterEvents, sortEvents } from './lib/event-generator';
 import {
@@ -34,6 +39,9 @@ import {
   CalendarExportDialog,
   ReminderSettingsDialog,
   CompletionDialog,
+  SnoozeDialog,
+  EscalationChainDialog,
+  EscalationAuditLog,
 } from './components';
 
 export const AutomatedCalendarPage = memo(function AutomatedCalendarPage() {
@@ -52,7 +60,15 @@ export const AutomatedCalendarPage = memo(function AutomatedCalendarPage() {
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [snoozeDialogOpen, setSnoozeDialogOpen] = useState(false);
+  const [escalationChainDialogOpen, setEscalationChainDialogOpen] = useState(false);
+  const [showAuditLog, setShowAuditLog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<AutomatedCalendarEvent | null>(null);
+  const [selectedChain, setSelectedChain] = useState<EscalationChain | null>(null);
+
+  // Escalation state
+  const [escalationChains, setEscalationChains] = useState<EscalationChain[]>(mockEscalationChains);
+  const [auditEntries, setAuditEntries] = useState<EscalationAuditEntry[]>(mockEscalationAuditEntries);
 
   // Notification preferences
   const [preferences, setPreferences] = useState<NotificationPreferences>(mockNotificationPreferences);
@@ -140,6 +156,87 @@ export const AutomatedCalendarPage = memo(function AutomatedCalendarPage() {
     // For demo, just log the action
   }, []);
 
+  // Escalation handlers
+  const handleSnooze = useCallback((eventId: string) => {
+    const event = events.find((e) => e.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      setSnoozeDialogOpen(true);
+    }
+  }, [events]);
+
+  const handleSnoozeSubmit = useCallback(
+    async (eventId: string, snoozeData: { snooze_hours: number; reason: string }) => {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const snoozeUntil = new Date(Date.now() + snoozeData.snooze_hours * 60 * 60 * 1000).toISOString();
+
+      // Update event with snooze
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === eventId
+            ? {
+                ...e,
+                escalation: e.escalation
+                  ? {
+                      ...e.escalation,
+                      is_snoozed: true,
+                      snooze_until: snoozeUntil,
+                      snooze_reason: snoozeData.reason,
+                      status: 'snoozed' as const,
+                    }
+                  : undefined,
+              }
+            : e
+        )
+      );
+
+      // Add audit entry
+      const newAuditEntry: EscalationAuditEntry = {
+        id: `audit-${Date.now()}`,
+        escalation_id: `esc-${eventId}`,
+        event_id: eventId,
+        action: 'escalation_snoozed',
+        performed_by: 'current-user',
+        performed_by_name: 'John Smith',
+        timestamp: new Date().toISOString(),
+        previous_level: events.find((e) => e.id === eventId)?.escalation?.current_level || null,
+        new_level: null,
+        previous_assignee: events.find((e) => e.id === eventId)?.escalation?.current_assignee_name || null,
+        new_assignee: null,
+        details: `Escalation snoozed for ${snoozeData.snooze_hours} hours`,
+        snooze_reason: snoozeData.reason,
+        snooze_duration_hours: snoozeData.snooze_hours,
+      };
+      setAuditEntries((prev) => [newAuditEntry, ...prev]);
+
+      setSnoozeDialogOpen(false);
+      setSelectedEvent(null);
+    },
+    [events]
+  );
+
+  const handleViewEscalation = useCallback((eventId: string) => {
+    const event = events.find((e) => e.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      setShowAuditLog(true);
+    }
+  }, [events]);
+
+  const handleSaveEscalationChain = useCallback((chain: EscalationChain) => {
+    setEscalationChains((prev) => {
+      const exists = prev.some((c) => c.id === chain.id);
+      if (exists) {
+        return prev.map((c) => (c.id === chain.id ? chain : c));
+      }
+      return [...prev, chain];
+    });
+    setEscalationChainDialogOpen(false);
+    setSelectedChain(null);
+  }, []);
+
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -200,41 +297,53 @@ export const AutomatedCalendarPage = memo(function AutomatedCalendarPage() {
       <CalendarStatsBar stats={mockCalendarStats} />
 
       {/* Feature highlights */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {[
           {
             icon: Zap,
             iconBg: 'bg-purple-100',
             iconColor: 'text-purple-600',
             title: 'Auto-Generated',
-            description: 'Events created from extracted covenants',
+            description: 'Events from covenants',
           },
           {
             icon: Bell,
             iconBg: 'bg-blue-100',
             iconColor: 'text-blue-600',
             title: 'Smart Reminders',
-            description: 'Email, Slack & in-app notifications',
+            description: 'Multi-channel alerts',
+          },
+          {
+            icon: ArrowUp,
+            iconBg: 'bg-red-100',
+            iconColor: 'text-red-600',
+            title: 'Escalation Chains',
+            description: 'PagerDuty-style escalation',
+            onClick: () => setEscalationChainDialogOpen(true),
           },
           {
             icon: Calendar,
             iconBg: 'bg-green-100',
             iconColor: 'text-green-600',
             title: 'Calendar Sync',
-            description: 'Outlook & Google Calendar integration',
+            description: 'Outlook & Google',
           },
           {
             icon: Plus,
             iconBg: 'bg-amber-100',
             iconColor: 'text-amber-600',
             title: 'Auto-Complete',
-            description: 'Mark complete with certificate upload',
+            description: 'Certificate upload',
           },
         ].map((feature, idx) => (
           <Card
             key={feature.title}
-            className="animate-in fade-in slide-in-from-bottom-2"
+            className={`animate-in fade-in slide-in-from-bottom-2 ${
+              'onClick' in feature ? 'cursor-pointer hover:shadow-md transition-shadow' : ''
+            }`}
             style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }}
+            onClick={'onClick' in feature ? feature.onClick : undefined}
+            data-testid={`feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
           >
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
@@ -321,6 +430,8 @@ export const AutomatedCalendarPage = memo(function AutomatedCalendarPage() {
             events={filteredEvents}
             onMarkComplete={handleMarkComplete}
             onUploadCertificate={handleUploadCertificate}
+            onSnooze={handleSnooze}
+            onViewEscalation={handleViewEscalation}
           />
         </CardContent>
       </Card>
@@ -406,6 +517,49 @@ export const AutomatedCalendarPage = memo(function AutomatedCalendarPage() {
         event={selectedEvent}
         onComplete={handleCompleteEvent}
       />
+
+      <SnoozeDialog
+        open={snoozeDialogOpen}
+        onOpenChange={setSnoozeDialogOpen}
+        event={selectedEvent}
+        onSnooze={handleSnoozeSubmit}
+      />
+
+      <EscalationChainDialog
+        open={escalationChainDialogOpen}
+        onOpenChange={setEscalationChainDialogOpen}
+        chain={selectedChain}
+        availableAssignees={mockEscalationAssignees}
+        onSave={handleSaveEscalationChain}
+      />
+
+      {/* Audit Log Panel */}
+      {showAuditLog && selectedEvent && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-auto">
+            <div className="sticky top-0 bg-white p-4 border-b flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Escalation History: {selectedEvent.title}</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowAuditLog(false);
+                  setSelectedEvent(null);
+                }}
+                data-testid="close-audit-log-btn"
+              >
+                Close
+              </Button>
+            </div>
+            <div className="p-4">
+              <EscalationAuditLog
+                entries={auditEntries}
+                eventId={selectedEvent.id}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

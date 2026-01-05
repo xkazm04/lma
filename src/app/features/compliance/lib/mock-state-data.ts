@@ -7,9 +7,9 @@ import type {
   PortfolioStateAnalytics,
   TransitionPattern,
   PortfolioInsight,
-} from './covenant-state-machine';
+} from './types';
 import { mockCovenants } from './mock-data';
-import { buildStateHistoryFromTests } from './covenant-state-machine';
+import { buildStateHistoryFromTests } from './types';
 
 /**
  * Generate mock state histories for all covenants.

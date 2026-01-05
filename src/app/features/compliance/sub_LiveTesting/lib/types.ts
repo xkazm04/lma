@@ -243,39 +243,9 @@ export const DEFAULT_ALERT_THRESHOLDS: HeadroomThreshold[] = [
   },
 ];
 
-/**
- * Helper function for alert severity color styling.
- */
-export function getAlertSeverityColor(severity: AlertSeverity): string {
-  switch (severity) {
-    case 'critical':
-      return 'bg-red-100 text-red-700 border-red-200';
-    case 'high':
-      return 'bg-orange-100 text-orange-700 border-orange-200';
-    case 'medium':
-      return 'bg-amber-100 text-amber-700 border-amber-200';
-    case 'low':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
-    case 'info':
-      return 'bg-zinc-100 text-zinc-700 border-zinc-200';
-  }
-}
-
-/**
- * Helper function for integration status color styling.
- */
-export function getIntegrationStatusColor(status: IntegrationStatus): string {
-  switch (status) {
-    case 'active':
-      return 'bg-green-100 text-green-700';
-    case 'inactive':
-      return 'bg-zinc-100 text-zinc-700';
-    case 'error':
-      return 'bg-red-100 text-red-700';
-    case 'pending':
-      return 'bg-amber-100 text-amber-700';
-  }
-}
+// Note: getAlertSeverityColor and getIntegrationStatusColor have been moved to
+// @/lib/utils/color-resolver.ts for centralized color management.
+// Import from '@/lib/utils' instead.
 
 /**
  * Helper function for accounting provider labels.

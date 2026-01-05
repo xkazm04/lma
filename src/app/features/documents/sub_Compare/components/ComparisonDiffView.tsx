@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { CopyableValue } from './CopyableValue';
 import type { ComparisonDiff, ComparisonHistoryEntryWithDetails } from '../lib/history-types';
 
 interface ComparisonDiffViewProps {
@@ -203,7 +204,7 @@ export const ComparisonDiffView = memo(function ComparisonDiffView({
                             <Badge
                               variant="secondary"
                               className={cn(
-                                'text-xs',
+                                'text-xs flex-shrink-0',
                                 change.inComparison1.changeType === 'added' && 'bg-green-100 text-green-700',
                                 change.inComparison1.changeType === 'modified' && 'bg-blue-100 text-blue-700',
                                 change.inComparison1.changeType === 'removed' && 'bg-red-100 text-red-700'
@@ -211,9 +212,31 @@ export const ComparisonDiffView = memo(function ComparisonDiffView({
                             >
                               {change.inComparison1.changeType}
                             </Badge>
-                            <span className="text-zinc-600 truncate">
-                              {String(change.inComparison1.doc1Value || '-')} → {String(change.inComparison1.doc2Value || '-')}
-                            </span>
+                            {(() => {
+                              const doc1Val = change.inComparison1.doc1Value;
+                              const doc2Val = change.inComparison1.doc2Value;
+                              const doc1Str = doc1Val != null ? String(doc1Val) : null;
+                              const doc2Str = doc2Val != null ? String(doc2Val) : null;
+                              return (
+                                <div className="flex items-center gap-1 text-zinc-600 truncate min-w-0">
+                                  <CopyableValue
+                                    value={doc1Str}
+                                    className="inline-block max-w-[45%] truncate"
+                                    data-testid={`evolved-${i}-earlier-doc1`}
+                                  >
+                                    <span className="truncate">{doc1Str || '-'}</span>
+                                  </CopyableValue>
+                                  <span className="flex-shrink-0">→</span>
+                                  <CopyableValue
+                                    value={doc2Str}
+                                    className="inline-block max-w-[45%] truncate"
+                                    data-testid={`evolved-${i}-earlier-doc2`}
+                                  >
+                                    <span className="truncate">{doc2Str || '-'}</span>
+                                  </CopyableValue>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded">
@@ -222,7 +245,7 @@ export const ComparisonDiffView = memo(function ComparisonDiffView({
                             <Badge
                               variant="secondary"
                               className={cn(
-                                'text-xs',
+                                'text-xs flex-shrink-0',
                                 change.inComparison2.changeType === 'added' && 'bg-green-100 text-green-700',
                                 change.inComparison2.changeType === 'modified' && 'bg-blue-100 text-blue-700',
                                 change.inComparison2.changeType === 'removed' && 'bg-red-100 text-red-700'
@@ -230,9 +253,31 @@ export const ComparisonDiffView = memo(function ComparisonDiffView({
                             >
                               {change.inComparison2.changeType}
                             </Badge>
-                            <span className="text-zinc-600 truncate">
-                              {String(change.inComparison2.doc1Value || '-')} → {String(change.inComparison2.doc2Value || '-')}
-                            </span>
+                            {(() => {
+                              const doc1Val = change.inComparison2.doc1Value;
+                              const doc2Val = change.inComparison2.doc2Value;
+                              const doc1Str = doc1Val != null ? String(doc1Val) : null;
+                              const doc2Str = doc2Val != null ? String(doc2Val) : null;
+                              return (
+                                <div className="flex items-center gap-1 text-zinc-600 truncate min-w-0">
+                                  <CopyableValue
+                                    value={doc1Str}
+                                    className="inline-block max-w-[45%] truncate"
+                                    data-testid={`evolved-${i}-later-doc1`}
+                                  >
+                                    <span className="truncate">{doc1Str || '-'}</span>
+                                  </CopyableValue>
+                                  <span className="flex-shrink-0">→</span>
+                                  <CopyableValue
+                                    value={doc2Str}
+                                    className="inline-block max-w-[45%] truncate"
+                                    data-testid={`evolved-${i}-later-doc2`}
+                                  >
+                                    <span className="truncate">{doc2Str || '-'}</span>
+                                  </CopyableValue>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>

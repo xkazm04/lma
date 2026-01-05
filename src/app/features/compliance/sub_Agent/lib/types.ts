@@ -69,18 +69,8 @@ export interface GeneratedDocument {
 }
 
 // Alert severity helpers
-export function getAlertSeverityColor(severity: AgentAlert['severity']): string {
-  switch (severity) {
-    case 'critical':
-      return 'bg-red-100 text-red-700 border-red-200';
-    case 'warning':
-      return 'bg-amber-100 text-amber-700 border-amber-200';
-    case 'info':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
-    default:
-      return 'bg-zinc-100 text-zinc-700 border-zinc-200';
-  }
-}
+// Note: getAlertSeverityColor has been moved to @/lib/utils/color-resolver.ts
+// for centralized color management. Import from '@/lib/utils' instead.
 
 export function getAlertSeverityIcon(severity: AgentAlert['severity']): string {
   switch (severity) {

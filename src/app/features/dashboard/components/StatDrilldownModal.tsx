@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useState, useMemo } from 'react';
-import { Search, ArrowUpDown, FileText, Clock, AlertTriangle, Handshake, Leaf } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, FileText, Clock, AlertTriangle, Handshake, Leaf } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -231,39 +231,106 @@ export const StatDrilldownModal = memo(function StatDrilldownModal({
 
     const query = searchQuery.toLowerCase();
 
+    // Helper to compare values for sorting
+    const compareValues = (a: unknown, b: unknown, direction: SortDirection): number => {
+      const aVal = a ?? '';
+      const bVal = b ?? '';
+      let comparison = 0;
+
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        comparison = aVal - bVal;
+      } else {
+        comparison = String(aVal).localeCompare(String(bVal));
+      }
+
+      return direction === 'asc' ? comparison : -comparison;
+    };
+
+    // Get sortable field based on type and column index
+    const getSortKey = <T,>(item: T, columnIndex: number): unknown => {
+      switch (type) {
+        case 'loans': {
+          const loan = item as LoanDetail;
+          const keys = ['name', 'borrower', 'amount', 'type', 'status', 'lastUpdated'] as const;
+          return loan[keys[columnIndex]];
+        }
+        case 'documents': {
+          const doc = item as DocumentDetail;
+          const keys = ['name', 'type', 'uploadedBy', 'uploadedAt', 'status', 'extractedFields'] as const;
+          return doc[keys[columnIndex]];
+        }
+        case 'deadlines': {
+          const deadline = item as DeadlineDetail;
+          const keys = ['title', 'loan', 'dueDate', 'daysRemaining', 'type', 'priority'] as const;
+          return deadline[keys[columnIndex]];
+        }
+        case 'negotiations': {
+          const negotiation = item as NegotiationDetail;
+          const keys = ['deal', 'counterparty', 'status', 'proposalsCount', 'openItems', 'lastActivity'] as const;
+          return negotiation[keys[columnIndex]];
+        }
+        case 'esg': {
+          const risk = item as ESGRiskDetail;
+          const keys = ['kpi', 'facility', 'target', 'current', 'impact', 'deadline'] as const;
+          return risk[keys[columnIndex]];
+        }
+        default:
+          return '';
+      }
+    };
+
+    // Filter data based on search query
+    let result: (LoanDetail | DocumentDetail | DeadlineDetail | NegotiationDetail | ESGRiskDetail)[];
+
     switch (type) {
       case 'loans':
-        return activeLoansDetails.filter(loan =>
+        result = activeLoansDetails.filter(loan =>
           loan.name.toLowerCase().includes(query) ||
           loan.borrower.toLowerCase().includes(query) ||
           loan.type.toLowerCase().includes(query)
         );
+        break;
       case 'documents':
-        return documentsProcessedDetails.filter(doc =>
+        result = documentsProcessedDetails.filter(doc =>
           doc.name.toLowerCase().includes(query) ||
           doc.type.toLowerCase().includes(query) ||
           doc.uploadedBy.toLowerCase().includes(query)
         );
+        break;
       case 'deadlines':
-        return upcomingDeadlinesDetails.filter(deadline =>
+        result = upcomingDeadlinesDetails.filter(deadline =>
           deadline.title.toLowerCase().includes(query) ||
           deadline.loan.toLowerCase().includes(query) ||
           deadline.type.toLowerCase().includes(query)
         );
+        break;
       case 'negotiations':
-        return openNegotiationsDetails.filter(negotiation =>
+        result = openNegotiationsDetails.filter(negotiation =>
           negotiation.deal.toLowerCase().includes(query) ||
           negotiation.counterparty.toLowerCase().includes(query)
         );
+        break;
       case 'esg':
-        return esgAtRiskDetails.filter(risk =>
+        result = esgAtRiskDetails.filter(risk =>
           risk.kpi.toLowerCase().includes(query) ||
           risk.facility.toLowerCase().includes(query)
         );
+        break;
       default:
         return [];
     }
-  }, [type, searchQuery]);
+
+    // Apply sorting if a column is selected
+    if (sortColumn !== null) {
+      result = [...result].sort((a, b) => {
+        const aKey = getSortKey(a, sortColumn);
+        const bKey = getSortKey(b, sortColumn);
+        return compareValues(aKey, bKey, sortDirection);
+      });
+    }
+
+    return result;
+  }, [type, searchQuery, sortColumn, sortDirection]);
 
   const renderTable = () => {
     if (!type || !config) return null;
@@ -282,10 +349,15 @@ export const StatDrilldownModal = memo(function StatDrilldownModal({
                 >
                   <div className="flex items-center gap-1">
                     {column}
-                    <ArrowUpDown className={cn(
-                      'w-3 h-3',
-                      sortColumn === index ? 'text-zinc-900' : 'text-zinc-400'
-                    )} />
+                    {sortColumn === index ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="w-3 h-3 text-zinc-900" data-testid={`sort-asc-${index}`} />
+                      ) : (
+                        <ArrowDown className="w-3 h-3 text-zinc-900" data-testid={`sort-desc-${index}`} />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-zinc-400" />
+                    )}
                   </div>
                 </th>
               ))}
@@ -336,7 +408,7 @@ export const StatDrilldownModal = memo(function StatDrilldownModal({
           </div>
         </DialogHeader>
 
-        {/* Search and filters */}
+        {/* Search */}
         <div className="flex items-center gap-4 py-4 border-b border-zinc-100">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -349,12 +421,6 @@ export const StatDrilldownModal = memo(function StatDrilldownModal({
               data-testid="drilldown-search-input"
             />
           </div>
-          <Button variant="outline" size="sm" data-testid="drilldown-filter-btn">
-            Filter
-          </Button>
-          <Button variant="outline" size="sm" data-testid="drilldown-export-btn">
-            Export
-          </Button>
         </div>
 
         {/* Table content */}

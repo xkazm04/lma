@@ -16,8 +16,8 @@ import type {
   CovenantStateHistory,
   CovenantStateTransition,
   CovenantLifecycleState,
-  TransitionTrigger,
-} from '../../lib/covenant-state-machine';
+  LifecycleTransitionTrigger,
+} from '../../lib/types';
 
 interface StateHistoryTimelineProps {
   stateHistory: CovenantStateHistory;
@@ -87,7 +87,7 @@ function getStateLabel(state: CovenantLifecycleState): string {
 /**
  * Get human-readable label for trigger.
  */
-function getTriggerLabel(trigger: TransitionTrigger): string {
+function getTriggerLabel(trigger: LifecycleTransitionTrigger): string {
   switch (trigger) {
     case 'headroom_deterioration':
       return 'Headroom Deteriorated';

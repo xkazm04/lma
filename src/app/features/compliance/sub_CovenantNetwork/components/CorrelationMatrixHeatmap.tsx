@@ -1,13 +1,13 @@
 'use client';
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { CorrelationMatrix } from '../../lib/correlation-types';
 import { categorizeCorrelationStrength, getCorrelationStrengthColor } from '../../lib/correlation-types';
 import { Info } from 'lucide-react';
+import { CellHoverPreviewPanel, type CellHoverData } from './CellHoverPreviewPanel';
+import { mockBreachPropagationEdges } from '../../lib/correlation-mock-data';
 
 interface CorrelationMatrixHeatmapProps {
   matrix: CorrelationMatrix;
@@ -23,6 +23,80 @@ export const CorrelationMatrixHeatmap = memo(function CorrelationMatrixHeatmap({
   onCellClick,
 }: CorrelationMatrixHeatmapProps) {
   const cellSize = 80; // px
+
+  // Hover preview state
+  const [hoverData, setHoverData] = useState<CellHoverData | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Get co-breach count from mock data for a cell
+  const getCoBreachCount = useCallback((rowId: string, colId: string): number | undefined => {
+    const edge = mockBreachPropagationEdges.find(
+      e =>
+        (e.from_covenant_id === rowId && e.to_covenant_id === colId) ||
+        (e.from_covenant_id === colId && e.to_covenant_id === rowId)
+    );
+    return edge?.co_breach_count;
+  }, []);
+
+  // Handle mouse enter on cell
+  const handleCellMouseEnter = useCallback((
+    event: React.MouseEvent,
+    rowIdx: number,
+    colIdx: number,
+    value: number,
+    pValue: number,
+    leadLag: number
+  ) => {
+    const isDiagonal = rowIdx === colIdx;
+    if (isDiagonal || value === 0) return;
+
+    // Clear any pending timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+
+    // Small delay before showing to prevent flicker
+    hoverTimeoutRef.current = setTimeout(() => {
+      const rowMeta = matrix.row_metadata[rowIdx];
+      const colMeta = matrix.col_metadata[colIdx];
+
+      const cellHoverData: CellHoverData = {
+        rowCovenantId: rowMeta.covenant_id,
+        rowCovenantName: rowMeta.covenant_name,
+        rowFacilityName: rowMeta.facility_name,
+        rowBorrowerName: rowMeta.borrower_name,
+        colCovenantId: colMeta.covenant_id,
+        colCovenantName: colMeta.covenant_name,
+        colFacilityName: colMeta.facility_name,
+        colBorrowerName: colMeta.borrower_name,
+        correlationValue: value,
+        pValue,
+        leadLagQuarters: leadLag,
+        coBreachCount: getCoBreachCount(rowMeta.covenant_id, colMeta.covenant_id),
+      };
+
+      setHoverData(cellHoverData);
+      setHoverPosition({ x: event.clientX, y: event.clientY });
+    }, 150);
+  }, [matrix.row_metadata, matrix.col_metadata, getCoBreachCount]);
+
+  // Handle mouse leave on cell
+  const handleCellMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoverData(null);
+    setHoverPosition(null);
+  }, []);
+
+  // Handle mouse move to update position
+  const handleCellMouseMove = useCallback((event: React.MouseEvent) => {
+    if (hoverData) {
+      setHoverPosition({ x: event.clientX, y: event.clientY });
+    }
+  }, [hoverData]);
 
   // Calculate color for correlation value
   const getCorrelationColor = (value: number, pValue: number): string => {
@@ -83,7 +157,7 @@ export const CorrelationMatrixHeatmap = memo(function CorrelationMatrixHeatmap({
             {/* Header Row */}
             <div className="flex">
               <div style={{ width: `${cellSize * 2}px` }} className="shrink-0" />
-              {matrix.col_metadata.map((col, idx) => (
+              {matrix.col_metadata.map((col) => (
                 <div
                   key={col.covenant_id}
                   style={{ width: `${cellSize}px` }}
@@ -135,6 +209,9 @@ export const CorrelationMatrixHeatmap = memo(function CorrelationMatrixHeatmap({
                           onCellClick(matrix.row_labels[rowIdx], matrix.col_labels[colIdx], value);
                         }
                       }}
+                      onMouseEnter={(e) => handleCellMouseEnter(e, rowIdx, colIdx, value, pValue, leadLag)}
+                      onMouseLeave={handleCellMouseLeave}
+                      onMouseMove={handleCellMouseMove}
                       data-testid={`matrix-cell-${rowIdx}-${colIdx}`}
                     >
                       {isDiagonal ? (
@@ -176,6 +253,12 @@ export const CorrelationMatrixHeatmap = memo(function CorrelationMatrixHeatmap({
           </p>
         </div>
       </CardContent>
+
+      {/* Hover Preview Panel */}
+      <CellHoverPreviewPanel
+        data={hoverData}
+        position={hoverPosition}
+      />
     </Card>
   );
 });

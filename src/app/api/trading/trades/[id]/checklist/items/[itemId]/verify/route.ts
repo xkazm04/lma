@@ -217,7 +217,7 @@ export async function POST(
 }
 
 // Fallback for when RPC function is not deployed yet
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 async function fallbackVerification(
   supabase: TypedSupabaseClient,
   itemId: string,
@@ -298,7 +298,7 @@ async function fallbackVerification(
 }
 
 // Helper to update checklist and trade status (fallback)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 async function updateChecklistStatus(supabase: TypedSupabaseClient, checklistId: string, tradeId: string) {
   const { data: items } = await supabase
     .from('due_diligence_items')

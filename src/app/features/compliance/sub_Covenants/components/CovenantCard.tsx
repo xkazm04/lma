@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, CheckCircle, AlertTriangle, Clock, ArrowRight, Brain } from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle, AlertTriangle, Clock, ArrowRight, Brain, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Covenant, BreachPrediction } from '../../lib';
 import { CovenantSparkline } from './CovenantSparkline';
@@ -22,6 +22,7 @@ interface CovenantCardProps {
   index?: number;
   showPrediction?: boolean;
   showEntropyMetrics?: boolean;
+  onRequestWaiver?: (covenant: Covenant) => void;
 }
 
 function formatThreshold(value: number, type: string): string {
@@ -94,6 +95,7 @@ export const CovenantCard = memo(function CovenantCard({
   index = 0,
   showPrediction = true,
   showEntropyMetrics = true,
+  onRequestWaiver,
 }: CovenantCardProps) {
   const [isPredictionExpanded, setIsPredictionExpanded] = useState(false);
   const isAtRisk = covenant.latest_test.headroom_percentage < DEFAULT_AT_RISK_HEADROOM_THRESHOLD && covenant.latest_test.headroom_percentage >= 0;
@@ -224,6 +226,17 @@ export const CovenantCard = memo(function CovenantCard({
           </div>
 
           <div className="flex items-center gap-2 ml-4 shrink-0">
+            {covenant.status === 'breached' && onRequestWaiver && (
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 hover:shadow-sm transition-all"
+                onClick={() => onRequestWaiver(covenant)}
+                data-testid={`request-waiver-btn-${covenant.id}`}
+              >
+                <ShieldAlert className="w-4 h-4 mr-1" />
+                Request Waiver
+              </Button>
+            )}
             <Link href={`/compliance/facilities/${covenant.facility_id}`}>
               <Button variant="outline" size="sm" className="hover:shadow-sm transition-all">
                 View Facility

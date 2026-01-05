@@ -17,25 +17,58 @@ import {
   calculatePortfolioMetrics,
   calculateRippleEffect,
 } from './risk-correlation-utils';
+import {
+  borrowers,
+  facilities,
+  BORROWER_IDS,
+  FACILITY_IDS,
+} from './borrower-registry';
+import {
+  toDateString,
+  toISOString,
+  daysAgo,
+  daysFromNow,
+  lastUpdated,
+  createDeadline,
+} from './date-factory';
 
 // =============================================================================
 // Mock Borrower Risk Profiles
 // =============================================================================
 
+// Helper references from canonical registry
+const bAbc = borrowers[BORROWER_IDS.ABC_HOLDINGS];
+const bXyz = borrowers[BORROWER_IDS.XYZ_CORP];
+const bApollo = borrowers[BORROWER_IDS.APOLLO_INDUSTRIES];
+const bNeptune = borrowers[BORROWER_IDS.NEPTUNE_LLC];
+const bDelta = borrowers[BORROWER_IDS.DELTA_CORP];
+const bOmega = borrowers[BORROWER_IDS.OMEGA_HOLDINGS];
+const bEcotech = borrowers[BORROWER_IDS.ECOTECH_LTD];
+const bAlpha = borrowers[BORROWER_IDS.ALPHA_PARTNERS];
+
+const fAbc = facilities[FACILITY_IDS.ABC_TERM_A];
+const fXyz = facilities[FACILITY_IDS.XYZ_REVOLVER];
+const fApollo = facilities[FACILITY_IDS.APOLLO_PROJECT];
+const fNeptune = facilities[FACILITY_IDS.NEPTUNE_SYNDICATED];
+const fDelta = facilities[FACILITY_IDS.DELTA_WC];
+const fOmega = facilities[FACILITY_IDS.OMEGA_ACQUISITION];
+const fEcotech = facilities[FACILITY_IDS.ECOTECH_GREEN];
+const fAlpha = facilities[FACILITY_IDS.ALPHA_BRIDGE];
+
 export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
   {
-    id: 'borrower-1',
-    name: 'ABC Holdings',
-    facilityId: 'fac-1',
-    facilityName: 'Term Loan A',
-    industry: 'Technology',
-    geography: 'North America',
-    totalExposure: 50_000_000,
-    esgScore: 72,
-    complianceScore: 85,
-    creditRating: 'BBB+',
-    covenantTypes: ['Leverage Ratio', 'Interest Coverage', 'EBITDA'],
-    maturityDate: '2026-12-15',
+    id: bAbc.id,
+    name: bAbc.name,
+    facilityId: fAbc.id,
+    facilityName: fAbc.name,
+    industry: bAbc.industry,
+    geography: bAbc.geography,
+    totalExposure: fAbc.amount,
+    esgScore: bAbc.esgScore,
+    complianceScore: bAbc.complianceScore,
+    creditRating: bAbc.creditRating,
+    covenantTypes: fAbc.covenantTypes,
+    maturityDate: fAbc.maturityDate,
     riskFactors: [
       {
         id: 'rf-1',
@@ -45,23 +78,23 @@ export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
         severity: 'medium',
         score: 75,
         trend: 'stable',
-        lastUpdated: '2024-12-01',
+        lastUpdated: toDateString(daysAgo(9)),
       },
     ],
   },
   {
-    id: 'borrower-2',
-    name: 'XYZ Corp',
-    facilityId: 'fac-2',
-    facilityName: 'Revolving Facility',
-    industry: 'Technology',
-    geography: 'North America',
-    totalExposure: 75_000_000,
-    esgScore: 68,
-    complianceScore: 88,
-    creditRating: 'A-',
-    covenantTypes: ['Leverage Ratio', 'Fixed Charge Coverage', 'Net Worth'],
-    maturityDate: '2027-06-30',
+    id: bXyz.id,
+    name: bXyz.name,
+    facilityId: fXyz.id,
+    facilityName: fXyz.name,
+    industry: bXyz.industry,
+    geography: bXyz.geography,
+    totalExposure: fXyz.amount,
+    esgScore: bXyz.esgScore,
+    complianceScore: bXyz.complianceScore,
+    creditRating: bXyz.creditRating,
+    covenantTypes: fXyz.covenantTypes,
+    maturityDate: fXyz.maturityDate,
     riskFactors: [
       {
         id: 'rf-2',
@@ -71,23 +104,23 @@ export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
         severity: 'medium',
         score: 68,
         trend: 'improving',
-        lastUpdated: '2024-11-15',
+        lastUpdated: toDateString(daysAgo(25)),
       },
     ],
   },
   {
-    id: 'borrower-3',
-    name: 'Apollo Industries',
-    facilityId: 'fac-3',
-    facilityName: 'Project Apollo',
-    industry: 'Manufacturing',
-    geography: 'Europe',
-    totalExposure: 120_000_000,
-    esgScore: 58,
-    complianceScore: 72,
-    creditRating: 'BBB',
-    covenantTypes: ['Leverage Ratio', 'Asset Coverage', 'EBITDA'],
-    maturityDate: '2025-09-30',
+    id: bApollo.id,
+    name: bApollo.name,
+    facilityId: fApollo.id,
+    facilityName: fApollo.name,
+    industry: bApollo.industry,
+    geography: bApollo.geography,
+    totalExposure: fApollo.amount,
+    esgScore: bApollo.esgScore,
+    complianceScore: bApollo.complianceScore,
+    creditRating: bApollo.creditRating,
+    covenantTypes: fApollo.covenantTypes,
+    maturityDate: fApollo.maturityDate,
     riskFactors: [
       {
         id: 'rf-3',
@@ -97,23 +130,23 @@ export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
         severity: 'high',
         score: 45,
         trend: 'declining',
-        lastUpdated: '2024-12-05',
+        lastUpdated: toDateString(daysAgo(5)),
       },
     ],
   },
   {
-    id: 'borrower-4',
-    name: 'Neptune LLC',
-    facilityId: 'fac-4',
-    facilityName: 'Project Neptune',
-    industry: 'Energy',
-    geography: 'Europe',
-    totalExposure: 85_000_000,
-    esgScore: 45,
-    complianceScore: 62,
-    creditRating: 'BB+',
-    covenantTypes: ['Leverage Ratio', 'Interest Coverage', 'Cash Flow'],
-    maturityDate: '2025-06-15',
+    id: bNeptune.id,
+    name: bNeptune.name,
+    facilityId: fNeptune.id,
+    facilityName: fNeptune.name,
+    industry: bNeptune.industry,
+    geography: bNeptune.geography,
+    totalExposure: fNeptune.amount,
+    esgScore: bNeptune.esgScore,
+    complianceScore: bNeptune.complianceScore,
+    creditRating: bNeptune.creditRating,
+    covenantTypes: fNeptune.covenantTypes,
+    maturityDate: fNeptune.maturityDate,
     riskFactors: [
       {
         id: 'rf-4',
@@ -123,7 +156,7 @@ export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
         severity: 'critical',
         score: 35,
         trend: 'declining',
-        lastUpdated: '2024-12-07',
+        lastUpdated: toDateString(daysAgo(3)),
       },
       {
         id: 'rf-5',
@@ -133,38 +166,38 @@ export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
         severity: 'high',
         score: 55,
         trend: 'declining',
-        lastUpdated: '2024-12-07',
+        lastUpdated: toDateString(daysAgo(3)),
       },
     ],
   },
   {
-    id: 'borrower-5',
-    name: 'Delta Corp',
-    facilityId: 'fac-5',
-    facilityName: 'Working Capital',
-    industry: 'Retail',
-    geography: 'North America',
-    totalExposure: 25_000_000,
-    esgScore: 78,
-    complianceScore: 91,
-    creditRating: 'A',
-    covenantTypes: ['Current Ratio', 'Net Worth', 'Inventory Turnover'],
-    maturityDate: '2026-03-31',
+    id: bDelta.id,
+    name: bDelta.name,
+    facilityId: fDelta.id,
+    facilityName: fDelta.name,
+    industry: bDelta.industry,
+    geography: bDelta.geography,
+    totalExposure: fDelta.amount,
+    esgScore: bDelta.esgScore,
+    complianceScore: bDelta.complianceScore,
+    creditRating: bDelta.creditRating,
+    covenantTypes: fDelta.covenantTypes,
+    maturityDate: fDelta.maturityDate,
     riskFactors: [],
   },
   {
-    id: 'borrower-6',
-    name: 'Omega Holdings',
-    facilityId: 'fac-6',
-    facilityName: 'Acquisition Finance',
-    industry: 'Technology',
-    geography: 'Asia Pacific',
-    totalExposure: 200_000_000,
-    esgScore: 65,
-    complianceScore: 80,
-    creditRating: 'BBB-',
-    covenantTypes: ['Leverage Ratio', 'Interest Coverage', 'EBITDA'],
-    maturityDate: '2028-01-15',
+    id: bOmega.id,
+    name: bOmega.name,
+    facilityId: fOmega.id,
+    facilityName: fOmega.name,
+    industry: bOmega.industry,
+    geography: bOmega.geography,
+    totalExposure: fOmega.amount,
+    esgScore: bOmega.esgScore,
+    complianceScore: bOmega.complianceScore,
+    creditRating: bOmega.creditRating,
+    covenantTypes: fOmega.covenantTypes,
+    maturityDate: fOmega.maturityDate,
     riskFactors: [
       {
         id: 'rf-6',
@@ -174,23 +207,23 @@ export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
         severity: 'medium',
         score: 60,
         trend: 'stable',
-        lastUpdated: '2024-12-01',
+        lastUpdated: toDateString(daysAgo(9)),
       },
     ],
   },
   {
-    id: 'borrower-7',
-    name: 'EcoTech Ltd',
-    facilityId: 'fac-7',
-    facilityName: 'Green Bond',
-    industry: 'Clean Energy',
-    geography: 'Europe',
-    totalExposure: 60_000_000,
-    esgScore: 88,
-    complianceScore: 94,
-    creditRating: 'A-',
-    covenantTypes: ['Renewable Usage', 'Carbon Reduction', 'Impact Metrics'],
-    maturityDate: '2029-12-31',
+    id: bEcotech.id,
+    name: bEcotech.name,
+    facilityId: fEcotech.id,
+    facilityName: fEcotech.name,
+    industry: bEcotech.industry,
+    geography: bEcotech.geography,
+    totalExposure: fEcotech.amount,
+    esgScore: bEcotech.esgScore,
+    complianceScore: bEcotech.complianceScore,
+    creditRating: bEcotech.creditRating,
+    covenantTypes: fEcotech.covenantTypes,
+    maturityDate: fEcotech.maturityDate,
     riskFactors: [
       {
         id: 'rf-7',
@@ -200,23 +233,23 @@ export const mockBorrowerProfiles: BorrowerRiskProfile[] = [
         severity: 'medium',
         score: 65,
         trend: 'improving',
-        lastUpdated: '2024-12-03',
+        lastUpdated: toDateString(daysAgo(7)),
       },
     ],
   },
   {
-    id: 'borrower-8',
-    name: 'Alpha Partners',
-    facilityId: 'fac-8',
-    facilityName: 'Bridge Loan',
-    industry: 'Financial Services',
-    geography: 'North America',
-    totalExposure: 15_000_000,
-    esgScore: 75,
-    complianceScore: 89,
-    creditRating: 'A',
-    covenantTypes: ['Leverage Ratio', 'Liquidity Ratio', 'Capital Adequacy'],
-    maturityDate: '2025-03-15',
+    id: bAlpha.id,
+    name: bAlpha.name,
+    facilityId: fAlpha.id,
+    facilityName: fAlpha.name,
+    industry: bAlpha.industry,
+    geography: bAlpha.geography,
+    totalExposure: fAlpha.amount,
+    esgScore: bAlpha.esgScore,
+    complianceScore: bAlpha.complianceScore,
+    creditRating: bAlpha.creditRating,
+    covenantTypes: fAlpha.covenantTypes,
+    maturityDate: fAlpha.maturityDate,
     riskFactors: [],
   },
 ];
@@ -231,14 +264,14 @@ export const mockRiskEvents: RiskEvent[] = [
     type: 'esg_breach',
     title: 'Carbon Emissions Target Missed',
     description:
-      'Neptune LLC is 7% below their annual carbon reduction target, triggering potential margin adjustment',
-    borrowerId: 'borrower-4',
-    borrowerName: 'Neptune LLC',
-    facilityId: 'fac-4',
+      `${bNeptune.name} is 7% below their annual carbon reduction target, triggering potential margin adjustment`,
+    borrowerId: bNeptune.id,
+    borrowerName: bNeptune.name,
+    facilityId: fNeptune.id,
     category: 'esg',
     severity: 'critical',
-    occurredAt: '2024-12-05T10:00:00Z',
-    detectedAt: '2024-12-07T09:30:00Z',
+    occurredAt: toISOString(daysAgo(5)),
+    detectedAt: toISOString(daysAgo(3)),
     status: 'active',
   },
   {
@@ -246,14 +279,14 @@ export const mockRiskEvents: RiskEvent[] = [
     type: 'compliance_overdue',
     title: 'Annual Review Overdue',
     description:
-      'Neptune LLC annual review documentation is overdue by 3 days',
-    borrowerId: 'borrower-4',
-    borrowerName: 'Neptune LLC',
-    facilityId: 'fac-4',
+      `${bNeptune.name} annual review documentation is overdue by 3 days`,
+    borrowerId: bNeptune.id,
+    borrowerName: bNeptune.name,
+    facilityId: fNeptune.id,
     category: 'compliance',
     severity: 'high',
-    occurredAt: '2024-12-04T00:00:00Z',
-    detectedAt: '2024-12-07T08:00:00Z',
+    occurredAt: toISOString(daysAgo(6)),
+    detectedAt: toISOString(daysAgo(3)),
     status: 'active',
   },
   {
@@ -261,14 +294,14 @@ export const mockRiskEvents: RiskEvent[] = [
     type: 'esg_warning',
     title: 'ESG KPI At Risk',
     description:
-      'Apollo Industries is showing declining sustainability performance',
-    borrowerId: 'borrower-3',
-    borrowerName: 'Apollo Industries',
-    facilityId: 'fac-3',
+      `${bApollo.name} is showing declining sustainability performance`,
+    borrowerId: bApollo.id,
+    borrowerName: bApollo.name,
+    facilityId: fApollo.id,
     category: 'esg',
     severity: 'high',
-    occurredAt: '2024-12-03T14:00:00Z',
-    detectedAt: '2024-12-05T11:00:00Z',
+    occurredAt: toISOString(daysAgo(7)),
+    detectedAt: toISOString(daysAgo(5)),
     status: 'active',
   },
 ];
@@ -277,51 +310,57 @@ export const mockRiskEvents: RiskEvent[] = [
 // Upcoming Related Covenants
 // =============================================================================
 
+// Create covenant deadlines
+const covDeadline5 = createDeadline(5, 'iso');
+const covDeadline10 = createDeadline(10, 'iso');
+const covDeadline21 = createDeadline(21, 'iso');
+const covDeadline26 = createDeadline(26, 'iso');
+
 export const mockUpcomingCovenants: RelatedCovenant[] = [
   {
     id: 'cov-1',
     name: 'Q4 Financial Statements',
     type: 'Reporting',
-    dueDate: '2024-12-15',
+    dueDate: covDeadline5.dueDate,
     status: 'due_soon',
-    borrowerName: 'ABC Holdings',
-    facilityName: 'Term Loan A',
+    borrowerName: bAbc.name,
+    facilityName: fAbc.name,
   },
   {
     id: 'cov-2',
     name: 'Leverage Ratio Test',
     type: 'Financial Covenant',
-    dueDate: '2024-12-20',
+    dueDate: covDeadline10.dueDate,
     status: 'upcoming',
-    borrowerName: 'XYZ Corp',
-    facilityName: 'Revolving Facility',
+    borrowerName: bXyz.name,
+    facilityName: fXyz.name,
   },
   {
     id: 'cov-3',
     name: 'ESG Performance Report',
     type: 'ESG',
-    dueDate: '2024-12-31',
+    dueDate: covDeadline21.dueDate,
     status: 'upcoming',
-    borrowerName: 'Neptune LLC',
-    facilityName: 'Project Neptune',
+    borrowerName: bNeptune.name,
+    facilityName: fNeptune.name,
   },
   {
     id: 'cov-4',
     name: 'Leverage Ratio Test',
     type: 'Financial Covenant',
-    dueDate: '2024-12-31',
+    dueDate: covDeadline21.dueDate,
     status: 'upcoming',
-    borrowerName: 'Apollo Industries',
-    facilityName: 'Project Apollo',
+    borrowerName: bApollo.name,
+    facilityName: fApollo.name,
   },
   {
     id: 'cov-5',
     name: 'Interest Coverage Test',
     type: 'Financial Covenant',
-    dueDate: '2025-01-05',
+    dueDate: covDeadline26.dueDate,
     status: 'upcoming',
-    borrowerName: 'Omega Holdings',
-    facilityName: 'Acquisition Finance',
+    borrowerName: bOmega.name,
+    facilityName: fOmega.name,
   },
 ];
 
@@ -336,13 +375,13 @@ export const mockAlerts: RiskCorrelationAlert[] = [
     severity: 'critical',
     title: 'ESG Event May Impact Correlated Energy Positions',
     description:
-      "Neptune LLC's carbon emissions breach may affect other energy sector borrowers with similar ESG profiles",
-    affectedBorrowers: ['Neptune LLC', 'Apollo Industries', 'EcoTech Ltd'],
+      `${bNeptune.name}'s carbon emissions breach may affect other energy sector borrowers with similar ESG profiles`,
+    affectedBorrowers: [bNeptune.name, bApollo.name, bEcotech.name],
     recommendations: [
       'Review ESG compliance status of energy sector borrowers',
       'Initiate proactive outreach to at-risk facilities',
     ],
-    createdAt: '2024-12-07T09:35:00Z',
+    createdAt: toISOString(daysAgo(3)),
   },
   {
     id: 'alert-2',
@@ -351,12 +390,12 @@ export const mockAlerts: RiskCorrelationAlert[] = [
     title: 'Technology Sector Concentration Above Threshold',
     description:
       'Technology sector exposure is at 45% of portfolio, exceeding 40% threshold',
-    affectedBorrowers: ['ABC Holdings', 'XYZ Corp', 'Omega Holdings'],
+    affectedBorrowers: [bAbc.name, bXyz.name, bOmega.name],
     recommendations: [
       'Consider diversification strategies',
       'Monitor tech sector market conditions',
     ],
-    createdAt: '2024-12-06T14:00:00Z',
+    createdAt: toISOString(daysAgo(4)),
   },
   {
     id: 'alert-3',
@@ -365,12 +404,12 @@ export const mockAlerts: RiskCorrelationAlert[] = [
     title: 'Increased Correlation in European Portfolio',
     description:
       'European borrowers showing increased risk correlation due to regulatory changes',
-    affectedBorrowers: ['Apollo Industries', 'Neptune LLC', 'EcoTech Ltd'],
+    affectedBorrowers: [bApollo.name, bNeptune.name, bEcotech.name],
     recommendations: [
       'Review exposure to EU regulatory changes',
       'Update stress test scenarios',
     ],
-    createdAt: '2024-12-05T10:00:00Z',
+    createdAt: toISOString(daysAgo(5)),
   },
 ];
 
@@ -397,7 +436,7 @@ export const mockRippleEffect = calculateRippleEffect(
 
 // Full dashboard data
 export const mockRiskCorrelationDashboard: RiskCorrelationDashboard = {
-  lastUpdated: '2 hours ago',
+  lastUpdated: lastUpdated(2),
   portfolioMetrics: mockPortfolioMetrics,
   activeRiskEvents: mockRiskEvents,
   recentRippleEffects: [mockRippleEffect],

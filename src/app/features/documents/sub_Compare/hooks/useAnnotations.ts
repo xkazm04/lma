@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import type { Annotation, Comment, Mention, ReviewStatus, AnnotationsMap, AnnotationSummary, User } from '../lib/types';
+import type { Annotation, Comment, Mention, ReviewStatus, AnnotationsMap, AnnotationSummary, User, ThreadResolutionStatus } from '../lib/types';
 import { generateId, currentUser, mockAnnotations, mockUsers } from '../lib/mock-data';
 
 interface UseAnnotationsOptions {
@@ -20,6 +20,9 @@ interface UseAnnotationsReturn {
   editComment: (changeId: string, commentId: string, newContent: string, mentions: Mention[]) => void;
   deleteComment: (changeId: string, commentId: string) => void;
   getAnnotationsForCategory: (categoryName: string) => Annotation[];
+  resolveThread: (changeId: string) => void;
+  reopenThread: (changeId: string) => void;
+  canMarkAsReviewed: () => boolean;
   summary: AnnotationSummary;
 }
 
@@ -56,6 +59,9 @@ export function useAnnotations(options: UseAnnotationsOptions = {}): UseAnnotati
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       createdBy: currentUser,
+      resolution: {
+        status: 'open',
+      },
     };
 
     setAnnotationsMap((prev) => {
@@ -158,6 +164,48 @@ export function useAnnotations(options: UseAnnotationsOptions = {}): UseAnnotati
     );
   }, [annotationsMap]);
 
+  // Resolve a thread
+  const resolveThread = useCallback((changeId: string) => {
+    setAnnotationsMap((prev) => {
+      const annotation = prev.get(changeId);
+      if (!annotation) return prev;
+
+      const next = new Map(prev);
+      next.set(changeId, {
+        ...annotation,
+        resolution: {
+          ...annotation.resolution,
+          status: 'resolved',
+          resolvedAt: new Date().toISOString(),
+          resolvedBy: currentUser,
+        },
+        updatedAt: new Date().toISOString(),
+      });
+      return next;
+    });
+  }, []);
+
+  // Reopen a resolved thread
+  const reopenThread = useCallback((changeId: string) => {
+    setAnnotationsMap((prev) => {
+      const annotation = prev.get(changeId);
+      if (!annotation) return prev;
+
+      const next = new Map(prev);
+      next.set(changeId, {
+        ...annotation,
+        resolution: {
+          ...annotation.resolution,
+          status: 'open',
+          reopenedAt: new Date().toISOString(),
+          reopenedBy: currentUser,
+        },
+        updatedAt: new Date().toISOString(),
+      });
+      return next;
+    });
+  }, []);
+
   // Calculate summary statistics
   const summary = useMemo((): AnnotationSummary => {
     const annotations = Array.from(annotationsMap.values());
@@ -170,6 +218,8 @@ export function useAnnotations(options: UseAnnotationsOptions = {}): UseAnnotati
 
     let withComments = 0;
     let withMentions = 0;
+    let resolved = 0;
+    let unresolved = 0;
 
     annotations.forEach((annotation) => {
       byStatus[annotation.reviewStatus]++;
@@ -179,15 +229,34 @@ export function useAnnotations(options: UseAnnotationsOptions = {}): UseAnnotati
           withMentions++;
         }
       }
+      // Count resolution status
+      if (annotation.resolution?.status === 'resolved') {
+        resolved++;
+      } else {
+        unresolved++;
+      }
     });
+
+    // All threads are resolved only if there are annotations with comments and none are unresolved
+    const threadsWithComments = annotations.filter(a => a.comments.length > 0);
+    const allThreadsResolved = threadsWithComments.length === 0 ||
+      threadsWithComments.every(a => a.resolution?.status === 'resolved');
 
     return {
       total: annotations.length,
       byStatus,
       withComments,
       withMentions,
+      resolved,
+      unresolved,
+      allThreadsResolved,
     };
   }, [annotationsMap]);
+
+  // Check if all threads are resolved (required before marking as "Reviewed")
+  const canMarkAsReviewed = useCallback((): boolean => {
+    return summary.allThreadsResolved;
+  }, [summary.allThreadsResolved]);
 
   return {
     annotations: annotationsMap,
@@ -201,6 +270,9 @@ export function useAnnotations(options: UseAnnotationsOptions = {}): UseAnnotati
     editComment,
     deleteComment,
     getAnnotationsForCategory,
+    resolveThread,
+    reopenThread,
+    canMarkAsReviewed,
     summary,
   };
 }

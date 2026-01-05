@@ -13,7 +13,9 @@
       "Bash(cat:*)",
       "Bash(cut:*)",
       "Bash(node -e:*)",
-      "Bash(node add-ts-nocheck.js:*)"
+      "Bash(node add-ts-nocheck.js:*)",
+      "Bash(done)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

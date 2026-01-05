@@ -22,7 +22,8 @@ import {
 import { cn } from '@/lib/utils';
 import type { AutopilotBreachPrediction, ContributingSignal } from '../lib/types';
 import { getPredictionRiskColor, getPredictionRiskBorderColor } from '../../lib/types';
-import { getSignalSourceColor, getSignalSourceLabel } from '../lib/types';
+import { getSignalSourceLabel } from '../lib/types';
+import { getSignalSourceColor } from '@/lib/utils';
 
 interface PredictionCardProps {
   prediction: AutopilotBreachPrediction;

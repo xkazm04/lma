@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, memo } from 'react';
-import { MoreHorizontal, Pencil, Trash2, Reply } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2, Reply, CheckCircle2, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import type { Comment, User, Mention } from '../lib/types';
+import type { Comment, User, Mention, ThreadResolution } from '../lib/types';
 import { UserAvatar } from './UserMention';
 import { MentionInput } from './MentionInput';
 
@@ -243,21 +243,31 @@ interface CommentThreadProps {
   comments: Comment[];
   currentUserId: string;
   users: User[];
+  resolution?: ThreadResolution;
   onAddComment: (content: string, mentions: Mention[]) => void;
   onEditComment: (commentId: string, newContent: string, mentions: Mention[]) => void;
   onDeleteComment: (commentId: string) => void;
+  onResolve?: () => void;
+  onReopen?: () => void;
 }
 
 export const CommentThread = memo(function CommentThread({
   comments,
   currentUserId,
   users,
+  resolution,
   onAddComment,
   onEditComment,
   onDeleteComment,
+  onResolve,
+  onReopen,
 }: CommentThreadProps) {
   const [newComment, setNewComment] = useState('');
   const [newMentions, setNewMentions] = useState<Mention[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(resolution?.status === 'resolved');
+
+  const isResolved = resolution?.status === 'resolved';
+  const hasComments = comments.length > 0;
 
   const handleSubmit = () => {
     if (newComment.trim()) {
@@ -269,8 +279,92 @@ export const CommentThread = memo(function CommentThread({
 
   return (
     <div className="space-y-4" data-testid="comment-thread">
-      {/* Existing comments */}
-      {comments.length > 0 && (
+      {/* Thread Resolution Header - only show if there are comments */}
+      {hasComments && (
+        <div
+          className={cn(
+            'flex items-center justify-between p-2 rounded-lg border transition-colors',
+            isResolved
+              ? 'bg-green-50 border-green-200'
+              : 'bg-amber-50 border-amber-200'
+          )}
+          data-testid="thread-resolution-header"
+        >
+          <div className="flex items-center gap-2">
+            {isResolved ? (
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+            ) : (
+              <div className="w-4 h-4 rounded-full border-2 border-amber-500" />
+            )}
+            <span
+              className={cn(
+                'text-sm font-medium',
+                isResolved ? 'text-green-700' : 'text-amber-700'
+              )}
+            >
+              {isResolved ? 'Resolved' : 'Open'}
+            </span>
+            {isResolved && resolution?.resolvedBy && (
+              <span className="text-xs text-green-600">
+                by {resolution.resolvedBy.name}
+              </span>
+            )}
+            {isResolved && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                data-testid="toggle-resolved-thread-btn"
+              >
+                {isCollapsed ? (
+                  <>
+                    <ChevronDown className="w-3 h-3 mr-1" />
+                    Show
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="w-3 h-3 mr-1" />
+                    Hide
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {isResolved ? (
+              onReopen && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-100"
+                  onClick={onReopen}
+                  data-testid="reopen-thread-btn"
+                >
+                  <RotateCcw className="w-3 h-3 mr-1" />
+                  Reopen
+                </Button>
+              )
+            ) : (
+              onResolve && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-green-700 hover:text-green-800 hover:bg-green-100"
+                  onClick={onResolve}
+                  data-testid="resolve-thread-btn"
+                >
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  Resolve
+                </Button>
+              )
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Existing comments - collapse if resolved */}
+      {hasComments && (!isResolved || !isCollapsed) && (
         <div className="space-y-4">
           {comments.map((comment) => (
             <CommentItem
@@ -286,28 +380,30 @@ export const CommentThread = memo(function CommentThread({
         </div>
       )}
 
-      {/* New comment input */}
-      <div className="pt-2 border-t border-zinc-100">
-        <MentionInput
-          value={newComment}
-          onChange={(value, mentions) => {
-            setNewComment(value);
-            setNewMentions(mentions);
-          }}
-          users={users}
-          placeholder="Add a comment... Use @ to mention someone"
-        />
-        <div className="flex justify-end mt-2">
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={!newComment.trim()}
-            data-testid="add-comment-btn"
-          >
-            Add Comment
-          </Button>
+      {/* New comment input - always show unless thread is resolved and collapsed */}
+      {(!isResolved || !isCollapsed) && (
+        <div className="pt-2 border-t border-zinc-100">
+          <MentionInput
+            value={newComment}
+            onChange={(value, mentions) => {
+              setNewComment(value);
+              setNewMentions(mentions);
+            }}
+            users={users}
+            placeholder="Add a comment... Use @ to mention someone"
+          />
+          <div className="flex justify-end mt-2">
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={!newComment.trim()}
+              data-testid="add-comment-btn"
+            >
+              Add Comment
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 });

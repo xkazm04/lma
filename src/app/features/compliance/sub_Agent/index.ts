@@ -8,4 +8,6 @@ export type {
   ChatResponse,
   GeneratedDocument,
 } from './lib/types';
-export { getAlertSeverityColor, getAlertSeverityIcon } from './lib/types';
+export { getAlertSeverityIcon } from './lib/types';
+// Re-export unified color utility
+export { getAlertSeverityColor } from '@/lib/utils';

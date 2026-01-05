@@ -12,12 +12,16 @@ interface EventsListProps {
   events: AutomatedCalendarEvent[];
   onMarkComplete: (eventId: string) => void;
   onUploadCertificate: (eventId: string) => void;
+  onSnooze?: (eventId: string) => void;
+  onViewEscalation?: (eventId: string) => void;
 }
 
 export const EventsList = memo(function EventsList({
   events,
   onMarkComplete,
   onUploadCertificate,
+  onSnooze,
+  onViewEscalation,
 }: EventsListProps) {
   const sortedEvents = useMemo(() => sortEvents(events), [events]);
   const groupedEvents = useMemo(
@@ -152,6 +156,8 @@ export const EventsList = memo(function EventsList({
                   index={idx}
                   onMarkComplete={onMarkComplete}
                   onUploadCertificate={onUploadCertificate}
+                  onSnooze={onSnooze}
+                  onViewEscalation={onViewEscalation}
                 />
               ))}
             </div>

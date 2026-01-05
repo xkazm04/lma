@@ -48,29 +48,9 @@ export type SignerRole =
   | 'lender_representative'
   | 'auditor';
 
-/**
- * Helper function for document status color styling.
- */
-export function getDocumentStatusColor(status: DocumentStatus): string {
-  switch (status) {
-    case 'draft':
-      return 'bg-zinc-100 text-zinc-700';
-    case 'pending_review':
-      return 'bg-amber-100 text-amber-700';
-    case 'pending_signature':
-      return 'bg-blue-100 text-blue-700';
-    case 'partially_signed':
-      return 'bg-purple-100 text-purple-700';
-    case 'completed':
-      return 'bg-green-100 text-green-700';
-    case 'rejected':
-      return 'bg-red-100 text-red-700';
-    case 'expired':
-      return 'bg-zinc-200 text-zinc-500';
-    default:
-      return 'bg-zinc-100 text-zinc-700';
-  }
-}
+// Note: getDocumentStatusColor and getSignatureStatusColor have been moved to
+// @/lib/utils/color-resolver.ts for centralized color management.
+// Import from '@/lib/utils' instead.
 
 /**
  * Helper function for document status label.
@@ -93,26 +73,6 @@ export function getDocumentStatusLabel(status: DocumentStatus): string {
       return 'Expired';
     default:
       return 'Unknown';
-  }
-}
-
-/**
- * Helper function for signature status color styling.
- */
-export function getSignatureStatusColor(status: SignatureStatus): string {
-  switch (status) {
-    case 'pending':
-      return 'bg-zinc-100 text-zinc-700';
-    case 'viewed':
-      return 'bg-blue-100 text-blue-700';
-    case 'signed':
-      return 'bg-green-100 text-green-700';
-    case 'declined':
-      return 'bg-red-100 text-red-700';
-    case 'expired':
-      return 'bg-zinc-200 text-zinc-500';
-    default:
-      return 'bg-zinc-100 text-zinc-700';
   }
 }
 

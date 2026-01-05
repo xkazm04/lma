@@ -9,6 +9,11 @@ import type {
   NotificationPreferences,
   NotificationLog,
   ComplianceCertificateUpload,
+  EscalationChain,
+  EscalationEvent,
+  EscalationAuditEntry,
+  EscalationStats,
+  EscalationAssignee,
 } from './types';
 import { mockCovenants, mockObligations, mockFacilityDetail } from '../../lib/mock-data';
 import {
@@ -379,3 +384,348 @@ export const mockComplianceCertificates: ComplianceCertificateUpload[] = [
     notes: 'Pending review by credit team.',
   },
 ];
+
+// =============================================================================
+// Mock Escalation Chain Data
+// =============================================================================
+
+/**
+ * Mock assignees for escalation chains
+ */
+export const mockEscalationAssignees: EscalationAssignee[] = [
+  {
+    id: 'user-analyst-1',
+    name: 'Sarah Chen',
+    email: 'sarah.chen@company.com',
+    role: 'Compliance Analyst',
+  },
+  {
+    id: 'user-analyst-2',
+    name: 'Michael Brown',
+    email: 'michael.brown@company.com',
+    role: 'Compliance Analyst',
+  },
+  {
+    id: 'user-manager-1',
+    name: 'Jennifer Williams',
+    email: 'jennifer.williams@company.com',
+    role: 'Compliance Manager',
+    phone: '+1-555-0101',
+  },
+  {
+    id: 'user-manager-2',
+    name: 'Robert Davis',
+    email: 'robert.davis@company.com',
+    role: 'Compliance Manager',
+    phone: '+1-555-0102',
+  },
+  {
+    id: 'user-vp-1',
+    name: 'Elizabeth Taylor',
+    email: 'elizabeth.taylor@company.com',
+    role: 'VP of Compliance',
+    phone: '+1-555-0201',
+  },
+  {
+    id: 'user-exec-1',
+    name: 'James Anderson',
+    email: 'james.anderson@company.com',
+    role: 'Chief Risk Officer',
+    phone: '+1-555-0301',
+  },
+];
+
+/**
+ * Mock escalation chains
+ */
+export const mockEscalationChains: EscalationChain[] = [
+  {
+    id: 'chain-1',
+    name: 'Standard Covenant Escalation',
+    description: 'Default escalation chain for covenant test deadlines. Escalates from analyst to manager at 3 days overdue, VP at 7 days, and executive at 14 days.',
+    is_active: true,
+    applies_to_event_types: ['covenant_test'],
+    applies_to_facility_ids: [],
+    steps: [
+      {
+        id: 'step-1-1',
+        level: 1,
+        trigger_days_overdue: 0,
+        assignees: [mockEscalationAssignees[0], mockEscalationAssignees[1]],
+        channels: ['email', 'in_app'],
+        notify_previous_levels: false,
+      },
+      {
+        id: 'step-1-2',
+        level: 2,
+        trigger_days_overdue: 3,
+        assignees: [mockEscalationAssignees[2]],
+        channels: ['email', 'in_app', 'slack'],
+        notify_previous_levels: true,
+      },
+      {
+        id: 'step-1-3',
+        level: 3,
+        trigger_days_overdue: 7,
+        assignees: [mockEscalationAssignees[4]],
+        channels: ['email', 'in_app', 'slack'],
+        notify_previous_levels: true,
+      },
+      {
+        id: 'step-1-4',
+        level: 4,
+        trigger_days_overdue: 14,
+        assignees: [mockEscalationAssignees[5]],
+        channels: ['email', 'in_app', 'slack', 'calendar_push'],
+        notify_previous_levels: true,
+      },
+    ],
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-06-01T14:30:00Z',
+    created_by: 'user-admin',
+  },
+  {
+    id: 'chain-2',
+    name: 'Critical Compliance Escalation',
+    description: 'Fast-track escalation for critical compliance events. Shorter intervals: 1 day to manager, 3 days to VP, 5 days to executive.',
+    is_active: true,
+    applies_to_event_types: ['compliance_event', 'waiver_expiration'],
+    applies_to_facility_ids: [],
+    steps: [
+      {
+        id: 'step-2-1',
+        level: 1,
+        trigger_days_overdue: 0,
+        assignees: [mockEscalationAssignees[0]],
+        channels: ['email', 'in_app', 'slack'],
+        notify_previous_levels: false,
+      },
+      {
+        id: 'step-2-2',
+        level: 2,
+        trigger_days_overdue: 1,
+        assignees: [mockEscalationAssignees[2], mockEscalationAssignees[3]],
+        channels: ['email', 'in_app', 'slack'],
+        notify_previous_levels: true,
+      },
+      {
+        id: 'step-2-3',
+        level: 3,
+        trigger_days_overdue: 3,
+        assignees: [mockEscalationAssignees[4]],
+        channels: ['email', 'in_app', 'slack', 'calendar_push'],
+        notify_previous_levels: true,
+      },
+      {
+        id: 'step-2-4',
+        level: 4,
+        trigger_days_overdue: 5,
+        assignees: [mockEscalationAssignees[5]],
+        channels: ['email', 'in_app', 'slack', 'calendar_push'],
+        notify_previous_levels: true,
+      },
+    ],
+    created_at: '2024-02-20T14:00:00Z',
+    updated_at: '2024-06-01T14:30:00Z',
+    created_by: 'user-admin',
+  },
+  {
+    id: 'chain-3',
+    name: 'Notification Due Escalation',
+    description: 'Standard escalation for notification deadlines with moderate urgency.',
+    is_active: true,
+    applies_to_event_types: ['notification_due'],
+    applies_to_facility_ids: [],
+    steps: [
+      {
+        id: 'step-3-1',
+        level: 1,
+        trigger_days_overdue: 0,
+        assignees: [mockEscalationAssignees[1]],
+        channels: ['email', 'in_app'],
+        notify_previous_levels: false,
+      },
+      {
+        id: 'step-3-2',
+        level: 2,
+        trigger_days_overdue: 2,
+        assignees: [mockEscalationAssignees[3]],
+        channels: ['email', 'in_app', 'slack'],
+        notify_previous_levels: true,
+      },
+      {
+        id: 'step-3-3',
+        level: 3,
+        trigger_days_overdue: 5,
+        assignees: [mockEscalationAssignees[4]],
+        channels: ['email', 'in_app', 'slack'],
+        notify_previous_levels: true,
+      },
+    ],
+    created_at: '2024-03-10T09:00:00Z',
+    updated_at: '2024-06-01T14:30:00Z',
+    created_by: 'user-admin',
+  },
+];
+
+/**
+ * Mock active escalation events
+ */
+export const mockEscalationEvents: EscalationEvent[] = [
+  {
+    id: 'esc-1',
+    event_id: 'manual-3',
+    chain_id: 'chain-2',
+    chain_name: 'Critical Compliance Escalation',
+    status: 'level_2',
+    current_level: 2,
+    started_at: '2024-12-17T09:00:00Z',
+    last_escalated_at: '2024-12-18T09:00:00Z',
+    current_assignee_id: 'user-manager-1',
+    current_assignee_name: 'Jennifer Williams',
+    days_overdue: 2,
+    snoozes: [],
+    is_snoozed: false,
+    resolved_at: null,
+    resolution_notes: null,
+  },
+  {
+    id: 'esc-2',
+    event_id: 'manual-2',
+    chain_id: 'chain-1',
+    chain_name: 'Standard Covenant Escalation',
+    status: 'snoozed',
+    current_level: 1,
+    started_at: '2024-12-15T09:00:00Z',
+    last_escalated_at: null,
+    current_assignee_id: 'user-analyst-1',
+    current_assignee_name: 'Sarah Chen',
+    days_overdue: 1,
+    snoozes: [
+      {
+        id: 'snooze-1',
+        event_id: 'manual-2',
+        snoozed_by: 'user-analyst-1',
+        snoozed_by_name: 'Sarah Chen',
+        snoozed_at: '2024-12-16T10:00:00Z',
+        snooze_until: '2024-12-18T10:00:00Z',
+        reason: 'Waiting for updated financial statements from borrower. Expected delivery by end of day tomorrow.',
+        is_active: true,
+        audit_logged: true,
+      },
+    ],
+    is_snoozed: true,
+    active_snooze: {
+      id: 'snooze-1',
+      event_id: 'manual-2',
+      snoozed_by: 'user-analyst-1',
+      snoozed_by_name: 'Sarah Chen',
+      snoozed_at: '2024-12-16T10:00:00Z',
+      snooze_until: '2024-12-18T10:00:00Z',
+      reason: 'Waiting for updated financial statements from borrower. Expected delivery by end of day tomorrow.',
+      is_active: true,
+      audit_logged: true,
+    },
+    resolved_at: null,
+    resolution_notes: null,
+  },
+];
+
+/**
+ * Mock escalation audit log entries
+ */
+export const mockEscalationAuditEntries: EscalationAuditEntry[] = [
+  {
+    id: 'audit-1',
+    escalation_id: 'esc-1',
+    event_id: 'manual-3',
+    action: 'escalation_started',
+    performed_by: null,
+    performed_by_name: 'System',
+    timestamp: '2024-12-17T09:00:00Z',
+    previous_level: null,
+    new_level: 1,
+    previous_assignee: null,
+    new_assignee: 'Sarah Chen',
+    details: 'Escalation initiated for overdue Material Event Notification Deadline',
+  },
+  {
+    id: 'audit-2',
+    escalation_id: 'esc-1',
+    event_id: 'manual-3',
+    action: 'notification_sent',
+    performed_by: null,
+    performed_by_name: 'System',
+    timestamp: '2024-12-17T09:00:05Z',
+    previous_level: null,
+    new_level: 1,
+    previous_assignee: null,
+    new_assignee: null,
+    details: 'Initial assignment notification sent to analyst',
+    notification_channels: ['email', 'in_app', 'slack'],
+  },
+  {
+    id: 'audit-3',
+    escalation_id: 'esc-1',
+    event_id: 'manual-3',
+    action: 'escalation_level_increased',
+    performed_by: null,
+    performed_by_name: 'System',
+    timestamp: '2024-12-18T09:00:00Z',
+    previous_level: 1,
+    new_level: 2,
+    previous_assignee: 'Sarah Chen',
+    new_assignee: 'Jennifer Williams',
+    details: 'Auto-escalated to Level 2 (Manager) after 1 day overdue threshold reached',
+  },
+  {
+    id: 'audit-4',
+    escalation_id: 'esc-2',
+    event_id: 'manual-2',
+    action: 'escalation_started',
+    performed_by: null,
+    performed_by_name: 'System',
+    timestamp: '2024-12-15T09:00:00Z',
+    previous_level: null,
+    new_level: 1,
+    previous_assignee: null,
+    new_assignee: 'Sarah Chen',
+    details: 'Escalation initiated for Insurance Certificate Renewal',
+  },
+  {
+    id: 'audit-5',
+    escalation_id: 'esc-2',
+    event_id: 'manual-2',
+    action: 'escalation_snoozed',
+    performed_by: 'user-analyst-1',
+    performed_by_name: 'Sarah Chen',
+    timestamp: '2024-12-16T10:00:00Z',
+    previous_level: 1,
+    new_level: null,
+    previous_assignee: 'Sarah Chen',
+    new_assignee: null,
+    details: 'Escalation snoozed for 48 hours',
+    snooze_reason: 'Waiting for updated financial statements from borrower. Expected delivery by end of day tomorrow.',
+    snooze_duration_hours: 48,
+  },
+];
+
+/**
+ * Mock escalation statistics
+ */
+export const mockEscalationStats: EscalationStats = {
+  total_active_escalations: 2,
+  level_1_count: 0,
+  level_2_count: 1,
+  level_3_count: 0,
+  level_4_count: 0,
+  snoozed_count: 1,
+  resolved_today: 3,
+  average_resolution_time_hours: 18.5,
+  escalations_by_event_type: {
+    covenant_test: 0,
+    compliance_event: 1,
+    notification_due: 1,
+    waiver_expiration: 0,
+  },
+};

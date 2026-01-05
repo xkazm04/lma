@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
 
 // Helper to create categories and terms from imported facility data
 async function createTermsFromImport(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   supabase: TypedSupabaseClient,
   dealId: string,
   importData: ImportFromFacilityData

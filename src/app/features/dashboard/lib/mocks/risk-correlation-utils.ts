@@ -23,6 +23,11 @@ import type {
   CorrelationFilters,
 } from './risk-correlation-types';
 
+import {
+  getSeverityMultiplier,
+  deriveSeverityFromProbability,
+} from '@/lib/utils/color-resolver';
+
 /**
  * Calculate correlation strength between two borrowers based on shared factors
  */
@@ -385,26 +390,8 @@ export function filterCorrelations(
 
 // Helper functions
 
-function getSeverityMultiplier(severity: RiskSeverity): number {
-  switch (severity) {
-    case 'critical':
-      return 1.0;
-    case 'high':
-      return 0.8;
-    case 'medium':
-      return 0.5;
-    case 'low':
-      return 0.3;
-    default:
-      return 0.5;
-  }
-}
-
 function getEstimatedImpact(probability: number): RiskSeverity {
-  if (probability >= 0.7) return 'critical';
-  if (probability >= 0.5) return 'high';
-  if (probability >= 0.3) return 'medium';
-  return 'low';
+  return deriveSeverityFromProbability(probability);
 }
 
 function calculateConcentrationRisk(
@@ -665,59 +652,12 @@ export function formatExposure(amount: number): string {
   return `$${amount.toFixed(0)}`;
 }
 
-/**
- * Get color for correlation strength
- */
-export function getCorrelationColor(strength: number): string {
-  if (strength >= 0.7) return 'text-red-600';
-  if (strength >= 0.5) return 'text-amber-600';
-  if (strength >= 0.3) return 'text-yellow-600';
-  return 'text-green-600';
-}
-
-/**
- * Get background color for correlation strength
- */
-export function getCorrelationBgColor(strength: number): string {
-  if (strength >= 0.7) return 'bg-red-100';
-  if (strength >= 0.5) return 'bg-amber-100';
-  if (strength >= 0.3) return 'bg-yellow-100';
-  return 'bg-green-100';
-}
-
-/**
- * Get severity color
- */
-export function getSeverityColor(severity: RiskSeverity): string {
-  switch (severity) {
-    case 'critical':
-      return 'text-red-700';
-    case 'high':
-      return 'text-red-600';
-    case 'medium':
-      return 'text-amber-600';
-    case 'low':
-      return 'text-green-600';
-    default:
-      return 'text-zinc-600';
-  }
-}
-
-/**
- * Get severity badge variant
- */
-export function getSeverityVariant(
-  severity: RiskSeverity
-): 'destructive' | 'warning' | 'success' | 'secondary' {
-  switch (severity) {
-    case 'critical':
-    case 'high':
-      return 'destructive';
-    case 'medium':
-      return 'warning';
-    case 'low':
-      return 'success';
-    default:
-      return 'secondary';
-  }
-}
+// =============================================================================
+// Re-export unified color utilities for backward compatibility
+// =============================================================================
+export {
+  getSeverityColor,
+  getSeverityVariant,
+  getCorrelationColor,
+  getCorrelationBgColor,
+} from '@/lib/utils/color-resolver';

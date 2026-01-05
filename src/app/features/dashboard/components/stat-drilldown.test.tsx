@@ -2,7 +2,7 @@
  * Stat Drilldown Component Tests
  *
  * These tests serve as living documentation of the stats dashboard drilldown behavior.
- * They cover modal interactions, data display, and search/filter functionality.
+ * They cover modal interactions, data display, and search functionality.
  *
  * DESIGN DECISIONS DOCUMENTED BY THESE TESTS:
  * 1. StatsTopBar renders all stat blocks with kebab-case data-testid attributes
@@ -573,10 +573,10 @@ describe('StatDrilldownModal', () => {
       // The component should handle the sort without errors
       expect(screen.getByTestId('drilldown-table')).toBeInTheDocument();
     });
-  });
 
-  describe('Filter and Export buttons', () => {
-    it('renders Filter button', () => {
+    it('shows ascending sort icon when column is clicked', async () => {
+      const user = userEvent.setup();
+
       render(
         <StatDrilldownModal
           open={true}
@@ -587,10 +587,16 @@ describe('StatDrilldownModal', () => {
         />
       );
 
-      expect(screen.getByTestId('drilldown-filter-btn')).toBeInTheDocument();
+      const nameHeader = screen.getByTestId('sort-column-0');
+      await user.click(nameHeader);
+
+      // Should show ascending sort icon
+      expect(screen.getByTestId('sort-asc-0')).toBeInTheDocument();
     });
 
-    it('renders Export button', () => {
+    it('toggles to descending sort on second click', async () => {
+      const user = userEvent.setup();
+
       render(
         <StatDrilldownModal
           open={true}
@@ -601,7 +607,68 @@ describe('StatDrilldownModal', () => {
         />
       );
 
-      expect(screen.getByTestId('drilldown-export-btn')).toBeInTheDocument();
+      const nameHeader = screen.getByTestId('sort-column-0');
+      await user.click(nameHeader);
+      await user.click(nameHeader);
+
+      // Should show descending sort icon
+      expect(screen.getByTestId('sort-desc-0')).toBeInTheDocument();
+    });
+
+    it('sorts loans by borrower name in ascending order', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <StatDrilldownModal
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          type="loans"
+          title="Active Loans"
+          value="24"
+        />
+      );
+
+      // Click on Borrower column (index 1)
+      const borrowerHeader = screen.getByTestId('sort-column-1');
+      await user.click(borrowerHeader);
+
+      // Verify sorting icon changes to ascending
+      expect(screen.getByTestId('sort-asc-1')).toBeInTheDocument();
+
+      // Get all table rows (excluding header)
+      const table = screen.getByTestId('drilldown-table');
+      const rows = within(table).getAllByRole('row').slice(1);
+
+      // Get borrower names from the second cell of each row
+      const borrowerNames = rows.map(row => {
+        const cells = row.querySelectorAll('td');
+        return cells[1]?.textContent || '';
+      });
+
+      // Verify the array is sorted alphabetically
+      const sortedBorrowers = [...borrowerNames].sort((a, b) => a.localeCompare(b));
+      expect(borrowerNames).toEqual(sortedBorrowers);
+    });
+
+    it('sorts deadlines by days remaining numerically', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <StatDrilldownModal
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          type="deadlines"
+          title="Upcoming Deadlines"
+          value="8"
+        />
+      );
+
+      // Click on Days Left column (index 3)
+      const daysHeader = screen.getByTestId('sort-column-3');
+      await user.click(daysHeader);
+
+      // Verify sorting is applied (ascending icon should be visible)
+      expect(screen.getByTestId('sort-asc-3')).toBeInTheDocument();
     });
   });
 
@@ -810,20 +877,14 @@ describe('Stat Drilldown Integration Journey', () => {
     );
 
     const searchInput = screen.getByTestId('drilldown-search-input');
-    const filterBtn = screen.getByTestId('drilldown-filter-btn');
-    const exportBtn = screen.getByTestId('drilldown-export-btn');
     const viewAllBtn = screen.getByTestId('drilldown-view-all-btn');
 
     // Elements should be present
     expect(searchInput).toBeInTheDocument();
-    expect(filterBtn).toBeInTheDocument();
-    expect(exportBtn).toBeInTheDocument();
     expect(viewAllBtn).toBeInTheDocument();
 
     // Check that interactive elements have correct types
     expect(searchInput.tagName).toBe('INPUT');
-    expect(filterBtn.tagName).toBe('BUTTON');
-    expect(exportBtn.tagName).toBe('BUTTON');
     expect(viewAllBtn.tagName).toBe('BUTTON');
   });
 });

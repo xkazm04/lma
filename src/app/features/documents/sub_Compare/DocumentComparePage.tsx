@@ -4,7 +4,7 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, GitCompare, ArrowRight, AlertTriangle, XCircle, MessageSquare, Files, FileText, Sparkles, History, Target, Loader2, Clock, Check, Undo2 } from 'lucide-react';
+import { ArrowLeft, GitCompare, ArrowRight, AlertTriangle, XCircle, MessageSquare, Files, FileText, Sparkles, History, Target, Loader2, Clock, Check, Undo2, Download, Library, Keyboard, FileStack, Network } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
@@ -24,11 +24,19 @@ import {
   RiskScoreSummary,
   CompactRiskSummary,
   MarketBenchmarkSection,
+  ExportModal,
+  ClauseLibraryPanel,
+  ClauseMatchBadge,
+  ShortcutReferenceCard,
+  ShortcutHint,
+  FloatingNavigationHint,
+  PDFComparisonPanel,
 } from './components';
 import { DocumentSelector, type DocumentOption } from './components/DocumentSelector';
 import { isValidDocumentPair } from './lib/validation';
 import { useComparisonFilters, DEFAULT_UNIFIED_FILTERS } from './hooks/useComparisonFilters';
-import { useAnnotations, useComparisonHistory } from './hooks';
+import { useAnnotations, useComparisonHistory, useClauseLibrary, useKeyboardShortcuts, usePDFOverlay } from './hooks';
+import { createChangeId } from './lib/mock-data';
 import { mockComparisonResult, mockDocuments } from '../lib';
 import { generateMockRiskAnalysis } from '@/lib/llm/risk-scoring';
 import type { ComparisonResult } from '@/types';
@@ -82,6 +90,9 @@ function DocumentComparePageContent() {
   const [isAnalyzingRisk, setIsAnalyzingRisk] = useState(false);
   const [showRiskDetails, setShowRiskDetails] = useState(true);
 
+  // Export modal state
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+
   // Memoized lens data providers for filtering
   const lensProviders = useMemo(() => ({
     getRiskScore: (changeId: string) => riskAnalysis?.changeScores.find((s) => s.changeId === changeId),
@@ -100,6 +111,7 @@ function DocumentComparePageContent() {
 
   // Annotations hook
   const {
+    annotations,
     getAnnotation,
     createAnnotation,
     updateReviewStatus,
@@ -128,6 +140,40 @@ function DocumentComparePageContent() {
     document2Id: doc2 || undefined,
     autoLoad: false,
   });
+
+  // Clause Library hook
+  const {
+    config: clauseLibraryConfig,
+    getMatch: getClauseMatch,
+    hasMatch: hasClauseMatch,
+    togglePanel: toggleClauseLibrary,
+    matchChanges,
+    insertClause,
+    setDropTarget,
+    draggingClauseId,
+  } = useClauseLibrary();
+
+  // PDF Overlay hook
+  const {
+    isOpen: isPDFOverlayOpen,
+    openOverlay: openPDFOverlay,
+    closeOverlay: closePDFOverlay,
+    toggleOverlay: togglePDFOverlay,
+    doc1Info,
+    doc2Info,
+    changeRegions,
+    focusedChangeId: pdfFocusedChangeId,
+    setFocusedChangeId: setPDFFocusedChangeId,
+    navigateToChange: navigateToPDFChange,
+  } = usePDFOverlay({
+    doc1Id: doc1,
+    doc2Id: doc2,
+    comparisonResult: result,
+  });
+
+  // Keyboard navigation state
+  const [focusedChangeIndex, setFocusedChangeIndex] = useState(-1);
+  const [allCategoriesExpanded, setAllCategoriesExpanded] = useState(true);
 
   // History UI state
   const [showHistory, setShowHistory] = useState(false);
@@ -173,6 +219,19 @@ function DocumentComparePageContent() {
       filteredChangesCount: filterResult.filteredChangesCount,
     };
   }, [result, filterCategories]);
+
+  // Create flat list of all changes for keyboard navigation
+  const allChanges = useMemo(() => {
+    if (!result) return [];
+    const changes: { change: ComparisonChange; changeId: string; categoryName: string }[] = [];
+    filteredCategories.forEach((category) => {
+      category.changes.forEach((change) => {
+        const changeId = createChangeId(category.category, change.field);
+        changes.push({ change, changeId, categoryName: category.category });
+      });
+    });
+    return changes;
+  }, [result, filteredCategories]);
 
   // Handle viewing history from toast action - opens panel and scrolls to entry
   const handleViewInHistory = useCallback((entryId: string) => {
@@ -280,13 +339,20 @@ function DocumentComparePageContent() {
       } finally {
         setIsAnalyzingRisk(false);
       }
+
+      // Run clause matching for document changes
+      const changesToMatch = mockComparisonResult.differences.map((diff) => ({
+        changeId: `${diff.category}-${diff.field}`.toLowerCase().replace(/\s+/g, '-'),
+        text: String(diff.document2Value || diff.document1Value || ''),
+      }));
+      matchChanges(changesToMatch);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred during comparison');
       setResult(null);
     } finally {
       setIsComparing(false);
     }
-  }, [doc1, doc2, autoSaveComparison]);
+  }, [doc1, doc2, autoSaveComparison, matchChanges]);
 
   // Handle bulk compare
   const handleBulkCompare = useCallback(async () => {
@@ -537,6 +603,180 @@ function DocumentComparePageContent() {
     return riskAnalysis?.summary.categorySummaries.find((cat) => cat.category === categoryName);
   }, [riskAnalysis]);
 
+  // ============================================
+  // Keyboard Shortcuts Handlers
+  // ============================================
+
+  // Navigate to a change by index - scroll into view and highlight
+  const navigateToChange = useCallback((index: number) => {
+    if (index >= 0 && index < allChanges.length) {
+      const change = allChanges[index];
+      setFocusedChangeIndex(index);
+      // Scroll to the change element
+      const element = document.querySelector(`[data-testid="change-item-${change.changeId}"]`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Add focus highlight
+        element.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2');
+        setTimeout(() => {
+          element.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2');
+        }, 1500);
+      }
+    }
+  }, [allChanges]);
+
+  // Handle next change navigation
+  const handleNextChange = useCallback(() => {
+    const nextIndex = focusedChangeIndex < allChanges.length - 1 ? focusedChangeIndex + 1 : 0;
+    navigateToChange(nextIndex);
+  }, [focusedChangeIndex, allChanges.length, navigateToChange]);
+
+  // Handle previous change navigation
+  const handlePreviousChange = useCallback(() => {
+    const prevIndex = focusedChangeIndex > 0 ? focusedChangeIndex - 1 : allChanges.length - 1;
+    navigateToChange(prevIndex);
+  }, [focusedChangeIndex, allChanges.length, navigateToChange]);
+
+  // Open review status for focused change
+  const handleOpenReviewStatusShortcut = useCallback(() => {
+    if (focusedChangeIndex >= 0 && focusedChangeIndex < allChanges.length) {
+      const change = allChanges[focusedChangeIndex];
+      // Trigger click on the review status dropdown
+      const element = document.querySelector(`[data-testid="change-item-${change.changeId}"] [data-testid="review-status-dropdown-trigger"]`);
+      if (element instanceof HTMLElement) {
+        element.click();
+      }
+    }
+  }, [focusedChangeIndex, allChanges]);
+
+  // Open annotation panel for focused change
+  const handleOpenAnnotationShortcut = useCallback(() => {
+    if (focusedChangeIndex >= 0 && focusedChangeIndex < allChanges.length) {
+      const change = allChanges[focusedChangeIndex];
+      handleAnnotationClick(change.change, change.changeId, change.categoryName);
+    }
+  }, [focusedChangeIndex, allChanges, handleAnnotationClick]);
+
+  // Toggle severity filter - show high/critical changes
+  const handleToggleSeverityFilter = useCallback(() => {
+    if (filters.riskLevels.includes('high') || filters.riskLevels.includes('critical')) {
+      // Clear risk level filters
+      setFilters({ ...filters, riskLevels: [] });
+    } else {
+      // Enable high and critical filters
+      setFilters({ ...filters, riskLevels: ['high', 'critical'] });
+    }
+  }, [filters, setFilters]);
+
+  // Close all open panels
+  const handleClosePanelShortcut = useCallback(() => {
+    if (annotationPanelOpen) {
+      handleClosePanel();
+    } else if (amendmentModalOpen) {
+      handleCloseAmendmentModal();
+    } else if (exportModalOpen) {
+      setExportModalOpen(false);
+    }
+  }, [annotationPanelOpen, amendmentModalOpen, exportModalOpen, handleClosePanel, handleCloseAmendmentModal]);
+
+  // Toggle expand/collapse all categories
+  const handleToggleExpandAll = useCallback(() => {
+    setAllCategoriesExpanded((prev) => !prev);
+    // Note: Individual category expansion is managed within ComparisonCategorySection
+    // This state could be passed down to control all categories
+  }, []);
+
+  // Jump to next unreviewed change
+  const handleNextUnreviewed = useCallback(() => {
+    const nextUnreviewedIndex = allChanges.findIndex((change, idx) => {
+      if (idx <= focusedChangeIndex) return false;
+      const annotation = getAnnotation(change.changeId);
+      return !annotation || annotation.reviewStatus === 'pending';
+    });
+
+    if (nextUnreviewedIndex >= 0) {
+      navigateToChange(nextUnreviewedIndex);
+    } else {
+      // Wrap around to start
+      const firstUnreviewedIndex = allChanges.findIndex((change) => {
+        const annotation = getAnnotation(change.changeId);
+        return !annotation || annotation.reviewStatus === 'pending';
+      });
+      if (firstUnreviewedIndex >= 0) {
+        navigateToChange(firstUnreviewedIndex);
+      }
+    }
+  }, [allChanges, focusedChangeIndex, getAnnotation, navigateToChange]);
+
+  // Mark current change as reviewed
+  const handleApproveChange = useCallback(() => {
+    if (focusedChangeIndex >= 0 && focusedChangeIndex < allChanges.length) {
+      const change = allChanges[focusedChangeIndex];
+      updateReviewStatus(change.changeId, 'reviewed');
+      // Show toast notification
+      toast({
+        title: 'Change approved',
+        description: `"${change.change.field}" marked as reviewed`,
+        variant: 'success',
+      });
+      // Auto-advance to next change
+      handleNextChange();
+    }
+  }, [focusedChangeIndex, allChanges, updateReviewStatus, handleNextChange]);
+
+  // Flag current change for discussion
+  const handleFlagChange = useCallback(() => {
+    if (focusedChangeIndex >= 0 && focusedChangeIndex < allChanges.length) {
+      const change = allChanges[focusedChangeIndex];
+      updateReviewStatus(change.changeId, 'flagged');
+      toast({
+        title: 'Change flagged',
+        description: `"${change.change.field}" flagged for discussion`,
+        variant: 'default',
+      });
+    }
+  }, [focusedChangeIndex, allChanges, updateReviewStatus]);
+
+  // Check if any modal is open
+  const isAnyModalOpen = amendmentModalOpen || exportModalOpen || editingHistoryEntry !== null;
+
+  // Toggle filter by change type
+  const handleFilterByChangeType = useCallback((type: 'added' | 'modified' | 'removed') => {
+    const newTypes = filters.changeTypes.includes(type)
+      ? filters.changeTypes.filter((t) => t !== type)
+      : [...filters.changeTypes, type];
+    setFilters({ ...filters, changeTypes: newTypes });
+  }, [filters, setFilters]);
+
+  // Keyboard shortcuts hook
+  const {
+    isReferenceOpen,
+    toggleReference,
+    closeReference,
+    shortcuts,
+    getShortcutsByCategory,
+    config: shortcutConfig,
+    getShortcutHint,
+  } = useKeyboardShortcuts({
+    onNextChange: handleNextChange,
+    onPreviousChange: handlePreviousChange,
+    onOpenReviewStatus: handleOpenReviewStatusShortcut,
+    onOpenAnnotation: handleOpenAnnotationShortcut,
+    onToggleSeverityFilter: handleToggleSeverityFilter,
+    onClosePanel: handleClosePanelShortcut,
+    onToggleExpandAll: handleToggleExpandAll,
+    onNextUnreviewed: handleNextUnreviewed,
+    onApproveChange: handleApproveChange,
+    onFlagChange: handleFlagChange,
+    onToggleHistory: () => setShowHistory((prev) => !prev),
+    onToggleClauseLibrary: toggleClauseLibrary,
+    onFilterByChangeType: handleFilterByChangeType,
+    totalChanges: allChanges.length,
+    currentChangeIndex: focusedChangeIndex,
+    isAnnotationPanelOpen: annotationPanelOpen,
+    isModalOpen: isAnyModalOpen,
+  });
+
   return (
     <div className="space-y-4">
       {/* Page Header */}
@@ -568,6 +808,18 @@ function DocumentComparePageContent() {
           </Button>
         </Link>
 
+        {/* Cross-Reference Graph link */}
+        <Link href="/documents/cross-reference" data-testid="cross-reference-link">
+          <Button
+            variant="outline"
+            className="transition-transform hover:scale-105 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:from-violet-700 hover:to-indigo-700"
+            data-testid="cross-reference-btn"
+          >
+            <Network className="w-4 h-4 mr-2" />
+            Cross-References
+          </Button>
+        </Link>
+
         {/* History toggle button */}
         {!isBulkMode && doc1 && doc2 && (
           <Button
@@ -583,6 +835,49 @@ function DocumentComparePageContent() {
                 {historyEntries.length}
               </Badge>
             )}
+            <ShortcutHint shortcutKey="H" show={shortcutConfig.showHints} />
+          </Button>
+        )}
+
+        {/* PDF Overlay toggle button */}
+        {!isBulkMode && result && (
+          <Button
+            variant={isPDFOverlayOpen ? 'default' : 'outline'}
+            onClick={togglePDFOverlay}
+            className="transition-transform hover:scale-105 bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-0 hover:from-blue-700 hover:to-cyan-700"
+            data-testid="toggle-pdf-overlay-btn"
+          >
+            <FileStack className="w-4 h-4 mr-2" />
+            View PDFs
+            <ShortcutHint shortcutKey="P" show={shortcutConfig.showHints} />
+          </Button>
+        )}
+
+        {/* Clause Library toggle button */}
+        {!isBulkMode && result && (
+          <Button
+            variant={clauseLibraryConfig.showPanel ? 'default' : 'outline'}
+            onClick={toggleClauseLibrary}
+            className="transition-transform hover:scale-105 bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 hover:from-indigo-700 hover:to-purple-700"
+            data-testid="toggle-clause-library-btn"
+          >
+            <Library className="w-4 h-4 mr-2" />
+            Clause Library
+            <ShortcutHint shortcutKey="L" show={shortcutConfig.showHints} />
+          </Button>
+        )}
+
+        {/* Keyboard shortcuts button */}
+        {!isBulkMode && result && (
+          <Button
+            variant="outline"
+            onClick={toggleReference}
+            className="transition-transform hover:scale-105"
+            data-testid="keyboard-shortcuts-btn"
+          >
+            <Keyboard className="w-4 h-4 mr-2" />
+            Shortcuts
+            <ShortcutHint shortcutKey="?" show={shortcutConfig.showHints} />
           </Button>
         )}
       </div>
@@ -827,8 +1122,13 @@ function DocumentComparePageContent() {
                 Back to Documents
               </Button>
             </Link>
-            <Button className="transition-transform hover:scale-105" data-testid="export-bulk-comparison-btn">
-              Export Comparison Report
+            <Button
+              className="transition-transform hover:scale-105"
+              onClick={() => setExportModalOpen(true)}
+              data-testid="export-bulk-comparison-btn"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export Comparison
             </Button>
           </div>
         </>
@@ -845,8 +1145,14 @@ function DocumentComparePageContent() {
         />
       )}
 
-      {/* Main content area with optional history sidebar */}
-      <div className={showHistory && !isBulkMode ? 'grid grid-cols-[1fr_300px] gap-4' : ''}>
+      {/* Main content area with optional sidebars */}
+      <div className={`flex gap-4 ${!isBulkMode && (showHistory || clauseLibraryConfig.showPanel) ? '' : ''}`}>
+        {/* Clause Library Panel (Left side) */}
+        {!isBulkMode && clauseLibraryConfig.showPanel && clauseLibraryConfig.panelPosition === 'left' && (
+          <ClauseLibraryPanel />
+        )}
+
+        <div className={`flex-1 ${showHistory && !isBulkMode ? 'grid grid-cols-[1fr_300px] gap-4' : ''}`}>
         <div className="space-y-4">
           {/* Standard Comparison Results */}
           {!isBulkMode && result && (
@@ -1012,6 +1318,17 @@ function DocumentComparePageContent() {
                   getRiskScore={getRiskScore}
                   getMarketBenchmark={getMarketBenchmark}
                   categorySummary={getCategorySummary(category.category)}
+                  getClauseMatch={getClauseMatch}
+                  onClauseMatchClick={(changeId, match) => {
+                    // When clicking a clause match, open the clause library panel
+                    if (!clauseLibraryConfig.showPanel) {
+                      toggleClauseLibrary();
+                    }
+                  }}
+                  onViewInPDF={(changeId) => {
+                    // Open PDF overlay and navigate to this change
+                    navigateToPDFChange(changeId);
+                  }}
                 />
               ))
             ) : (
@@ -1073,8 +1390,14 @@ function DocumentComparePageContent() {
               <Sparkles className="w-3 h-3 mr-1" />
               Generate Amendment
             </Button>
-            <Button variant="outline" className="transition-transform hover:scale-105" data-testid="export-comparison-btn">
-              Export Comparison Report
+            <Button
+              variant="outline"
+              className="transition-transform hover:scale-105"
+              onClick={() => setExportModalOpen(true)}
+              data-testid="export-comparison-btn"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export Comparison
             </Button>
           </div>
             </>
@@ -1107,6 +1430,12 @@ function DocumentComparePageContent() {
             onDelete={handleDeleteHistoryEntry}
             selectedEntryId={selectedHistoryEntry?.id}
           />
+        )}
+        </div>
+
+        {/* Clause Library Panel (Right side) */}
+        {!isBulkMode && clauseLibraryConfig.showPanel && clauseLibraryConfig.panelPosition === 'right' && (
+          <ClauseLibraryPanel />
         )}
       </div>
 
@@ -1144,6 +1473,65 @@ function DocumentComparePageContent() {
         onClose={() => setEditingHistoryEntry(null)}
         onSave={handleSaveHistoryEntryEdit}
       />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        comparisonResult={result}
+        annotations={annotations}
+        riskAnalysis={riskAnalysis}
+        doc1Name={doc1 ? getDocName(doc1) : undefined}
+        doc2Name={doc2 ? getDocName(doc2) : undefined}
+      />
+
+      {/* Keyboard Shortcuts Reference Card */}
+      <ShortcutReferenceCard
+        isOpen={isReferenceOpen}
+        onClose={closeReference}
+        shortcuts={shortcuts}
+        getShortcutsByCategory={getShortcutsByCategory}
+      />
+
+      {/* Floating Navigation Hint - shows when navigating with keyboard */}
+      {!isBulkMode && result && allChanges.length > 0 && (
+        <FloatingNavigationHint
+          show={focusedChangeIndex >= 0 && shortcutConfig.showHints}
+          currentIndex={focusedChangeIndex}
+          totalCount={allChanges.length}
+        />
+      )}
+
+      {/* PDF Comparison Panel - Side-by-side PDF overlay */}
+      {!isBulkMode && result && (
+        <PDFComparisonPanel
+          isOpen={isPDFOverlayOpen}
+          onClose={closePDFOverlay}
+          doc1Info={doc1Info}
+          doc2Info={doc2Info}
+          changeRegions={changeRegions}
+          focusedChangeId={pdfFocusedChangeId}
+          onHighlightClick={(changeId) => {
+            // Navigate to the change in the structured comparison view
+            const changeIndex = allChanges.findIndex((c) => c.changeId === changeId);
+            if (changeIndex >= 0) {
+              navigateToChange(changeIndex);
+              // Close the PDF overlay to show the structured view
+              closePDFOverlay();
+            }
+          }}
+          onFocusChange={(changeId) => {
+            if (changeId) {
+              setPDFFocusedChangeId(changeId);
+              // Also highlight in the structured view
+              const changeIndex = allChanges.findIndex((c) => c.changeId === changeId);
+              if (changeIndex >= 0) {
+                setFocusedChangeIndex(changeIndex);
+              }
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

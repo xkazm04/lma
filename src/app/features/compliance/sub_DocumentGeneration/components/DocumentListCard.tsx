@@ -24,10 +24,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { DocumentListItem, DocumentStatus } from '../../lib';
 import {
-  getDocumentStatusColor,
   getDocumentStatusLabel,
   getTemplateTypeLabel,
 } from '../../lib';
+import { getDocumentStatusColor } from '@/lib/utils';
 
 interface DocumentListCardProps {
   document: DocumentListItem;

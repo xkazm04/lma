@@ -6,3 +6,4 @@ export * from './ActivityCard';
 export * from './ComplianceFiltersBar';
 export * from './ActiveFilterChips';
 export * from './FilterPresets';
+export * from './UnifiedAlertCard';

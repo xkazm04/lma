@@ -3,9 +3,9 @@
 import React, { memo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockFacilityDetail, mockObligations, mockCovenants, getWaiversByFacility } from '../lib';
-import { FacilityHeader, FacilityOverview, ObligationsTab, CovenantsTab, CalendarTab, WaiversTab } from './components';
+import { FacilityHeader, FacilityOverview, ObligationsTab, CovenantsTab, CalendarTab, WaiversTab, PredictionsTab } from './components';
 
-const VALID_TABS = ['obligations', 'covenants', 'waivers', 'calendar'] as const;
+const VALID_TABS = ['obligations', 'covenants', 'waivers', 'calendar', 'predictions'] as const;
 type ValidTab = typeof VALID_TABS[number];
 
 interface FacilityDetailPageProps {
@@ -39,6 +39,7 @@ export const FacilityDetailPage = memo(function FacilityDetailPage({ facilityId,
           <TabsTrigger value="covenants" data-testid="covenants-tab">Covenants</TabsTrigger>
           <TabsTrigger value="waivers" data-testid="waivers-tab">Waivers</TabsTrigger>
           <TabsTrigger value="calendar" data-testid="calendar-tab">Calendar</TabsTrigger>
+          <TabsTrigger value="predictions" data-testid="predictions-tab">Predictions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="obligations" data-testid="obligations-tab-content">
@@ -46,19 +47,23 @@ export const FacilityDetailPage = memo(function FacilityDetailPage({ facilityId,
         </TabsContent>
 
         <TabsContent value="covenants" data-testid="covenants-tab-content">
-          <CovenantsTab covenants={facilityCovenants} />
+          <CovenantsTab covenants={facilityCovenants} waivers={facilityWaivers} />
         </TabsContent>
 
         <TabsContent value="waivers" data-testid="waivers-tab-content">
           <WaiversTab
             waivers={facilityWaivers}
-            facilityId={facilityId}
+            covenants={facilityCovenants}
             onRequestWaiver={handleRequestWaiver}
           />
         </TabsContent>
 
         <TabsContent value="calendar" data-testid="calendar-tab-content">
           <CalendarTab facilityId={facilityId} facilityName={facility.facility_name} />
+        </TabsContent>
+
+        <TabsContent value="predictions" data-testid="predictions-tab-content">
+          <PredictionsTab facilityId={facilityId} facilityName={facility.facility_name} />
         </TabsContent>
       </Tabs>
     </div>

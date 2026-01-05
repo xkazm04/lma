@@ -1,13 +1,153 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getMarketTemperatureColor, getMarketTemperatureLabel } from '../../lib/types';
-import type { MarketThermometerReading } from '../../lib/types';
+import type { MarketThermometerReading, MarketTemperature } from '../../lib/types';
 
 interface MarketTemperatureGaugeProps {
   reading: MarketThermometerReading;
+}
+
+interface TemperatureNeedleProps {
+  score: number;
+  temperature: MarketTemperature;
+}
+
+function TemperatureNeedle({ score, temperature }: TemperatureNeedleProps) {
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const [isPulsing, setIsPulsing] = useState(false);
+  const previousScoreRef = useRef(0);
+  const animationRef = useRef<number | null>(null);
+
+  const isCritical = temperature === 'hot' || temperature === 'warm';
+
+  useEffect(() => {
+    const startValue = previousScoreRef.current;
+    const endValue = score;
+    const duration = 1200;
+    const startTime = performance.now();
+
+    const easeOutElastic = (t: number): number => {
+      const c4 = (2 * Math.PI) / 3;
+      return t === 0
+        ? 0
+        : t === 1
+        ? 1
+        : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+    };
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutElastic(progress);
+      const currentValue = startValue + (endValue - startValue) * easedProgress;
+
+      setAnimatedScore(currentValue);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        previousScoreRef.current = endValue;
+        if (isCritical) {
+          setIsPulsing(true);
+        }
+      }
+    };
+
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    setIsPulsing(false);
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [score, isCritical]);
+
+  const needleX = `${animatedScore}%`;
+
+  return (
+    <div className="relative h-16 mt-4" data-testid="temperature-needle-container">
+      <svg
+        className="absolute inset-0 w-full h-full overflow-visible"
+        preserveAspectRatio="none"
+        data-testid="temperature-needle-svg"
+      >
+        <defs>
+          <filter id="needleShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.4)" />
+          </filter>
+          <linearGradient id="needleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#1f2937" />
+            <stop offset="50%" stopColor="#374151" />
+            <stop offset="100%" stopColor="#111827" />
+          </linearGradient>
+          <linearGradient id="needleHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.3)" />
+            <stop offset="50%" stopColor="rgba(255,255,255,0.1)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </linearGradient>
+        </defs>
+
+        <g
+          style={{ transform: `translateX(${needleX})` }}
+          className="transition-none"
+        >
+          {/* Needle body */}
+          <polygon
+            points="-6,48 6,48 2,8 -2,8"
+            fill="url(#needleGradient)"
+            filter="url(#needleShadow)"
+            className={cn(
+              isPulsing && 'animate-pulse-subtle'
+            )}
+          />
+
+          {/* Needle highlight */}
+          <polygon
+            points="-5,46 0,46 0,10 -1.5,10"
+            fill="url(#needleHighlight)"
+          />
+
+          {/* Needle cap (pivot point) */}
+          <circle
+            cx="0"
+            cy="52"
+            r="8"
+            fill="url(#needleGradient)"
+            filter="url(#needleShadow)"
+          />
+
+          {/* Cap highlight */}
+          <circle
+            cx="-2"
+            cy="50"
+            r="3"
+            fill="rgba(255,255,255,0.2)"
+          />
+
+          {/* Critical pulse ring */}
+          {isPulsing && (
+            <circle
+              cx="0"
+              cy="52"
+              r="12"
+              fill="none"
+              stroke={temperature === 'hot' ? '#ef4444' : '#f97316'}
+              strokeWidth="2"
+              className="animate-ping-slow"
+              opacity="0.6"
+            />
+          )}
+        </g>
+      </svg>
+    </div>
+  );
 }
 
 export function MarketTemperatureGauge({ reading }: MarketTemperatureGaugeProps) {
@@ -27,12 +167,12 @@ export function MarketTemperatureGauge({ reading }: MarketTemperatureGaugeProps)
 
         {/* Temperature Scale */}
         <div className="max-w-2xl mx-auto mt-6">
-          <div className="h-8 rounded-full overflow-hidden flex">
-            <div className="flex-1 bg-blue-600" />
-            <div className="flex-1 bg-blue-400" />
-            <div className="flex-1 bg-gray-400" />
-            <div className="flex-1 bg-orange-400" />
-            <div className="flex-1 bg-red-500" />
+          <div className="h-8 rounded-full overflow-hidden flex shadow-inner">
+            <div className="flex-1 bg-gradient-to-r from-blue-700 to-blue-600" />
+            <div className="flex-1 bg-gradient-to-r from-blue-500 to-blue-400" />
+            <div className="flex-1 bg-gradient-to-r from-gray-400 to-gray-350" />
+            <div className="flex-1 bg-gradient-to-r from-orange-400 to-orange-500" />
+            <div className="flex-1 bg-gradient-to-r from-red-500 to-red-600" />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>Very Cold</span>
@@ -41,16 +181,9 @@ export function MarketTemperatureGauge({ reading }: MarketTemperatureGaugeProps)
             <span>Warm</span>
             <span>Hot</span>
           </div>
-          <div className="relative h-2 mt-2">
-            <div
-              className="absolute top-0 w-0.5 h-full bg-black"
-              style={{ left: `${overall_score}%` }}
-            />
-            <div
-              className="absolute top-2 w-3 h-3 bg-black rounded-full -translate-x-1/2"
-              style={{ left: `${overall_score}%` }}
-            />
-          </div>
+
+          {/* Animated SVG Needle */}
+          <TemperatureNeedle score={overall_score} temperature={overall_temperature} />
         </div>
       </div>
 

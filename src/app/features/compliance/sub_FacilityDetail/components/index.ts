@@ -5,3 +5,7 @@ export * from './CovenantsTab';
 export * from './CalendarTab';
 export * from './WaiversTab';
 export * from './WaiverCard';
+export * from './WaiverRequestModal';
+export * from './PredictionsTab';
+export * from './FacilityPredictionPanel';
+export * from './CausalChainVisualization';

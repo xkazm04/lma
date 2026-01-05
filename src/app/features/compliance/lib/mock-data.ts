@@ -15,6 +15,8 @@ import type {
   BenchmarkDashboardStats,
   BenchmarkTrend,
   NetworkContributionStatus,
+  PeerInstitution,
+  PercentileMovement,
 } from './types';
 
 export const dashboardStats: DashboardStats = {
@@ -1230,6 +1232,18 @@ export const mockCovenantBenchmarkComparisons: CovenantBenchmarkComparison[] = [
     deviation_from_median: 0.0,
     deviation_from_average: -4.8,
     comparison_summary: 'ABC Holdings\' leverage covenant is market-standard at 4.0x maximum, sitting at the 52nd percentile for mid-market manufacturing term loans. Current performance at 3.2x provides healthy headroom.',
+    peer_institutions: [
+      { id: 'peer-1', name: 'Apex Capital', percentile_rank: 38, threshold_value: 3.5, current_value: 2.9 },
+      { id: 'peer-2', name: 'Meridian Bank', percentile_rank: 65, threshold_value: 4.25, current_value: 3.5 },
+      { id: 'peer-3', name: 'Summit Finance', percentile_rank: 78, threshold_value: 4.75, current_value: 3.8 },
+      { id: 'peer-4', name: 'Horizon Partners', percentile_rank: 45, threshold_value: 3.75, current_value: 3.1 },
+    ],
+    percentile_movement: {
+      previous_percentile: 48,
+      direction: 'up',
+      change_points: 4,
+      previous_quarter: 'Q2 2024',
+    },
   },
   {
     covenant_id: '2',
@@ -1249,6 +1263,17 @@ export const mockCovenantBenchmarkComparisons: CovenantBenchmarkComparison[] = [
     deviation_from_median: -9.1,
     deviation_from_average: -10.7,
     comparison_summary: 'ABC Holdings\' interest coverage covenant at 2.5x minimum is tighter than market median (2.75x), placing it at the 35th percentile. This provides additional protection for lenders.',
+    peer_institutions: [
+      { id: 'peer-5', name: 'Apex Capital', percentile_rank: 42, threshold_value: 2.6, current_value: 3.5 },
+      { id: 'peer-6', name: 'Meridian Bank', percentile_rank: 58, threshold_value: 2.8, current_value: 3.9 },
+      { id: 'peer-7', name: 'Northern Trust', percentile_rank: 25, threshold_value: 2.3, current_value: 3.2 },
+    ],
+    percentile_movement: {
+      previous_percentile: 40,
+      direction: 'down',
+      change_points: 5,
+      previous_quarter: 'Q2 2024',
+    },
   },
   {
     covenant_id: '3',
@@ -1268,6 +1293,19 @@ export const mockCovenantBenchmarkComparisons: CovenantBenchmarkComparison[] = [
     deviation_from_median: 7.7,
     deviation_from_average: 0.0,
     comparison_summary: 'XYZ Corporation\'s leverage covenant at 3.5x is tighter than the technology sector median of 3.25x. At the 28th percentile, this represents stricter-than-market terms. Current value of 3.1x shows limited headroom.',
+    peer_institutions: [
+      { id: 'peer-8', name: 'Tech Ventures', percentile_rank: 55, threshold_value: 3.75, current_value: 3.2 },
+      { id: 'peer-9', name: 'Digital Finance', percentile_rank: 72, threshold_value: 4.0, current_value: 3.4 },
+      { id: 'peer-10', name: 'Innovation Bank', percentile_rank: 15, threshold_value: 3.0, current_value: 2.5 },
+      { id: 'peer-11', name: 'Cloud Capital', percentile_rank: 42, threshold_value: 3.5, current_value: 2.9 },
+      { id: 'peer-12', name: 'Quantum Partners', percentile_rank: 85, threshold_value: 4.5, current_value: 3.8 },
+    ],
+    percentile_movement: {
+      previous_percentile: 28,
+      direction: 'stable',
+      change_points: 0,
+      previous_quarter: 'Q2 2024',
+    },
   },
   {
     covenant_id: '4',
@@ -2340,4 +2378,119 @@ export function getActiveWaivers(): Waiver[] {
     w.expiration_date &&
     new Date(w.expiration_date) > now
   );
+}
+
+// =============================================================================
+// Covenant-Waiver Bidirectional Linkage Helpers
+// =============================================================================
+
+/**
+ * Get waivers for a specific covenant.
+ * This enables the bidirectional relationship where covenants know their waivers.
+ */
+export function getWaiversByCovenant(covenantId: string): Waiver[] {
+  return mockWaivers.filter(w => w.covenant_id === covenantId);
+}
+
+/**
+ * Get the active waiver for a covenant (if any).
+ */
+export function getActiveWaiverForCovenant(covenantId: string): Waiver | undefined {
+  const now = new Date();
+  return mockWaivers.find(w =>
+    w.covenant_id === covenantId &&
+    w.status === 'approved' &&
+    w.expiration_date &&
+    new Date(w.expiration_date) > now
+  );
+}
+
+/**
+ * Get pending waivers for a covenant.
+ */
+export function getPendingWaiversForCovenant(covenantId: string): Waiver[] {
+  return mockWaivers.filter(w => w.covenant_id === covenantId && w.status === 'pending');
+}
+
+/**
+ * Get the covenant for a specific waiver.
+ * This enables the bidirectional relationship where waivers know their covenant.
+ */
+export function getCovenantForWaiver(waiverId: string): Covenant | undefined {
+  const waiver = mockWaivers.find(w => w.id === waiverId);
+  if (!waiver) return undefined;
+  return mockCovenants.find(c => c.id === waiver.covenant_id);
+}
+
+/**
+ * Get covenant with enriched waiver state information.
+ * Returns the covenant with all related waivers and computed state information.
+ */
+export function getCovenantWithWaiverContext(covenantId: string): {
+  covenant: Covenant | undefined;
+  waivers: Waiver[];
+  activeWaiver: Waiver | undefined;
+  pendingWaivers: Waiver[];
+  hasActiveWaiver: boolean;
+  hasPendingWaiver: boolean;
+} {
+  const covenant = mockCovenants.find(c => c.id === covenantId);
+  const waivers = getWaiversByCovenant(covenantId);
+  const activeWaiver = getActiveWaiverForCovenant(covenantId);
+  const pendingWaivers = getPendingWaiversForCovenant(covenantId);
+
+  return {
+    covenant,
+    waivers,
+    activeWaiver,
+    pendingWaivers,
+    hasActiveWaiver: !!activeWaiver,
+    hasPendingWaiver: pendingWaivers.length > 0,
+  };
+}
+
+/**
+ * Get all covenants with their waiver context for a facility.
+ * This provides a unified view of covenants and their waiver states.
+ */
+export function getFacilityCovenantWaiverState(facilityId: string): Array<{
+  covenant: Covenant;
+  waivers: Waiver[];
+  activeWaiver: Waiver | undefined;
+  pendingWaivers: Waiver[];
+  hasActiveWaiver: boolean;
+  hasPendingWaiver: boolean;
+  stateDescription: string;
+}> {
+  const facilityCovenants = mockCovenants.filter(c => c.facility_id === facilityId);
+
+  return facilityCovenants.map(covenant => {
+    const context = getCovenantWithWaiverContext(covenant.id);
+    let stateDescription = 'Compliant';
+
+    if (covenant.status === 'waived') {
+      if (context.activeWaiver?.expiration_date) {
+        const daysRemaining = Math.ceil(
+          (new Date(context.activeWaiver.expiration_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        );
+        stateDescription = `Waived (${daysRemaining} days remaining)`;
+      } else {
+        stateDescription = 'Waived';
+      }
+    } else if (covenant.status === 'breached') {
+      if (context.hasPendingWaiver) {
+        stateDescription = 'Breached - Waiver Pending';
+      } else {
+        stateDescription = 'Breached - No Waiver';
+      }
+    } else if (covenant.latest_test.headroom_percentage < 15) {
+      stateDescription = 'At Risk (Low Headroom)';
+    }
+
+    return {
+      ...context,
+      covenant,
+      stateDescription,
+    };
+  });
 }

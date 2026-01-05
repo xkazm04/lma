@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { TrendingUp, TrendingDown, Clock, Target, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,124 @@ import type { DealPrediction } from '../lib/types';
 
 interface PredictionScoreCardProps {
   prediction: DealPrediction;
+}
+
+// Animated circular progress ring component
+interface AnimatedRingProps {
+  probability: number;
+  colorClass: string;
+  strokeColor: string;
+}
+
+function AnimatedRing({ probability, colorClass, strokeColor }: AnimatedRingProps) {
+  const [animatedProgress, setAnimatedProgress] = useState(0);
+  const [isPulsing, setIsPulsing] = useState(false);
+  const prevProbabilityRef = useRef(probability);
+  const animationRef = useRef<number | null>(null);
+
+  // SVG ring parameters
+  const size = 96; // w-24 = 96px
+  const strokeWidth = 4;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  // Animate on mount and when probability changes
+  useEffect(() => {
+    const startValue = prevProbabilityRef.current !== probability ? animatedProgress : 0;
+    const endValue = probability;
+    const duration = 1200; // 1.2 seconds
+    const startTime = performance.now();
+
+    // Trigger pulse when score changes (not on initial mount)
+    if (prevProbabilityRef.current !== probability && prevProbabilityRef.current !== 0) {
+      setIsPulsing(true);
+      setTimeout(() => setIsPulsing(false), 600);
+    }
+    prevProbabilityRef.current = probability;
+
+    // Easing function - easeOutExpo for smooth deceleration
+    const easeOutExpo = (t: number): number => {
+      return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    };
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutExpo(progress);
+      const currentValue = startValue + (endValue - startValue) * easedProgress;
+
+      setAnimatedProgress(currentValue);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [probability]);
+
+  const strokeDashoffset = circumference - (animatedProgress / 100) * circumference;
+
+  return (
+    <div
+      className={cn(
+        'relative w-24 h-24 flex items-center justify-center',
+        isPulsing && 'animate-pulse'
+      )}
+      data-testid="probability-ring-container"
+    >
+      {/* Background circle */}
+      <svg
+        width={size}
+        height={size}
+        className="absolute transform -rotate-90"
+        data-testid="probability-ring-svg"
+      >
+        {/* Track circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          className="text-zinc-200"
+        />
+        {/* Animated progress circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          className="transition-colors duration-300"
+          style={{
+            filter: isPulsing ? 'drop-shadow(0 0 8px currentColor)' : 'none',
+          }}
+        />
+      </svg>
+      {/* Center content */}
+      <div className="flex flex-col items-center justify-center z-10">
+        <span
+          className={cn('text-3xl font-bold tabular-nums', colorClass)}
+          data-testid="probability-score-value"
+        >
+          {Math.round(animatedProgress)}%
+        </span>
+        <span className="text-xs text-zinc-500">Success</span>
+      </div>
+    </div>
+  );
 }
 
 export function PredictionScoreCard({ prediction }: PredictionScoreCardProps) {
@@ -22,11 +140,11 @@ export function PredictionScoreCard({ prediction }: PredictionScoreCardProps) {
     return 'text-red-600';
   };
 
-  const getProbabilityBg = (prob: number) => {
-    if (prob >= 75) return 'bg-green-100 border-green-200';
-    if (prob >= 50) return 'bg-blue-100 border-blue-200';
-    if (prob >= 25) return 'bg-amber-100 border-amber-200';
-    return 'bg-red-100 border-red-200';
+  const getStrokeColor = (prob: number) => {
+    if (prob >= 75) return '#16a34a'; // green-600
+    if (prob >= 50) return '#2563eb'; // blue-600
+    if (prob >= 25) return '#d97706'; // amber-600
+    return '#dc2626'; // red-600
   };
 
   const getConfidenceLabel = (conf: number) => {
@@ -48,19 +166,12 @@ export function PredictionScoreCard({ prediction }: PredictionScoreCardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-6">
-          {/* Main Score */}
-          <div
-            className={cn(
-              'w-24 h-24 rounded-full flex flex-col items-center justify-center border-4',
-              getProbabilityBg(probability)
-            )}
-            data-testid="probability-score"
-          >
-            <span className={cn('text-3xl font-bold', getProbabilityColor(probability))}>
-              {probability}%
-            </span>
-            <span className="text-xs text-zinc-500">Success</span>
-          </div>
+          {/* Main Score - Animated Ring */}
+          <AnimatedRing
+            probability={probability}
+            colorClass={getProbabilityColor(probability)}
+            strokeColor={getStrokeColor(probability)}
+          />
 
           {/* Key Metrics */}
           <div className="flex-1 grid grid-cols-3 gap-4">

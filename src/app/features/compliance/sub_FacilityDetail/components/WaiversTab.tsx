@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo, useMemo, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,14 +13,19 @@ import {
   XCircle,
   Filter,
   FileText,
+  ArrowRight,
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WaiverCard } from './WaiverCard';
-import type { Waiver, WaiverStatus, WaiverStats } from '../../lib';
+import { UnifiedCovenantTimeline } from '../../sub_Covenants/components';
+import type { Waiver, WaiverStatus, WaiverStats, Covenant } from '../../lib';
+import { getCovenantWaivers } from '../../lib/covenant-waiver-unified-types';
 
 interface WaiversTabProps {
   waivers: Waiver[];
-  facilityId?: string;
+  /** Covenants for linking waiver context back to covenant state */
+  covenants?: Covenant[];
   onRequestWaiver?: () => void;
 }
 
@@ -34,50 +39,106 @@ const STATUS_FILTERS: { value: FilterStatus; label: string; icon: React.ReactNod
   { value: 'expired', label: 'Expired', icon: <ShieldX className="w-3 h-3" /> },
 ];
 
-function calculateStats(waivers: Waiver[]): WaiverStats {
+interface DerivedWaiverData {
+  stats: WaiverStats;
+  pendingWaivers: Waiver[];
+  activeWaivers: Waiver[];
+}
+
+function calculateDerivedData(waivers: Waiver[]): DerivedWaiverData {
   const now = new Date();
+  const pendingWaivers: Waiver[] = [];
+  const activeWaivers: Waiver[] = [];
+  let approvedCount = 0;
+  let rejectedCount = 0;
+  let expiredCount = 0;
+
+  for (const waiver of waivers) {
+    switch (waiver.status) {
+      case 'pending':
+        pendingWaivers.push(waiver);
+        break;
+      case 'approved':
+        approvedCount++;
+        if (waiver.expiration_date && new Date(waiver.expiration_date) > now) {
+          activeWaivers.push(waiver);
+        }
+        break;
+      case 'rejected':
+        rejectedCount++;
+        break;
+      case 'expired':
+        expiredCount++;
+        break;
+    }
+  }
+
   return {
-    total_waivers: waivers.length,
-    pending_waivers: waivers.filter((w) => w.status === 'pending').length,
-    approved_waivers: waivers.filter((w) => w.status === 'approved').length,
-    rejected_waivers: waivers.filter((w) => w.status === 'rejected').length,
-    expired_waivers: waivers.filter((w) => w.status === 'expired').length,
-    active_waivers: waivers.filter(
-      (w) =>
-        w.status === 'approved' &&
-        w.expiration_date &&
-        new Date(w.expiration_date) > now
-    ).length,
+    stats: {
+      total_waivers: waivers.length,
+      pending_waivers: pendingWaivers.length,
+      approved_waivers: approvedCount,
+      rejected_waivers: rejectedCount,
+      expired_waivers: expiredCount,
+      active_waivers: activeWaivers.length,
+    },
+    pendingWaivers,
+    activeWaivers,
   };
+}
+
+/**
+ * Group waivers by covenant to show the state-transition relationship.
+ */
+function groupWaiversByCovenant(waivers: Waiver[]): Map<string, Waiver[]> {
+  const grouped = new Map<string, Waiver[]>();
+  waivers.forEach((waiver) => {
+    const existing = grouped.get(waiver.covenant_id) || [];
+    existing.push(waiver);
+    grouped.set(waiver.covenant_id, existing);
+  });
+  return grouped;
 }
 
 export const WaiversTab = memo(function WaiversTab({
   waivers,
+  covenants = [],
   onRequestWaiver,
 }: WaiversTabProps) {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
+  const [selectedCovenant, setSelectedCovenant] = useState<Covenant | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'byState'>('list');
 
-  const stats = useMemo(() => calculateStats(waivers), [waivers]);
+  // Single pass calculation for all derived waiver data
+  const { stats, pendingWaivers, activeWaivers } = useMemo(
+    () => calculateDerivedData(waivers),
+    [waivers]
+  );
 
   const filteredWaivers = useMemo(() => {
     if (statusFilter === 'all') return waivers;
     return waivers.filter((w) => w.status === statusFilter);
   }, [waivers, statusFilter]);
 
-  const pendingWaivers = useMemo(
-    () => waivers.filter((w) => w.status === 'pending'),
-    [waivers]
+  // Group waivers by covenant for the "by state" view
+  const waiversByCovenant = useMemo(() => groupWaiversByCovenant(waivers), [waivers]);
+
+  // Find the covenant for a given waiver
+  const getCovenantForWaiver = useCallback(
+    (waiver: Waiver) => covenants.find((c) => c.id === waiver.covenant_id),
+    [covenants]
   );
 
-  const activeWaivers = useMemo(() => {
-    const now = new Date();
-    return waivers.filter(
-      (w) =>
-        w.status === 'approved' &&
-        w.expiration_date &&
-        new Date(w.expiration_date) > now
-    );
-  }, [waivers]);
+  // Show timeline for a specific covenant
+  const handleShowCovenantTimeline = useCallback(
+    (waiver: Waiver) => {
+      const covenant = getCovenantForWaiver(waiver);
+      if (covenant) {
+        setSelectedCovenant(covenant);
+      }
+    },
+    [getCovenantForWaiver]
+  );
 
   // Placeholder handlers for workflow actions - TODO: implement actual API calls
   const handleApprove: ((waiverId: string) => void) | undefined = undefined;
@@ -90,7 +151,7 @@ export const WaiversTab = memo(function WaiversTab({
         <div>
           <h2 className="text-base font-semibold text-zinc-900">Covenant Waivers</h2>
           <p className="text-sm text-zinc-500">
-            Waiver requests and approval history for this facility
+            Waivers as covenant state transitions - each waiver represents a temporary mutation of covenant compliance status
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -325,6 +386,112 @@ export const WaiversTab = memo(function WaiversTab({
               </Button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Unified State View - Waivers Grouped by Covenant */}
+      {waiversByCovenant.size > 0 && (
+        <Card className="border-blue-200 bg-blue-50/30" data-testid="waiver-state-context">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Activity className="w-5 h-5 text-blue-600" />
+              <h3 className="text-sm font-semibold text-blue-900">
+                Waiver-Covenant State Context
+              </h3>
+              <Badge variant="outline" className="text-xs text-blue-700">
+                {waiversByCovenant.size} covenant{waiversByCovenant.size !== 1 ? 's' : ''} affected
+              </Badge>
+            </div>
+            <p className="text-sm text-blue-700 mb-3">
+              Each waiver represents a state transition for its parent covenant.
+              View the unified timeline to see how waivers fit into the covenant lifecycle.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {Array.from(waiversByCovenant.entries()).map(([covenantId, covenantWaivers]) => {
+                const covenant = covenants.find((c) => c.id === covenantId);
+                const activeCount = covenantWaivers.filter(
+                  (w) =>
+                    w.status === 'approved' &&
+                    w.expiration_date &&
+                    new Date(w.expiration_date) > new Date()
+                ).length;
+                const pendingCount = covenantWaivers.filter(
+                  (w) => w.status === 'pending'
+                ).length;
+
+                return (
+                  <div
+                    key={covenantId}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-100"
+                    data-testid={`covenant-waiver-group-${covenantId}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-zinc-900 block truncate">
+                        {covenant?.name || covenantWaivers[0]?.covenant_name || 'Unknown Covenant'}
+                      </span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-zinc-500">
+                          {covenantWaivers.length} waiver{covenantWaivers.length !== 1 ? 's' : ''}
+                        </span>
+                        {activeCount > 0 && (
+                          <Badge className="text-xs bg-green-100 text-green-700">
+                            {activeCount} active
+                          </Badge>
+                        )}
+                        {pendingCount > 0 && (
+                          <Badge className="text-xs bg-amber-100 text-amber-700">
+                            {pendingCount} pending
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    {covenant && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedCovenant(covenant)}
+                        data-testid={`view-covenant-timeline-${covenantId}`}
+                      >
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Unified Timeline Modal for Selected Covenant */}
+      {selectedCovenant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4">
+            <div className="p-4 border-b border-zinc-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {selectedCovenant.name} - Unified State Timeline
+                </h2>
+                <p className="text-sm text-zinc-500">
+                  Waiver as state transition context
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCovenant(null)}
+                data-testid="close-waiver-timeline-btn"
+              >
+                Close
+              </Button>
+            </div>
+            <div className="p-4">
+              <UnifiedCovenantTimeline
+                covenant={selectedCovenant}
+                waivers={getCovenantWaivers(selectedCovenant.id, waivers)}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>

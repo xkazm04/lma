@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, TrendingDown, Zap, Clock, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HeadroomAlert } from '../lib/types';
-import { getAlertSeverityColor } from '../lib/types';
+import { getAlertSeverityColor } from '@/lib/utils';
 
 interface LiveActivityFeedProps {
   alerts: HeadroomAlert[];
