@@ -245,7 +245,7 @@ export const DocumentGrid = memo(function DocumentGrid({
             <div
               key={doc.id}
               className="animate-in fade-in slide-in-from-bottom-2"
-              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+              style={documents.length > 10 ? undefined : { animationDelay: `${index * 30}ms`, animationFillMode: 'both' }}
               data-testid={`document-item-${doc.id}`}
             >
               <CompactDocumentCard

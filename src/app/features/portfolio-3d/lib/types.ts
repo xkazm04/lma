@@ -9,6 +9,9 @@ export interface Vector3D {
   z: number;
 }
 
+// Risk trend direction
+export type RiskTrend = 'improving' | 'stable' | 'declining';
+
 // Node representing a borrower in the 3D graph
 export interface BorrowerNode {
   id: string;
@@ -23,6 +26,7 @@ export interface BorrowerNode {
   profile: BorrowerRiskProfile;
   healthScore: number; // 0-100
   riskLevel: RiskSeverity;
+  riskTrend: RiskTrend; // Overall risk trajectory
   isSelected: boolean;
   isHovered: boolean;
   // Force simulation

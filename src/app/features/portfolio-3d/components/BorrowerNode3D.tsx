@@ -171,6 +171,20 @@ export function BorrowerNode3D({
                 >
                   {Math.round(node.healthScore)}%
                 </span>
+                {/* Risk trend indicator */}
+                <span
+                  className={
+                    node.riskTrend === 'improving'
+                      ? 'text-green-400 ml-1'
+                      : node.riskTrend === 'declining'
+                      ? 'text-red-400 ml-1'
+                      : 'text-zinc-400 ml-1'
+                  }
+                >
+                  {node.riskTrend === 'improving' && '↑'}
+                  {node.riskTrend === 'declining' && '↓'}
+                  {node.riskTrend === 'stable' && '→'}
+                </span>
               </p>
               <p className="text-zinc-400">
                 Industry:{' '}

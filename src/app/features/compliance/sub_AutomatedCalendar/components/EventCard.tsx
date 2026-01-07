@@ -142,9 +142,9 @@ export const EventCard = memo(function EventCard({
       style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
       data-testid={`event-card-${event.id}`}
     >
-      <CardContent className="py-4">
+      <CardContent className="py-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3">
             <div
               className={cn(
                 'p-2 rounded-lg transition-transform hover:scale-110',
@@ -170,9 +170,9 @@ export const EventCard = memo(function EventCard({
                 </Badge>
               </div>
 
-              <p className="text-sm text-zinc-500 mt-1">{event.description}</p>
+              <p className="text-sm text-zinc-500 mt-0.5 line-clamp-1">{event.description}</p>
 
-              <div className="flex items-center gap-4 mt-2 text-xs text-zinc-400">
+              <div className="flex items-center gap-3 mt-1.5 text-xs text-zinc-400">
                 <div className="flex items-center gap-1">
                   <Building2 className="w-3 h-3" />
                   <span>{event.facility_name}</span>
@@ -187,7 +187,7 @@ export const EventCard = memo(function EventCard({
                 )}
               </div>
 
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2 mt-2">
                 <Badge
                   className={cn('text-xs', getItemStatusColor(event.status))}
                 >
@@ -218,7 +218,7 @@ export const EventCard = memo(function EventCard({
 
               {/* Reminders summary */}
               {event.reminders.length > 0 && (
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-1.5">
                   <Clock className="w-3 h-3 text-zinc-400" />
                   <span className="text-xs text-zinc-500">
                     {event.reminders.filter((r) => r.is_active).length} active
@@ -241,7 +241,7 @@ export const EventCard = memo(function EventCard({
 
               {/* Escalation status */}
               {event.escalation && (
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-1.5">
                   {event.escalation.is_snoozed ? (
                     <Badge
                       className={cn(

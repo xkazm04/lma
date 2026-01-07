@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, GitCompare, Shield, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
 import { PageContainer } from '@/components/layout';
 import { DemoCard } from '@/lib/demo-guide';
 import {
@@ -242,7 +243,22 @@ export function DocumentsListPage() {
 
       <PageContainer>
         <div className="space-y-3">
-          {/* Row 1: Stats Bar - Full Width */}
+          {/* Header */}
+          <PageHeader
+            title="Document Hub"
+            subtitle="Upload, analyze, and manage loan documents"
+            compact
+            actions={
+              <Link href="/documents/upload">
+                <Button size="sm" className="h-8 text-xs">
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
+                  Upload
+                </Button>
+              </Link>
+            }
+          />
+
+          {/* Stats Bar */}
           <DocumentStatsBar documents={folderFilteredDocuments} />
 
           {/* Row 2: Saved Views Bar + Action Buttons */}

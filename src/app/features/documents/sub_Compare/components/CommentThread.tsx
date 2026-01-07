@@ -278,7 +278,7 @@ export const CommentThread = memo(function CommentThread({
   };
 
   return (
-    <div className="space-y-4" data-testid="comment-thread">
+    <div className="space-y-2" data-testid="comment-thread">
       {/* Thread Resolution Header - only show if there are comments */}
       {hasComments && (
         <div
@@ -365,7 +365,7 @@ export const CommentThread = memo(function CommentThread({
 
       {/* Existing comments - collapse if resolved */}
       {hasComments && (!isResolved || !isCollapsed) && (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}

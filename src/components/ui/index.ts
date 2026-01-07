@@ -28,3 +28,8 @@ export * from './stat-card-unified';
 
 // Expandable row component
 export * from './expandable-row';
+
+// Unified page components
+export * from './page-header';
+export * from './data-table';
+export * from './list-item';

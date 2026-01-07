@@ -98,6 +98,7 @@ export const CovenantCard = memo(function CovenantCard({
   onRequestWaiver,
 }: CovenantCardProps) {
   const [isPredictionExpanded, setIsPredictionExpanded] = useState(false);
+  const [isEntropyExpanded, setIsEntropyExpanded] = useState(false);
   const isAtRisk = covenant.latest_test.headroom_percentage < DEFAULT_AT_RISK_HEADROOM_THRESHOLD && covenant.latest_test.headroom_percentage >= 0;
   const headroomColor = getHeadroomColor(covenant.latest_test.headroom_percentage);
 
@@ -261,25 +262,26 @@ export const CovenantCard = memo(function CovenantCard({
           />
         )}
 
-        {/* Entropy Metrics Panel */}
-        {entropyMetrics && entropyMetrics.attentionLevel >= 3 && (
-          <div className="mt-4 pt-4 border-t border-zinc-100">
-            <EntropyMetricsPanel
-              metrics={entropyMetrics}
-              compact={false}
-              showDetails={true}
-            />
-          </div>
-        )}
-
-        {/* Compact Entropy Display for low-risk covenants */}
-        {entropyMetrics && entropyMetrics.attentionLevel < 3 && (
+        {/* Entropy Metrics Panel - collapsed by default, show summary badge */}
+        {entropyMetrics && (
           <div className="mt-3 pt-3 border-t border-zinc-100">
-            <EntropyMetricsPanel
-              metrics={entropyMetrics}
-              compact={true}
-              showDetails={false}
-            />
+            <div className="flex items-center justify-between">
+              <EntropyMetricsPanel
+                metrics={entropyMetrics}
+                compact={!isEntropyExpanded}
+                showDetails={isEntropyExpanded}
+              />
+              {entropyMetrics.attentionLevel >= 3 && !isEntropyExpanded && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEntropyExpanded(true)}
+                  className="text-xs text-zinc-500 h-6 px-2"
+                >
+                  Show details
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </CardContent>

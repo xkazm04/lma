@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Plus, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { PageHeader } from '@/components/ui/page-header';
 import { PageContainer } from '@/components/layout';
 import { DemoCard } from '@/lib/demo-guide';
 import { DealFiltersBar, DealStatsBar, DealListView, DealKanbanView, DealTimelineView, SmartInboxView, type ViewMode } from './components';
@@ -164,26 +165,27 @@ export function DealsListPage() {
     <PageContainer>
       <div className="space-y-3">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-zinc-900">Deal Room</h1>
-            <p className="text-sm text-zinc-500">Manage and negotiate loan terms</p>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Link href="/deals/intelligence">
-              <Button variant="outline" size="sm" className="h-8 text-xs" data-testid="deals-intelligence-btn">
-                <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
-                Intelligence
-              </Button>
-            </Link>
-            <Link href="/deals/new">
-              <Button size="sm" className="h-8 text-xs" data-testid="deals-new-btn">
-                <Plus className="w-3.5 h-3.5 mr-1.5" />
-                New Deal
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <PageHeader
+          title="Deal Room"
+          subtitle="Manage and negotiate loan terms"
+          compact
+          actions={
+            <>
+              <Link href="/deals/intelligence">
+                <Button variant="outline" size="sm" className="h-8 text-xs" data-testid="deals-intelligence-btn">
+                  <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                  Intelligence
+                </Button>
+              </Link>
+              <Link href="/deals/new">
+                <Button size="sm" className="h-8 text-xs" data-testid="deals-new-btn">
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
+                  New Deal
+                </Button>
+              </Link>
+            </>
+          }
+        />
 
         {/* Filters */}
         <DealFiltersBar

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { memo } from 'react';
-import { Search, Filter, Grid, List, SortAsc } from 'lucide-react';
+import React, { memo, useMemo } from 'react';
+import { Search, Filter, Grid, List, SortAsc, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { DOCUMENT_STATUS_OPTIONS, DOCUMENT_TYPE_OPTIONS } from '../lib/constants';
 import type { DocumentStatusFilter, DocumentTypeFilter, DocumentViewMode } from '../lib/types';
 
@@ -37,6 +38,23 @@ export const DocumentFiltersBar = memo(function DocumentFiltersBar({
   onTypeChange,
   onViewModeChange,
 }: DocumentFiltersBarProps) {
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (statusFilter !== 'all') count++;
+    if (typeFilter !== 'all') count++;
+    if (searchQuery.trim()) count++;
+    return count;
+  }, [statusFilter, typeFilter, searchQuery]);
+
+  const hasActiveFilters = activeFilterCount > 0;
+
+  const clearAllFilters = () => {
+    onSearchChange('');
+    onStatusChange('all');
+    onTypeChange('all');
+  };
+
   return (
     <div className="px-3 py-2 bg-white">
       <div className="flex items-center gap-2">
@@ -47,14 +65,31 @@ export const DocumentFiltersBar = memo(function DocumentFiltersBar({
             placeholder="Search documents..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-8 h-8 text-sm border-zinc-200 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-200"
+            className={cn(
+              "pl-8 h-8 text-sm border-zinc-200 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-200",
+              searchQuery && "border-blue-300 bg-blue-50/30"
+            )}
             data-testid="document-search-input"
           />
+          {searchQuery && (
+            <button
+              onClick={() => onSearchChange('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
 
         {/* Status Filter */}
         <Select value={statusFilter} onValueChange={(v) => onStatusChange(v as DocumentStatusFilter)}>
-          <SelectTrigger className="w-32 h-8 text-xs border-zinc-200" data-testid="status-filter-trigger">
+          <SelectTrigger
+            className={cn(
+              "w-32 h-8 text-xs border-zinc-200",
+              statusFilter !== 'all' && "border-blue-300 bg-blue-50/30"
+            )}
+            data-testid="status-filter-trigger"
+          >
             <Filter className="w-3 h-3 mr-1.5 text-zinc-400" />
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -74,7 +109,13 @@ export const DocumentFiltersBar = memo(function DocumentFiltersBar({
 
         {/* Type Filter */}
         <Select value={typeFilter} onValueChange={(v) => onTypeChange(v as DocumentTypeFilter)}>
-          <SelectTrigger className="w-40 h-8 text-xs border-zinc-200" data-testid="type-filter-trigger">
+          <SelectTrigger
+            className={cn(
+              "w-40 h-8 text-xs border-zinc-200",
+              typeFilter !== 'all' && "border-blue-300 bg-blue-50/30"
+            )}
+            data-testid="type-filter-trigger"
+          >
             <SelectValue placeholder="Document Type" />
           </SelectTrigger>
           <SelectContent>
@@ -90,6 +131,19 @@ export const DocumentFiltersBar = memo(function DocumentFiltersBar({
             ))}
           </SelectContent>
         </Select>
+
+        {/* Active Filters Badge */}
+        {hasActiveFilters && (
+          <Badge
+            variant="secondary"
+            className="h-6 px-2 text-[10px] gap-1 cursor-pointer hover:bg-zinc-200"
+            onClick={clearAllFilters}
+            data-testid="active-filters-badge"
+          >
+            {activeFilterCount} active
+            <X className="w-2.5 h-2.5" />
+          </Badge>
+        )}
 
         {/* Sort */}
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-500 hover:text-zinc-700" data-testid="sort-btn">

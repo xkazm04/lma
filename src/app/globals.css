@@ -203,11 +203,83 @@ body {
   animation: pingSlow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-/* Respect reduced motion preference */
+/* ========================================================================
+   STANDARDIZED ANIMATION UTILITIES
+   ======================================================================== */
+
+/* Slide animations for consistent entry effects */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-from-left-4 {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.slide-in-from-right-4 {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.slide-in-from-bottom-6 {
+  animation: slideInFromBottom 0.5s ease-out;
+}
+
+/* Standard duration utilities */
+.duration-150 { animation-duration: 150ms; }
+.duration-200 { animation-duration: 200ms; }
+.duration-300 { animation-duration: 300ms; }
+.duration-500 { animation-duration: 500ms; }
+
+/* ========================================================================
+   STANDARDIZED ANIMATION SYSTEM
+   ========================================================================
+
+   Standard durations:
+   - fast:    150ms  (micro-interactions: hover, focus)
+   - default: 200ms  (transitions: colors, opacity)
+   - medium:  300ms  (reveals: panels, dropdowns)
+   - slow:    500ms  (page elements: cards, sections)
+
+   Standard easings:
+   - ease-out: entering elements
+   - ease-in:  exiting elements
+   - ease-in-out: looping/continuous animations
+   ======================================================================== */
+
+/* Respect reduced motion preference - COMPREHENSIVE */
 @media (prefers-reduced-motion: reduce) {
+  /* Disable all custom animations */
   .view-transition-enter,
-  .view-transition-exit {
-    animation: none;
+  .view-transition-exit,
+  .animate-in,
+  .animate-out,
+  .fade-in,
+  .slide-in-from-top-2,
+  .slide-in-from-bottom-2,
+  .animate-needle-pulse,
+  .animate-ping-slow,
+  .animate-pulse-subtle,
+  .animate-pulse-urgent,
+  .animate-pulse-once {
+    animation: none !important;
   }
 
   .view-transition-enter {
@@ -219,10 +291,22 @@ body {
     display: none;
   }
 
-  .animate-needle-pulse,
-  .animate-ping-slow,
-  .animate-pulse-subtle,
+  /* Disable Tailwind transition utilities */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  /* Keep critical state indicators visible */
   .animate-pulse-urgent {
-    animation: none;
+    opacity: 1 !important;
+  }
+
+  /* Disable stagger delays */
+  [style*="animation-delay"] {
+    animation-delay: 0ms !important;
   }
 }

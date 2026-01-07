@@ -29,14 +29,11 @@ export const Header = () => (
             </nav>
 
             <div className="flex items-center gap-4">
-                <Link href="/login" className={`text-sm font-medium ${THEME.text} hover:opacity-70`}>
-                    Sign in
-                </Link>
                 <Link
                     href="/dashboard"
-                    className={`hidden sm:inline-flex px-4 py-2 text-sm font-semibold ${THEME.primary} ${THEME.primaryFg} ${THEME.radius} transition-opacity hover:opacity-90`}
+                    className={`inline-flex px-4 py-2 text-sm font-semibold ${THEME.primary} ${THEME.primaryFg} ${THEME.radius} transition-opacity hover:opacity-90`}
                 >
-                    Open Demo
+                    Enter Demo
                 </Link>
             </div>
         </div>

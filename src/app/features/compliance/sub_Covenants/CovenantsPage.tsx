@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BarChart3, Upload, History, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
 import { PageContainer } from '@/components/layout';
 import { ComplianceFiltersBar } from '../components';
 import { mockCovenants, useFilterPersistence, FILTER_PRESETS, DEFAULT_AT_RISK_HEADROOM_THRESHOLD } from '../lib';
@@ -204,34 +205,31 @@ function CovenantsPageContent() {
   return (
     <PageContainer>
       <div className="space-y-4 animate-in fade-in">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm text-zinc-500 mb-1">
-              <Link href="/compliance" className="hover:text-zinc-900 transition-colors">
-                Compliance
-              </Link>
-              <span>/</span>
-              <span className="text-zinc-900">Covenants</span>
-            </div>
-            <h1 className="text-2xl font-bold text-zinc-900">Covenant Tracking</h1>
-            <p className="text-zinc-500 text-sm">Monitor covenant tests and headroom across all facilities</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowHistory(!showHistory)}
-              data-testid="toggle-history-btn"
-            >
-              <History className="w-4 h-4 mr-1" />
-              {showHistory ? 'Hide' : 'History'}
-            </Button>
-            <Button size="sm" onClick={() => setIsImportDialogOpen(true)} data-testid="bulk-import-btn">
-              <Upload className="w-4 h-4 mr-1" />
-              Import
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Covenant Tracking"
+          subtitle="Monitor covenant tests and headroom across all facilities"
+          breadcrumbs={[
+            { label: 'Compliance', href: '/compliance' },
+            { label: 'Covenants' },
+          ]}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowHistory(!showHistory)}
+                data-testid="toggle-history-btn"
+              >
+                <History className="w-4 h-4 mr-1" />
+                {showHistory ? 'Hide' : 'History'}
+              </Button>
+              <Button size="sm" onClick={() => setIsImportDialogOpen(true)} data-testid="bulk-import-btn">
+                <Upload className="w-4 h-4 mr-1" />
+                Import
+              </Button>
+            </>
+          }
+        />
 
         {showHistory && (
           <div className="animate-in fade-in slide-in-from-top-2">

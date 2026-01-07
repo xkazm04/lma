@@ -16,22 +16,29 @@ export const DashboardStats = React.memo<DashboardStatsProps>(({ stats }) => {
       label: 'Portfolio Value',
       value: formatCurrency(stats.total_position_value),
       icon: <Building2 className="w-4 h-4 text-zinc-500" />,
+      change: '+2.3%',
+      trend: 'up' as const,
     },
     {
       label: 'Active Trades',
       value: stats.active_trades,
       icon: <ArrowLeftRight className="w-4 h-4 text-blue-500" />,
+      change: '+3',
+      trend: 'up' as const,
     },
     {
       label: 'DD Progress',
       value: `${stats.dd_completion_rate}%`,
       icon: <ClipboardCheck className="w-4 h-4 text-green-500" />,
+      change: '+5%',
       trend: 'up' as const,
     },
     {
       label: 'Settled',
-      value: stats.settled_this_month,
+      value: `${stats.settled_this_month} trades`,
       icon: <DollarSign className="w-4 h-4 text-green-500" />,
+      change: formatCurrency(stats.total_position_value * 0.15),
+      trend: 'up' as const,
     },
   ], [stats]);
 

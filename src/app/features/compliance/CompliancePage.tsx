@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Plus, ArrowRight, CheckCircle, Calendar, AlertTriangle, Clock, TrendingUp } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { DemoCard } from '@/lib/demo-guide';
@@ -17,18 +18,19 @@ export const CompliancePage = memo(function CompliancePage() {
     <PageContainer>
       <div className="space-y-3">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-zinc-900">Compliance Tracker</h1>
-            <p className="text-sm text-zinc-500">Monitor obligations, covenants, and deadlines</p>
-          </div>
-          <Link href="/compliance/facilities">
-            <Button size="sm" className="h-8 text-xs">
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Add Facility
-            </Button>
-          </Link>
-        </div>
+        <PageHeader
+          title="Compliance Tracker"
+          subtitle="Monitor obligations, covenants, and deadlines"
+          compact
+          actions={
+            <Link href="/compliance/facilities">
+              <Button size="sm" className="h-8 text-xs">
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                Add Facility
+              </Button>
+            </Link>
+          }
+        />
 
         {/* Stats Bar */}
         <ComplianceStatsBar stats={dashboardStats} />

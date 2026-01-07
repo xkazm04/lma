@@ -22,7 +22,7 @@ export const VariantB = () => {
                                 </div>
 
                                 <div>
-                                    <ul className="mb-6 space-y-2">
+                                    <ul className="space-y-2">
                                         {module.highlights.map(h => (
                                             <li key={h} className="flex items-center gap-2 text-xs text-zinc-500">
                                                 <span className="w-1 h-1 bg-black rounded-full" />
@@ -30,9 +30,6 @@ export const VariantB = () => {
                                             </li>
                                         ))}
                                     </ul>
-                                    <Link href={module.href} className="inline-flex items-center gap-2 text-xs font-bold uppercase border-b border-black pb-0.5 hover:text-blue-600 hover:border-blue-600 transition-colors">
-                                        Access Module <ArrowRight className="w-3 h-3" />
-                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -81,16 +78,14 @@ export const VariantB = () => {
             </section>
 
             <div className="border-t border-black bg-white">
-                <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="text-lg font-bold uppercase">Ready to deploy?</div>
-                    <div className="flex gap-4">
-                        <button className="px-6 py-3 bg-black text-white hover:bg-zinc-800 transition-colors uppercase font-bold tracking-wider">
-                            Initialize Demo
-                        </button>
-                        <button className="px-6 py-3 border border-black hover:bg-zinc-50 transition-colors uppercase font-bold tracking-wider">
-                            View Documentation
-                        </button>
-                    </div>
+                <div className="container mx-auto px-6 py-16 flex flex-col items-center justify-center gap-6 text-center">
+                    <div className="text-2xl font-bold uppercase">Ready to explore?</div>
+                    <Link
+                        href="/dashboard"
+                        className="px-8 py-4 bg-black text-white hover:bg-zinc-800 transition-colors uppercase font-bold tracking-wider"
+                    >
+                        Enter Demo
+                    </Link>
                 </div>
             </div>
         </div>

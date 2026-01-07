@@ -106,13 +106,49 @@ export const DDChecklist = React.memo<DDChecklistProps>(({ checklist, tradeId, o
     }).length;
   }, 0);
 
+  // Calculate flagged and pending counts
+  const flaggedItems = checklist.categories.reduce((count, category) => {
+    return count + category.items.filter((item) => {
+      const state = getItemState(item);
+      return state.status === 'flagged';
+    }).length;
+  }, 0);
+
+  const pendingItems = checklist.total_items - completedItems - flaggedItems;
+  const completionPercentage = Math.round((completedItems / checklist.total_items) * 100);
+
   return (
     <Card className="animate-in fade-in slide-in-from-left-4 duration-500">
-      <CardHeader>
-        <CardTitle>Due Diligence Checklist</CardTitle>
-        <CardDescription>
-          {completedItems} of {checklist.total_items} items completed
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle>Due Diligence Checklist</CardTitle>
+          <Badge variant={completionPercentage === 100 ? 'default' : 'outline'} className="text-xs">
+            {completionPercentage}%
+          </Badge>
+        </div>
+        <CardDescription className="flex items-center gap-3 mt-1">
+          <span className="flex items-center gap-1 text-green-600">
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            {completedItems} done
+          </span>
+          {flaggedItems > 0 && (
+            <span className="flex items-center gap-1 text-red-600">
+              <AlertTriangle className="w-3 h-3" />
+              {flaggedItems} flagged
+            </span>
+          )}
+          <span className="flex items-center gap-1 text-zinc-500">
+            <span className="w-2 h-2 rounded-full bg-zinc-300" />
+            {pendingItems} pending
+          </span>
         </CardDescription>
+        {/* Progress bar */}
+        <div className="mt-2 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-green-500 transition-all duration-300"
+            style={{ width: `${completionPercentage}%` }}
+          />
+        </div>
         {error && (
           <p className="text-sm text-red-600 mt-2" data-testid="dd-checklist-error">{error}</p>
         )}

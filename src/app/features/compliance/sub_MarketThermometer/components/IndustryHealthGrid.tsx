@@ -288,160 +288,123 @@ export function IndustryHealthGrid({ healthMetrics }: IndustryHealthGridProps) {
   );
 
   return (
-    <div className="space-y-4" data-testid="industry-health-grid">
-      {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Industry Health Metrics</h2>
-          <p className="text-sm text-muted-foreground">
-            Independent industry health assessments across the network
-          </p>
+    <div className="space-y-3" data-testid="industry-health-grid">
+      {/* Compact Header with Controls */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-3">
+          <h2 className="text-base font-semibold">Industry Health</h2>
+          <span className="text-xs text-muted-foreground">
+            {processedMetrics.length}/{healthMetrics.length} shown
+          </span>
         </div>
 
-        {/* View Toggle */}
-        <div className="flex items-center gap-2 border rounded-lg p-1 bg-muted/30">
-          <Button
-            variant={viewMode === 'cards' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('cards')}
-            className="h-8 px-3"
-            data-testid="view-cards-btn"
-          >
-            <LayoutGrid className="h-4 w-4 mr-1.5" />
-            Cards
-          </Button>
-          <Button
-            variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('table')}
-            className="h-8 px-3"
-            data-testid="view-table-btn"
-          >
-            <List className="h-4 w-4 mr-1.5" />
-            Table
-          </Button>
-        </div>
-      </div>
+        <div className="flex items-center gap-2">
+          {/* Sort Dropdown */}
+          <div className="flex items-center gap-1 border rounded-md p-0.5 bg-muted/30">
+            {(['health_score', 'stress_level', 'trend'] as const).map((field) => (
+              <button
+                key={field}
+                onClick={() => handleSort(field)}
+                className={cn(
+                  'px-2 py-1 text-xs rounded transition-colors',
+                  sortField === field
+                    ? 'bg-white shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                data-testid={`sort-${field}-btn`}
+              >
+                {field === 'health_score' ? 'Health' : field === 'stress_level' ? 'Stress' : 'Trend'}
+                {sortField === field && <span className="ml-0.5">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
+              </button>
+            ))}
+          </div>
 
-      {/* Sort Controls */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm text-muted-foreground mr-2">Sort by:</span>
-        <Button
-          variant={sortField === 'health_score' ? 'secondary' : 'outline'}
-          size="sm"
-          onClick={() => handleSort('health_score')}
-          className="h-8"
-          data-testid="sort-health-score-btn"
-        >
-          <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
-          Health Score
-          {sortField === 'health_score' && (
-            <span className="ml-1 text-xs">({sortDirection === 'asc' ? '↑' : '↓'})</span>
-          )}
-        </Button>
-        <Button
-          variant={sortField === 'stress_level' ? 'secondary' : 'outline'}
-          size="sm"
-          onClick={() => handleSort('stress_level')}
-          className="h-8"
-          data-testid="sort-stress-level-btn"
-        >
-          <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
-          Stress Level
-          {sortField === 'stress_level' && (
-            <span className="ml-1 text-xs">({sortDirection === 'asc' ? '↑' : '↓'})</span>
-          )}
-        </Button>
-        <Button
-          variant={sortField === 'trend' ? 'secondary' : 'outline'}
-          size="sm"
-          onClick={() => handleSort('trend')}
-          className="h-8"
-          data-testid="sort-trend-btn"
-        >
-          <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
-          Trend Direction
-          {sortField === 'trend' && (
-            <span className="ml-1 text-xs">({sortDirection === 'asc' ? '↑' : '↓'})</span>
-          )}
-        </Button>
-      </div>
-
-      {/* Filter Chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm text-muted-foreground mr-2">Filter:</span>
-
-        {/* Stress Level Filters */}
-        <div className="flex items-center gap-1">
-          {(['high', 'elevated', 'moderate', 'low'] as const).map((level) => (
+          {/* View Toggle */}
+          <div className="flex items-center gap-1 border rounded-md p-0.5 bg-muted/30">
             <button
-              key={level}
-              onClick={() => setStressFilter(stressFilter === level ? 'all' : level)}
+              onClick={() => setViewMode('cards')}
               className={cn(
-                'px-3 py-1 text-xs font-medium rounded-full border transition-colors capitalize',
-                stressFilter === level
-                  ? level === 'high' || level === 'elevated'
-                    ? 'bg-red-100 border-red-300 text-red-700'
-                    : 'bg-zinc-100 border-zinc-300 text-zinc-700'
-                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                'p-1.5 rounded transition-colors',
+                viewMode === 'cards' ? 'bg-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
               )}
-              data-testid={`filter-stress-${level}-btn`}
+              data-testid="view-cards-btn"
             >
-              {level} stress
+              <LayoutGrid className="h-3.5 w-3.5" />
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('table')}
+              className={cn(
+                'p-1.5 rounded transition-colors',
+                viewMode === 'table' ? 'bg-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+              data-testid="view-table-btn"
+            >
+              <List className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div className="w-px h-4 bg-zinc-200 mx-2" />
-
+      {/* Compact Filter Row */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {/* Stress Filters */}
+        {(['high', 'elevated', 'moderate', 'low'] as const).map((level) => (
+          <button
+            key={level}
+            onClick={() => setStressFilter(stressFilter === level ? 'all' : level)}
+            className={cn(
+              'px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors capitalize',
+              stressFilter === level
+                ? level === 'high' || level === 'elevated'
+                  ? 'bg-red-100 border-red-300 text-red-700'
+                  : 'bg-zinc-100 border-zinc-300 text-zinc-700'
+                : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50'
+            )}
+            data-testid={`filter-stress-${level}-btn`}
+          >
+            {level}
+          </button>
+        ))}
+        <span className="text-zinc-300">|</span>
         {/* Trend Filters */}
-        <div className="flex items-center gap-1">
-          {(['declining', 'stable', 'improving'] as const).map((trend) => (
-            <button
-              key={trend}
-              onClick={() => setTrendFilter(trendFilter === trend ? 'all' : trend)}
-              className={cn(
-                'px-3 py-1 text-xs font-medium rounded-full border transition-colors capitalize flex items-center gap-1',
-                trendFilter === trend
-                  ? trend === 'declining'
-                    ? 'bg-red-100 border-red-300 text-red-700'
-                    : trend === 'improving'
-                      ? 'bg-green-100 border-green-300 text-green-700'
-                      : 'bg-zinc-100 border-zinc-300 text-zinc-700'
-                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
-              )}
-              data-testid={`filter-trend-${trend}-btn`}
-            >
-              {trend === 'declining' && <TrendingDown className="h-3 w-3" />}
-              {trend === 'improving' && <TrendingUp className="h-3 w-3" />}
-              {trend}
-            </button>
-          ))}
-        </div>
-
-        {/* Clear Filters */}
+        {(['declining', 'stable', 'improving'] as const).map((trend) => (
+          <button
+            key={trend}
+            onClick={() => setTrendFilter(trendFilter === trend ? 'all' : trend)}
+            className={cn(
+              'px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors capitalize flex items-center gap-0.5',
+              trendFilter === trend
+                ? trend === 'declining'
+                  ? 'bg-red-100 border-red-300 text-red-700'
+                  : trend === 'improving'
+                    ? 'bg-green-100 border-green-300 text-green-700'
+                    : 'bg-zinc-100 border-zinc-300 text-zinc-700'
+                : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50'
+            )}
+            data-testid={`filter-trend-${trend}-btn`}
+          >
+            {trend === 'declining' && <TrendingDown className="h-2.5 w-2.5" />}
+            {trend === 'improving' && <TrendingUp className="h-2.5 w-2.5" />}
+            {trend}
+          </button>
+        ))}
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="ml-2 px-2 py-1 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+            className="px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-0.5"
             data-testid="clear-filters-btn"
           >
-            <X className="h-3 w-3" />
+            <X className="h-2.5 w-2.5" />
             Clear
           </button>
         )}
       </div>
 
-      {/* Results count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {processedMetrics.length} of {healthMetrics.length} industries
-      </div>
-
-      {/* Card View */}
+      {/* Card View - More Compact */}
       {viewMode === 'cards' && (
         <div
           ref={gridRef}
-          className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"
+          className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3"
           data-testid="industry-health-cards-grid"
         >
           {processedMetrics.map((industry) => (
@@ -449,98 +412,59 @@ export function IndustryHealthGrid({ healthMetrics }: IndustryHealthGridProps) {
               key={industry.industry}
               data-industry-card={industry.industry}
               className={cn(
-                'p-6 border-2 will-change-transform',
-                industry.stress_level === 'high' && 'border-red-200 bg-red-50',
-                industry.stress_level === 'elevated' && 'border-orange-200 bg-orange-50'
+                'p-4 border will-change-transform',
+                industry.stress_level === 'high' && 'border-red-200 bg-red-50/50',
+                industry.stress_level === 'elevated' && 'border-orange-200 bg-orange-50/50'
               )}
               data-testid={`industry-health-card-${industry.industry}`}
             >
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold">{getIndustrySectorLabel(industry.industry)}</h3>
+              <div className="space-y-2">
+                {/* Header - Compact */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-sm">{getIndustrySectorLabel(industry.industry)}</h3>
                     <Badge
                       variant={
                         industry.stress_level === 'high' || industry.stress_level === 'elevated'
                           ? 'destructive'
                           : 'secondary'
                       }
-                      className="mt-1 text-xs"
+                      className="text-[10px] px-1.5 py-0"
                     >
-                      {industry.stress_level} stress
+                      {industry.stress_level}
                     </Badge>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">{industry.overall_health_score}</div>
-                    <div className="text-xs text-muted-foreground">health score</div>
+                  <div className="text-xl font-bold">{industry.overall_health_score}</div>
+                </div>
+
+                {/* Metrics - Single Row */}
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="text-muted-foreground">
+                    Headroom: <span className={cn('font-medium', industry.average_headroom_all_covenants < 15 && 'text-red-600')}>{industry.average_headroom_all_covenants.toFixed(0)}%</span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Risk: <span className="font-medium text-red-600">{industry.covenants_at_risk_percentage.toFixed(0)}%</span>
+                  </span>
+                  <div className={cn(
+                    'flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium',
+                    industry.headroom_trend_3m === 'declining' && 'bg-red-100 text-red-700',
+                    industry.headroom_trend_3m === 'improving' && 'bg-green-100 text-green-700',
+                    industry.headroom_trend_3m === 'stable' && 'bg-zinc-100 text-zinc-600'
+                  )}>
+                    {industry.headroom_trend_3m === 'declining' && <TrendingDown className="h-3 w-3" />}
+                    {industry.headroom_trend_3m === 'improving' && <TrendingUp className="h-3 w-3" />}
+                    {industry.headroom_change_3m_percentage > 0 ? '+' : ''}{industry.headroom_change_3m_percentage.toFixed(0)}%
                   </div>
                 </div>
 
-                {/* Metrics */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Avg Headroom</span>
-                    <span
-                      className={cn(
-                        'font-medium',
-                        industry.average_headroom_all_covenants < 15 && 'text-red-600'
-                      )}
-                    >
-                      {industry.average_headroom_all_covenants.toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">At-Risk</span>
-                    <span className="font-medium text-red-600">
-                      {industry.covenants_at_risk_percentage.toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Breached</span>
-                    <span className="font-medium">
-                      {industry.covenants_breached_percentage.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Trend */}
-                <div
-                  className={cn(
-                    'p-3 rounded-lg',
-                    industry.headroom_trend_3m === 'declining' && 'bg-red-100',
-                    industry.headroom_trend_3m === 'improving' && 'bg-green-100',
-                    industry.headroom_trend_3m === 'stable' && 'bg-gray-100'
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    {industry.headroom_trend_3m === 'declining' && (
-                      <TrendingDown className="h-4 w-4 text-red-600" />
-                    )}
-                    {industry.headroom_trend_3m === 'improving' && (
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                    )}
-                    <span className="text-xs font-medium">
-                      3M Trend: {industry.headroom_change_3m_percentage > 0 ? '+' : ''}
-                      {industry.headroom_change_3m_percentage.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Early Warning Signals */}
+                {/* Early Warnings - Inline */}
                 {industry.early_warning_signals.length > 0 && (
-                  <div className="pt-3 border-t">
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle className="h-4 w-4 text-orange-500" />
-                      <span className="text-xs font-semibold">Early Warnings</span>
-                    </div>
-                    <ul className="space-y-1">
-                      {industry.early_warning_signals.slice(0, 2).map((signal, idx) => (
-                        <li key={idx} className="text-xs text-muted-foreground">
-                          • {signal}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="flex items-center gap-1.5 text-[10px] text-orange-600">
+                    <AlertTriangle className="h-3 w-3" />
+                    <span className="truncate">{industry.early_warning_signals[0]}</span>
+                    {industry.early_warning_signals.length > 1 && (
+                      <span className="text-orange-400">+{industry.early_warning_signals.length - 1}</span>
+                    )}
                   </div>
                 )}
               </div>

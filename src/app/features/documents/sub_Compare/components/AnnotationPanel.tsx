@@ -11,9 +11,9 @@ import { ReviewStatusDropdown } from './ReviewStatusDropdown';
 import { CommentThread } from './CommentThread';
 
 const STORAGE_KEY = 'annotation-panel-width';
-const DEFAULT_WIDTH = 448;
-const MIN_WIDTH = 320;
-const MAX_WIDTH = 600;
+const DEFAULT_WIDTH = 380;
+const MIN_WIDTH = 280;
+const MAX_WIDTH = 520;
 
 interface AnnotationPanelProps {
   annotation: Annotation | null;
@@ -173,7 +173,7 @@ export const AnnotationPanel = memo(function AnnotationPanel({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(100vh - 65px)' }}>
+      <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ maxHeight: 'calc(100vh - 65px)' }}>
         {/* Change Info Card */}
         <Card className="border-zinc-200">
           <CardHeader className="pb-2">

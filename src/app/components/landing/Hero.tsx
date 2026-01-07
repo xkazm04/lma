@@ -32,29 +32,18 @@ export const Hero = () => (
                     and manage secondary market trades—all powered by Claude AI.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+                <div className="flex justify-center pt-2">
                     <Link
                         href="/dashboard"
                         className={`
-              group inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold transition-all duration-200
+              group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold transition-all duration-200
               ${THEME.primary} ${THEME.primaryFg} ${THEME.radius}
               hover:scale-[1.02] active:scale-[0.98]
             `}
                     >
-                        <LayoutDashboard className="w-4 h-4" />
-                        <span>Explore Dashboard</span>
-                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                    <Link
-                        href="/documents"
-                        className={`
-              inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold transition-all duration-200
-              bg-white border hover:bg-zinc-50
-              ${THEME.text} ${THEME.border} ${THEME.radius}
-            `}
-                    >
-                        <FileText className="w-4 h-4" />
-                        <span>Try Document Analysis</span>
+                        <LayoutDashboard className="w-5 h-5" />
+                        <span>Enter Demo</span>
+                        <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                 </div>
             </div>

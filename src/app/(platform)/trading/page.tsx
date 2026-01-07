@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PageContainer } from '@/components/layout';
+import { PageHeader } from '@/components/ui/page-header';
 import { DemoCard } from '@/lib/demo-guide';
 import { cn } from '@/lib/utils';
 import { InlineEdit } from '@/components/ui/inline-edit';
@@ -151,18 +152,19 @@ export default function TradingDashboardPage() {
     <PageContainer>
       <div className="space-y-3">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-zinc-900">Trading</h1>
-            <p className="text-sm text-zinc-500">Manage positions, trades, and due diligence</p>
-          </div>
-          <Link href="/trading/trades/new">
-            <Button size="sm" className="h-8 text-xs">
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              New Trade
-            </Button>
-          </Link>
-        </div>
+        <PageHeader
+          title="Trading"
+          subtitle="Manage positions, trades, and due diligence"
+          compact
+          actions={
+            <Link href="/trading/trades/new">
+              <Button size="sm" className="h-8 text-xs">
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                New Trade
+              </Button>
+            </Link>
+          }
+        />
 
         {/* Stats Row */}
         <div className="flex flex-wrap items-center gap-2">

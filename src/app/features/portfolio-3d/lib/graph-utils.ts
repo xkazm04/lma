@@ -9,6 +9,7 @@ import type {
   PortfolioRegion,
   TerrainPoint,
   VisualizationSettings,
+  RiskTrend,
 } from './types';
 import {
   getSeverityHexColor,
@@ -169,6 +170,36 @@ export function calculateHealthScore(borrower: BorrowerRiskProfile): number {
 }
 
 /**
+ * Calculate overall risk trend from borrower's risk factors
+ * Weights declining factors more heavily (especially critical/high severity)
+ */
+export function calculateRiskTrend(borrower: BorrowerRiskProfile): RiskTrend {
+  if (borrower.riskFactors.length === 0) {
+    return 'stable';
+  }
+
+  let score = 0;
+  borrower.riskFactors.forEach(factor => {
+    // Weight by severity
+    const weight = factor.severity === 'critical' ? 3 : factor.severity === 'high' ? 2 : 1;
+
+    switch (factor.trend) {
+      case 'declining':
+        score -= weight;
+        break;
+      case 'improving':
+        score += weight;
+        break;
+      // 'stable' adds 0
+    }
+  });
+
+  if (score > 0) return 'improving';
+  if (score < 0) return 'declining';
+  return 'stable';
+}
+
+/**
  * Get correlation line color (uses unified color resolver)
  */
 export function getCorrelationColor(strength: number): string {
@@ -205,6 +236,7 @@ export function createPortfolio3DData(
       profile: borrower,
       healthScore: calculateHealthScore(borrower),
       riskLevel: getBorrowerRiskLevel(borrower),
+      riskTrend: calculateRiskTrend(borrower),
       isSelected: false,
       isHovered: false,
     };
