@@ -4,7 +4,7 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, GitCompare, ArrowRight, AlertTriangle, XCircle, MessageSquare, Files, FileText, Sparkles, History, Target, Loader2, Clock, Check, Undo2, Download, Library, Keyboard, FileStack, Network } from 'lucide-react';
+import { ArrowLeft, GitCompare, ArrowRight, AlertTriangle, XCircle, MessageSquare, Files, FileText, Sparkles, History, Target, Loader2, Check, Undo2, Download, Library, Keyboard, FileStack, Network } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
@@ -225,7 +225,7 @@ function DocumentComparePageContent() {
     if (!result) return [];
     const changes: { change: ComparisonChange; changeId: string; categoryName: string }[] = [];
     filteredCategories.forEach((category) => {
-      category.changes.forEach((change) => {
+      category.changes?.forEach((change) => {
         const changeId = createChangeId(category.category, change.field);
         changes.push({ change, changeId, categoryName: category.category });
       });
@@ -796,18 +796,6 @@ function DocumentComparePageContent() {
               : 'Compare two documents to identify changes and differences'}
           </p>
         </div>
-        {/* Evolution link - temporal comparison */}
-        <Link href="/documents/evolution" data-testid="evolution-link">
-          <Button
-            variant="outline"
-            className="transition-transform hover:scale-105"
-            data-testid="evolution-btn"
-          >
-            <Clock className="w-4 h-4 mr-2" />
-            Document Evolution
-          </Button>
-        </Link>
-
         {/* Cross-Reference Graph link */}
         <Link href="/documents/cross-reference" data-testid="cross-reference-link">
           <Button

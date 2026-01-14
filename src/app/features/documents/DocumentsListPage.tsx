@@ -309,7 +309,7 @@ export function DocumentsListPage() {
             <DemoCard sectionId="documents-folder-tree">
               <div
                 className={`flex-shrink-0 transition-all duration-300 ease-in-out border-r border-zinc-100 relative bg-zinc-50/50 ${
-                  sidebarExpanded ? 'w-80' : 'w-56'
+                  sidebarExpanded ? 'w-[40rem]' : 'w-[28rem]'
                 }`}
                 style={{ height: '100%' }}
               >

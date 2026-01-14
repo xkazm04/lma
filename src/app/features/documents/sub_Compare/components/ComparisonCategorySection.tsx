@@ -55,10 +55,13 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
 }: ComparisonCategorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
+  // Safely get changes array (may be undefined in some data structures)
+  const changes = category.changes ?? [];
+
   // Get annotations for this category for the summary
   const categoryAnnotations: Annotation[] = [];
   if (getAnnotation) {
-    category.changes.forEach((change) => {
+    changes.forEach((change) => {
       const changeId = createChangeId(category.category, change.field);
       const annotation = getAnnotation(changeId);
       if (annotation) {
@@ -70,7 +73,7 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
   // Count clause matches for this category
   let clauseMatchCount = 0;
   if (getClauseMatch) {
-    category.changes.forEach((change) => {
+    changes.forEach((change) => {
       const changeId = createChangeId(category.category, change.field);
       const match = getClauseMatch(changeId);
       if (match?.doc2Match) {
@@ -100,7 +103,7 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
               )}
             </span>
             <CardTitle className="text-lg">{category.category}</CardTitle>
-            <Badge variant="secondary">{category.changes.length} changes</Badge>
+            <Badge variant="secondary">{changes.length} changes</Badge>
             {/* Category risk summary badge */}
             {categorySummary && (
               <Badge
@@ -172,7 +175,7 @@ export const ComparisonCategorySection = memo(function ComparisonCategorySection
       >
         <CardContent className="pt-0">
           <div className="space-y-3">
-            {category.changes.map((change, i) => {
+            {changes.map((change, i) => {
               const changeId = createChangeId(category.category, change.field);
               const annotation = getAnnotation?.(changeId) || null;
               const riskScore = getRiskScore?.(changeId);

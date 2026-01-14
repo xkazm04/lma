@@ -192,63 +192,62 @@ export function RiskDashboardPage() {
         isScanning={isScanning}
       />
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Sidebar - Breakdowns */}
-        <div className="lg:col-span-1 space-y-4 p-4 bg-white rounded-lg border border-zinc-200">
+      {/* Breakdowns Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="p-4 bg-white rounded-lg border border-zinc-200">
           <RiskCategoryBreakdown
             stats={stats}
             onCategoryClick={handleCategoryClick}
             selectedCategory={categoryFilter !== 'all' ? categoryFilter : null}
           />
-          <div className="border-t border-zinc-100 pt-4">
-            <RiskStatusBreakdown
-              stats={stats}
-              onStatusClick={handleStatusClick}
-              selectedStatus={statusFilter !== 'all' ? statusFilter : null}
-            />
-          </div>
         </div>
-
-        {/* Main Content - Alert List */}
-        <DemoCard sectionId="risk-details" className="lg:col-span-3">
-          <div className="bg-white rounded-lg border border-zinc-200 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-zinc-900">
-                Risk Alerts
-                <span className="ml-2 text-sm font-normal text-zinc-500">
-                  ({filteredAlerts.length} of {alerts.length})
-                </span>
-              </h2>
-              {(severityFilter !== 'all' ||
-                categoryFilter !== 'all' ||
-                statusFilter !== 'all' ||
-                searchQuery) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSeverityFilter('all');
-                    setCategoryFilter('all');
-                    setStatusFilter('all');
-                    setSearchQuery('');
-                  }}
-                  className="text-xs text-zinc-500"
-                  data-testid="risk-clear-filters-btn"
-                >
-                  Clear filters
-                </Button>
-              )}
-            </div>
-
-            <RiskAlertsList
-              alerts={filteredAlerts}
-              onStatusChange={handleStatusChange}
-              onViewDocument={handleViewDocument}
-            />
-          </div>
-        </DemoCard>
+        <div className="p-4 bg-white rounded-lg border border-zinc-200">
+          <RiskStatusBreakdown
+            stats={stats}
+            onStatusClick={handleStatusClick}
+            selectedStatus={statusFilter !== 'all' ? statusFilter : null}
+          />
+        </div>
       </div>
+
+      {/* Main Content - Full Width Alert List */}
+      <DemoCard sectionId="risk-details" fullWidth>
+        <div className="bg-white rounded-lg border border-zinc-200 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Risk Alerts
+              <span className="ml-2 text-sm font-normal text-zinc-500">
+                ({filteredAlerts.length} of {alerts.length})
+              </span>
+            </h2>
+            {(severityFilter !== 'all' ||
+              categoryFilter !== 'all' ||
+              statusFilter !== 'all' ||
+              searchQuery) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSeverityFilter('all');
+                  setCategoryFilter('all');
+                  setStatusFilter('all');
+                  setSearchQuery('');
+                }}
+                className="text-xs text-zinc-500"
+                data-testid="risk-clear-filters-btn"
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+
+          <RiskAlertsList
+            alerts={filteredAlerts}
+            onStatusChange={handleStatusChange}
+            onViewDocument={handleViewDocument}
+          />
+        </div>
+      </DemoCard>
       </div>
     </PageContainer>
   );

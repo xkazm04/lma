@@ -14,4 +14,3 @@ export * from './document-lifecycle';
 export * from './risk-detection';
 export * from './document-translation';
 export * from './risk-scenario-simulation';
-export * from './evolution-engine';

@@ -9,14 +9,12 @@ import {
   Handshake,
   ClipboardCheck,
   ArrowLeftRight,
-  Settings,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   BarChart3,
   Brain,
   Shield,
-  Clock,
   Box,
   Calendar,
   TrendingUp,
@@ -56,7 +54,6 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Document Hub', href: '/documents', icon: FileText },
       { name: 'Risk Detection', href: '/documents/risk-detection', icon: Shield },
-      { name: 'Evolution', href: '/documents/evolution', icon: Clock },
       { name: 'Compare', href: '/documents/compare', icon: Layers },
       { name: 'Portfolio', href: '/documents/portfolio', icon: BarChart3 },
     ],
@@ -261,18 +258,8 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             {navigation.map(renderNavItem)}
           </nav>
 
-          {/* Settings & Collapse Button */}
+          {/* Collapse Button */}
           <div className="p-3 border-t border-zinc-200">
-            {!collapsed && (
-              <Link
-                href="/settings"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-md text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-colors"
-              >
-                <Settings className="w-5 h-5" />
-                <span className="text-sm font-medium">Settings</span>
-              </Link>
-            )}
-
             <Button
               variant="ghost"
               size="sm"
